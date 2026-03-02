@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimeGrid } from '@/components/anime/AnimeGrid';
-import { LayoutGrid, List, Zap, ChevronDown, Filter } from 'lucide-react';
+import { LayoutGrid, List, Zap, ChevronDown, Filter, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useQueryFilters } from '@/components/anime/filters/useQueryFilters';
@@ -24,6 +24,17 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const { filters, debouncedFilters, updateFilter, resetFilters } = useQueryFilters();
+
+    // Count active filters for badge
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        if (filters.search) count++;
+        count += filters.types.length;
+        count += filters.status.length;
+        count += Object.values(filters.genres).filter(v => v && v !== 'none').length;
+        if (filters.sortBy !== 'popularity') count++;
+        return count;
+    }, [filters]);
 
     const [projects, setProjects] = useState<any[]>(initialProjects);
     const [page, setPage] = useState(1);
@@ -182,9 +193,14 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                             <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
                                 <button
                                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                    className="p-3 bg-bg-dark text-cream hover:bg-accent transition-colors shrink-0 outline-none flex lg:hidden items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
+                                    className="relative p-3 bg-bg-dark text-cream hover:bg-accent transition-colors shrink-0 outline-none flex lg:hidden items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
                                 >
                                     <Filter size={18} />
+                                    {activeFilterCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center bg-accent text-cream text-[10px] font-black rounded-full border-2 border-cream px-1">
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
                                 </button>
 
                                 <div className="hidden lg:flex p-3 bg-bg-dark text-cream shrink-0 items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)]">
@@ -303,6 +319,23 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                     )}
                 </section>
             </main>
+
+            {/* Mobile Floating Filter Button (FAB) */}
+            <button
+                onClick={() => setIsFilterOpen(true)}
+                className={cn(
+                    "fixed bottom-6 right-6 z-[100] lg:hidden flex items-center gap-3 px-5 py-4 bg-bg-dark text-cream border-4 border-cream shadow-[4px_4px_0_var(--color-accent)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all",
+                    isFilterOpen && "hidden"
+                )}
+            >
+                <SlidersHorizontal size={20} strokeWidth={2.5} />
+                <span className="font-editorial text-sm uppercase tracking-wider">Фильтры</span>
+                {activeFilterCount > 0 && (
+                    <span className="min-w-[22px] h-[22px] flex items-center justify-center bg-accent text-cream text-[11px] font-black rounded-full border-2 border-cream px-1">
+                        {activeFilterCount}
+                    </span>
+                )}
+            </button>
         </div>
     );
 }
