@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { TrendingUp, ChevronRight, Calendar, Star } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { cn } from '@/lib/utils';
+import { ensureFullUrl } from '@/lib/imageUtils';
 
 interface RelatedRelease {
     relation: string;
@@ -92,7 +93,7 @@ export const RelatedReleases: React.FC<RelatedReleasesProps> = ({ currentAnimeId
                             >
                                 <div className="w-12 h-16 bg-bg-cream border-2 border-bg-dark overflow-hidden flex-shrink-0">
                                     <BlurImage
-                                        src={anime.image?.original ? `https://shikimori.one${anime.image.original}` : ''}
+                                        src={anime.image?.original ? ensureFullUrl(anime.image.original) : ''}
                                         alt={anime.russian || anime.name}
                                         className="w-full h-full object-cover mix-blend-multiply"
                                     />

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { ensureFullUrl } from '@/lib/imageUtils';
 
 interface BlurImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
     src: string;
@@ -13,27 +14,25 @@ interface BlurImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 export const BlurImage: React.FC<BlurImageProps> = ({ src, alt, className, fill, ...props }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
-    const [retried, setRetried] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
 
-    const handleError = () => {
-        // If the primary URL fails and it's a Shikimori 'original' URL, try 'preview' size
-        if (!retried && src?.includes('/system/animes/original/')) {
-            setRetried(true);
-            // Will re-render with preview URL
-        } else {
-            setError(true);
+    // Resolve the image URL through the centralized utility
+    const imgSrc = ensureFullUrl(src || '');
+
+    // Check if image already loaded (SSR hydration race condition fix)
+    useEffect(() => {
+        if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
             setIsLoading(false);
         }
+    }, [imgSrc]);
+
+    const handleError = () => {
+        setError(true);
+        setIsLoading(false);
     };
 
-    // If retried, swap 'original' for 'preview' in Shikimori URL
-    let imgSrc = src || '';
-    if (retried && !error && imgSrc.includes('/system/animes/original/')) {
-        imgSrc = imgSrc.replace('/original/', '/preview/');
-    }
-
     if (error || !imgSrc) {
-        // Beautiful gradient placeholder instead of ugly missing image
+        // Gradient placeholder for missing images
         return (
             <div className={cn("relative overflow-hidden bg-gradient-to-br from-purple-900/30 via-slate-800/50 to-indigo-900/30 flex items-center justify-center", className)}>
                 <div className="flex flex-col items-center gap-2 opacity-40">
@@ -51,6 +50,7 @@ export const BlurImage: React.FC<BlurImageProps> = ({ src, alt, className, fill,
     return (
         <div className={cn("relative overflow-hidden bg-secondary/10", className)}>
             <img
+                ref={imgRef}
                 src={imgSrc}
                 alt={alt}
                 loading="lazy"

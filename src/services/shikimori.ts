@@ -124,46 +124,125 @@ export async function getAnimeRelated(id: string | number) {
 }
 
 /**
- * Get trending animes (sorted by popularity)
+ * Get trending animes (sorted by popularity) via GraphQL for reliable poster URLs
  */
 export async function getTrendingAnimes(limit: number = 20) {
-    const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
-    url.searchParams.append('limit', String(limit));
-    url.searchParams.append('order', 'popularity');
-    url.searchParams.append('status', 'ongoing,released'); // Focus on released or currently airing
-
     try {
-        const response = await fetch(url.toString(), {
+        const query = `{
+            animes(limit: ${limit}, order: popularity, status: "ongoing,released") {
+                id
+                name
+                russian
+                score
+                status
+                kind
+                episodes
+                airedOn { date }
+                poster { originalUrl mainUrl }
+            }
+        }`;
+
+        const response = await fetch('https://shikimori.one/api/graphql', {
+            method: 'POST',
             headers,
+            body: JSON.stringify({ query }),
             next: { revalidate: 3600 }
         });
-        if (!response.ok) throw new Error(`Shikimori trending error: ${response.status}`);
-        return await response.json();
+
+        if (!response.ok) throw new Error(`Shikimori GQL trending error: ${response.status}`);
+        const data = await response.json();
+        const animes = data?.data?.animes || [];
+
+        // Map to REST-compatible format for backward compat
+        return animes.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            russian: a.russian,
+            score: a.score,
+            status: a.status,
+            kind: a.kind,
+            episodes: a.episodes,
+            aired_on: a.airedOn?.date,
+            image: {
+                original: a.poster?.originalUrl || a.poster?.mainUrl || '',
+                preview: a.poster?.mainUrl || a.poster?.originalUrl || ''
+            },
+            // Direct poster URL for convenience
+            posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
+        }));
     } catch (e) {
-        console.error(e);
-        return [];
+        console.error('GQL trending failed, falling back to REST:', e);
+        // Fallback to REST API
+        const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
+        url.searchParams.append('limit', String(limit));
+        url.searchParams.append('order', 'popularity');
+        url.searchParams.append('status', 'ongoing,released');
+        try {
+            const response = await fetch(url.toString(), { headers, next: { revalidate: 3600 } });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch { return []; }
     }
 }
 
 /**
- * Get upcoming animes (status anons)
+ * Get upcoming animes (status anons) via GraphQL for reliable poster URLs
  */
 export async function getUpcomingAnimes(limit: number = 20) {
-    const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
-    url.searchParams.append('limit', String(limit));
-    url.searchParams.append('order', 'popularity');
-    url.searchParams.append('status', 'anons');
-
     try {
-        const response = await fetch(url.toString(), {
+        const query = `{
+            animes(limit: ${limit}, order: popularity, status: "anons") {
+                id
+                name
+                russian
+                score
+                status
+                kind
+                episodes
+                episodesAired
+                airedOn { date }
+                poster { originalUrl mainUrl }
+            }
+        }`;
+
+        const response = await fetch('https://shikimori.one/api/graphql', {
+            method: 'POST',
             headers,
+            body: JSON.stringify({ query }),
             next: { revalidate: 3600 }
         });
-        if (!response.ok) throw new Error(`Shikimori upcoming error: ${response.status}`);
-        return await response.json();
+
+        if (!response.ok) throw new Error(`Shikimori GQL upcoming error: ${response.status}`);
+        const data = await response.json();
+        const animes = data?.data?.animes || [];
+
+        return animes.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            russian: a.russian,
+            score: a.score,
+            status: a.status,
+            kind: a.kind,
+            episodes: a.episodes,
+            episodes_aired: a.episodesAired,
+            aired_on: a.airedOn?.date,
+            image: {
+                original: a.poster?.originalUrl || a.poster?.mainUrl || '',
+                preview: a.poster?.mainUrl || a.poster?.originalUrl || ''
+            },
+            posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
+        }));
     } catch (e) {
-        console.error(e);
-        return [];
+        console.error('GQL upcoming failed, falling back to REST:', e);
+        const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
+        url.searchParams.append('limit', String(limit));
+        url.searchParams.append('order', 'popularity');
+        url.searchParams.append('status', 'anons');
+        try {
+            const response = await fetch(url.toString(), { headers, next: { revalidate: 3600 } });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch { return []; }
     }
 }
 
@@ -188,3 +267,118 @@ export async function getMovies(limit: number = 20, order: string = 'popularity'
         return [];
     }
 }
+
+/**
+ * Universal GraphQL anime list with reliable poster URLs.
+ * Use this for catalog, search, etc. — same method as the home page.
+ */
+export async function getAnimesGQL(params: {
+    limit?: number;
+    page?: number;
+    order?: string;
+    status?: string;
+    kind?: string;
+    search?: string;
+    genre?: string;
+    ids?: string;
+    season?: string;
+} = {}): Promise<any[]> {
+    const { limit = 20, page = 1, order = 'popularity', status, kind, search, genre, ids, season } = params;
+
+    const args: string[] = [];
+    args.push(`limit: ${limit}`);
+    args.push(`page: ${page}`);
+    args.push(`order: ${order}`);
+    if (status) args.push(`status: "${status}"`);
+    if (kind) args.push(`kind: "${kind}"`);
+    if (search) args.push(`search: "${search.replace(/"/g, '\\"')}"`);
+    if (ids) args.push(`ids: "${ids}"`);
+    if (season) args.push(`season: "${season}"`);
+    if (genre) {
+        const parts = genre.split(',');
+        const included = parts.filter(p => !p.startsWith('!')).join(',');
+        const excluded = parts.filter(p => p.startsWith('!')).map(p => p.slice(1)).join(',');
+        if (included) args.push(`genre: "${included}"`);
+        if (excluded) args.push(`excludeGenre: "${excluded}"`);
+    }
+
+    const query = `{
+        animes(${args.join(', ')}) {
+            id
+            name
+            russian
+            score
+            status
+            kind
+            episodes
+            episodesAired
+            airedOn { date }
+            poster { originalUrl mainUrl }
+            description
+        }
+    }`;
+
+    try {
+        const response = await fetch('https://shikimori.one/api/graphql', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ query }),
+            next: { revalidate: 3600 }
+        });
+
+        if (!response.ok) throw new Error(`GQL animes error: ${response.status}`);
+        const data = await response.json();
+        const animes = data?.data?.animes || [];
+
+        return animes.map((a: any) => ({
+            id: parseInt(a.id),
+            name: a.name,
+            russian: a.russian,
+            score: a.score ? String(a.score) : '0',
+            status: a.status,
+            kind: a.kind,
+            episodes: a.episodes,
+            episodes_aired: a.episodesAired,
+            aired_on: a.airedOn?.date,
+            description: a.description,
+            image: {
+                original: a.poster?.originalUrl || a.poster?.mainUrl || '',
+                preview: a.poster?.mainUrl || a.poster?.originalUrl || ''
+            },
+            posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
+        }));
+    } catch (e) {
+        console.error('getAnimesGQL failed:', e);
+        return [];
+    }
+}
+
+/**
+ * Get single anime details with reliable poster via GraphQL.
+ * Use this for the project detail page poster enrichment.
+ */
+export async function getAnimePosterGQL(id: string | number): Promise<string> {
+    try {
+        const query = `{
+            animes(ids: "${id}", limit: 1) {
+                poster { originalUrl mainUrl }
+            }
+        }`;
+
+        const response = await fetch('https://shikimori.one/api/graphql', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ query }),
+            next: { revalidate: 86400 }
+        });
+
+        if (!response.ok) return '';
+        const data = await response.json();
+        const anime = data?.data?.animes?.[0];
+        return anime?.poster?.originalUrl || anime?.poster?.mainUrl || '';
+    } catch (e) {
+        console.error('getAnimePosterGQL failed:', e);
+        return '';
+    }
+}
+

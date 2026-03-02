@@ -21,19 +21,38 @@ export const SectionDivider: React.FC<Props> = ({
         return <MarqueeStrip variant="dark" speed="fast" />;
     }
 
-    // In the retro-editorial style, we use thick brutalist stripes instead of curves
+    // Vintage magazine section divider with ink print pattern
     return (
         <div
             className={cn(
-                'w-full h-8 sm:h-12 border-y-4 border-bg-dark relative z-20 flex items-center justify-center overflow-hidden',
+                'w-full relative z-20 overflow-hidden',
                 flip && 'rotate-180',
                 className
             )}
             style={{ backgroundColor: color || 'var(--color-bg-cream)' }}
         >
-            <div className="w-full h-full opacity-20" style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, var(--color-bg-dark) 10px, var(--color-bg-dark) 20px)'
-            }} />
+            {/* Thick editorial border line */}
+            <div className="h-1 bg-bg-dark w-full" />
+
+            {/* Decorative dotted strip (vintage print feel) */}
+            <div className="h-6 flex items-center justify-between px-6 lg:px-16">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-accent" />
+                    <div className="w-8 h-px bg-bg-dark/20" />
+                </div>
+                <div className="flex gap-1.5">
+                    {[...Array(20)].map((_, i) => (
+                        <div key={i} className="w-1 h-1 rounded-full bg-bg-dark/10" />
+                    ))}
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-px bg-bg-dark/20" />
+                    <div className="w-2 h-2 bg-accent" />
+                </div>
+            </div>
+
+            {/* Bottom line */}
+            <div className="h-1 bg-bg-dark w-full" />
         </div>
     );
 };

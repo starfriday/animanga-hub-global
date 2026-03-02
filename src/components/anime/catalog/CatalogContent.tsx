@@ -48,9 +48,17 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
         params.append('limit', '20');
 
         if (debouncedFilters.search) params.append('search', debouncedFilters.search);
-        if (debouncedFilters.sortBy === 'popularity') params.append('order', 'popularity');
-        if (debouncedFilters.sortBy === 'rating') params.append('order', 'ranked');
-        if (debouncedFilters.sortBy === 'newest') params.append('order', 'aired_on');
+
+        // Map all sort options to Shikimori API order param
+        const sortMap: Record<string, string> = {
+            'popularity': 'popularity',
+            'name-asc': 'name',
+            'date': 'aired_on',
+            'rating': 'ranked',
+            'votes': 'popularity',  // Shikimori uses popularity for vote-based
+            'views': 'popularity',  // closest match
+        };
+        params.append('order', sortMap[debouncedFilters.sortBy] || 'popularity');
 
         if (debouncedFilters.types.length > 0) {
             params.append('kind', debouncedFilters.types.join(','));
@@ -78,6 +86,16 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             params.append('genre', [...activeGenreIds, ...excludedGenreIds].join(','));
         }
 
+        // Send year range as season filter to API (e.g. "2020_2025")
+        const [yearMin, yearMax] = debouncedFilters.yearRange;
+        if (yearMin !== 1990 || yearMax !== 2026) {
+            if (yearMin === yearMax) {
+                params.append('season', String(yearMin));
+            } else {
+                params.append('season', `${yearMin}_${yearMax}`);
+            }
+        }
+
         if (debouncedFilters.showAnnouncements) params.append('anons', 'true');
 
         return params.toString();
@@ -86,7 +104,19 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
     useEffect(() => {
         let isCancelled = false;
         const fetchInitial = async () => {
-            if (page === 1 && !debouncedFilters.search && debouncedFilters.types.length === 0 && debouncedFilters.status.length === 0 && Object.keys(debouncedFilters.genres).length === 0 && debouncedFilters.sortBy === 'popularity') {
+            // Only skip API call and use SSR data when ALL filters are at defaults
+            const isDefaultState =
+                !debouncedFilters.search &&
+                debouncedFilters.types.length === 0 &&
+                debouncedFilters.status.length === 0 &&
+                Object.keys(debouncedFilters.genres).filter(k => debouncedFilters.genres[k] !== 'none').length === 0 &&
+                debouncedFilters.sortBy === 'popularity' &&
+                debouncedFilters.yearRange[0] === 1990 &&
+                debouncedFilters.yearRange[1] === 2026 &&
+                debouncedFilters.episodeRange[0] === 1 &&
+                debouncedFilters.episodeRange[1] === 1000;
+
+            if (page === 1 && isDefaultState) {
                 if (projects.length === 0) setProjects(initialProjects);
                 return;
             }
@@ -242,11 +272,14 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                                     <select
                                         value={filters.sortBy}
                                         onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                        className="w-full appearance-none flex items-center justify-between md:justify-start gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs md:text-sm font-bold transition-all text-bg-dark hover:border-accent outline-none uppercase tracking-wider"
+                                        className="w-full appearance-none flex items-center justify-between md:justify-start gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs md:text-sm font-bold transition-all text-bg-dark hover:border-accent outline-none uppercase tracking-wider cursor-pointer"
                                     >
                                         <option value="popularity">Громкие хиты</option>
-                                        <option value="rating">Высший балл</option>
-                                        <option value="newest">Свежие релизы</option>
+                                        <option value="name-asc">Названию (А-Я)</option>
+                                        <option value="date">Дате выхода</option>
+                                        <option value="rating">Рейтингу</option>
+                                        <option value="votes">Голосам</option>
+                                        <option value="views">Просмотрам</option>
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bg-dark">
                                         <ChevronDown size={16} strokeWidth={3} />

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Star, ChevronRight, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BlurImage } from '@/components/ui/BlurImage';
+import { resolveAnimeImage } from '@/lib/imageUtils';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { mockProjects } from '@/data/mockProjects';
 
@@ -23,7 +24,7 @@ export const TrendsScroll = ({ popular }: TrendsScrollProps) => {
             id: anime.id,
             title: anime.russian || anime.name,
             originalTitle: anime.name,
-            image: anime.image?.original ? `https://shikimori.one${anime.image.original}` : '',
+            image: resolveAnimeImage(anime),
             studio_rating: parseFloat(anime.score) || 0,
             type: anime.kind?.toUpperCase() || 'TV',
             slug: anime.id.toString()
@@ -36,119 +37,159 @@ export const TrendsScroll = ({ popular }: TrendsScrollProps) => {
         }
     };
 
-    return (
-        <section ref={sectionRef} className="relative w-full overflow-hidden bg-bg-cream border-b-4 border-bg-dark text-bg-dark pt-24 pb-32">
+    // Random rotation values for collage effect (deterministic per index)
+    const rotations = [-3, 2, -1.5, 3, -2, 1, -2.5, 3.5, -1, 2.5];
 
-            {/* Retro background pattern */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-5">
+    return (
+        <section ref={sectionRef} className="relative w-full overflow-hidden bg-bg-dark text-cream border-b-4 border-bg-dark">
+
+            {/* Grain texture */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04] mix-blend-overlay"
+                style={{ backgroundImage: 'var(--background-noise)', backgroundSize: '128px' }}
+            />
+
+            {/* Diagonal hatching background */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04]">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <pattern id="dotGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <circle cx="2" cy="2" r="1.5" fill="var(--color-bg-dark)" />
+                        <pattern id="diag" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0" x2="0" y2="8" stroke="#FFF" strokeWidth="1" />
                         </pattern>
                     </defs>
-                    <rect width="100%" height="100%" fill="url(#dotGrid)" />
+                    <rect width="100%" height="100%" fill="url(#diag)" />
                 </svg>
             </div>
 
-            <div className="max-w-[1800px] mx-auto px-6 lg:px-12 relative z-10 flex flex-col lg:flex-row gap-16 lg:gap-24">
+            {/* RED TOP STRIP */}
+            <div className="h-3 bg-accent w-full" />
 
-                {/* LEFT: EDITORIAL TYPOGRAPHY HEADING */}
-                <div className={cn("w-full lg:w-1/3 shrink-0 flex flex-col", isVisible ? "animate-fade-in-up" : "opacity-0")}>
-                    <div className="font-editorial text-[10rem] sm:text-[14rem] lg:text-[16rem] leading-[0.7] text-accent opacity-20 transform -translate-x-8 mix-blend-multiply">
-                        <span className="writing-vertical-rl" style={{ writingMode: 'vertical-rl' }}>人気</span>
+            <div className="max-w-[1600px] mx-auto px-6 lg:px-16 py-20 sm:py-28 relative z-10">
+
+                {/* === SECTION HEADER === */}
+                <div className={cn("flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16", isVisible ? "animate-fade-in-up" : "opacity-0")}>
+
+                    <div className="flex items-start gap-6 lg:gap-10">
+                        {/* Vertical kanji */}
+                        <div className="font-editorial text-7xl sm:text-8xl lg:text-9xl leading-none text-accent/30 tracking-tighter select-none hidden sm:block" style={{ writingMode: 'vertical-rl' }}>
+                            人気
+                        </div>
+
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-3 h-3 bg-accent" />
+                                <span className="font-black uppercase tracking-[0.3em] text-[10px] text-accent">РУБРИКА 01</span>
+                            </div>
+
+                            <h2 className="font-editorial text-6xl sm:text-7xl lg:text-8xl text-cream uppercase tracking-tighter leading-[0.85]">
+                                Trending<br />
+                                <span className="text-accent">Now</span>
+                            </h2>
+
+                            <div className="border-l-4 border-accent pl-5 mt-6 max-w-md">
+                                <p className="text-cream/50 leading-relaxed text-sm">
+                                    Самые обсуждаемые тайтлы этого сезона. Вырезки из наших архивов.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="relative -mt-32 sm:-mt-48 lg:-mt-56 z-10">
-                        <h2 className="font-editorial text-7xl sm:text-8xl lg:text-9xl text-accent uppercase tracking-tighter leading-[0.85] mix-blend-multiply drop-shadow-sm mb-6">
-                            Trending<br />Now
-                        </h2>
-                        <div className="border-l-4 border-accent pl-6 py-2 mb-10">
-                            <p className="font-serif text-bg-dark/80 max-w-sm font-semibold leading-relaxed">
-                                The most popular titles currently dominating the charts. Join the hype train and never miss a masterpiece again.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => scroll(-1)} className="w-12 h-12 flex items-center justify-center border-2 border-accent text-accent hover:bg-accent hover:text-cream transition-colors">
-                                <ChevronLeft strokeWidth={3} />
-                            </button>
-                            <button onClick={() => scroll(1)} className="w-12 h-12 flex items-center justify-center border-2 border-accent text-accent hover:bg-accent hover:text-cream transition-colors">
-                                <ChevronRight strokeWidth={3} />
-                            </button>
-                        </div>
+
+                    {/* Scroll controls */}
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => scroll(-1)} className="w-12 h-12 flex items-center justify-center border-2 border-cream/20 text-cream/50 hover:bg-cream hover:text-bg-dark transition-colors active:scale-95">
+                            <ChevronLeft strokeWidth={3} size={18} />
+                        </button>
+                        <button onClick={() => scroll(1)} className="w-12 h-12 flex items-center justify-center border-2 border-cream/20 text-cream/50 hover:bg-cream hover:text-bg-dark transition-colors active:scale-95">
+                            <ChevronRight strokeWidth={3} size={18} />
+                        </button>
                     </div>
                 </div>
 
-                {/* RIGHT: SCROLLING CARDS */}
-                <div className={cn("w-full lg:w-2/3 flex items-center relative", isVisible ? "animate-fade-in" : "opacity-0")} style={{ animationDelay: '0.2s' }}>
-                    <div
-                        ref={scrollRef}
-                        className="flex items-center gap-8 overflow-x-auto pb-12 pt-8 scrollbar-hide snap-x px-4 -mx-4 w-full"
-                        style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
-                    >
-                        {trending.map((p, index) => (
-                            <TrendCard key={p.id} project={p} rank={index + 1} visible={isVisible} />
-                        ))}
+                {/* === TORN PAPER COLLAGE CARDS === */}
+                <div
+                    ref={scrollRef}
+                    className="flex gap-8 sm:gap-10 overflow-x-auto pb-12 scrollbar-hide snap-x -mx-6 px-6 items-start"
+                    style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+                >
+                    {trending.map((p, index) => (
+                        <TornPaperCard key={p.id} project={p} rank={index + 1} visible={isVisible} rotation={rotations[index % rotations.length]} />
+                    ))}
 
-                        {/* View All Card */}
-                        <Link href="/catalog" className="flex-none w-[280px] aspect-[3/4] snap-start group outline-none bg-accent/5 border-4 border-accent flex flex-col items-center justify-center p-8 hover:bg-accent hover:text-cream text-accent transition-colors">
-                            <ArrowUpRight size={48} className="mb-4 stroke-[3px]" />
-                            <h3 className="font-editorial text-4xl uppercase tracking-tighter text-center">View<br />All</h3>
-                        </Link>
-                    </div>
+                    {/* View All Card */}
+                    <Link href="/catalog" className="flex-none w-[240px] sm:w-[280px] aspect-[3/4] snap-start group outline-none bg-cream text-bg-dark flex flex-col items-center justify-center p-8 hover:bg-accent hover:text-cream transition-all rotate-2 hover:rotate-0 shadow-2xl">
+                        <div className="w-12 h-12 rounded-full border-3 border-current flex items-center justify-center mb-4">
+                            <ArrowUpRight size={24} className="stroke-[2.5px]" />
+                        </div>
+                        <h3 className="font-editorial text-3xl uppercase tracking-tighter text-center mb-1">Смотреть<br />Все</h3>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-50">КАТАЛОГ</span>
+                    </Link>
                 </div>
             </div>
+
+            {/* Bottom red strip */}
+            <div className="h-3 bg-accent w-full" />
         </section>
     );
 };
 
-const TrendCard: React.FC<{ project: any; rank: number; visible: boolean }> = ({ project, rank, visible }) => {
+const TornPaperCard: React.FC<{ project: any; rank: number; visible: boolean; rotation: number }> = ({ project, rank, visible, rotation }) => {
     return (
         <Link
             href={`/anime/${project.slug || project.id}`}
             className={cn(
-                "flex-none relative w-[280px] md:w-[320px] aspect-[3/4] snap-start group outline-none border-4 border-bg-dark bg-bg-dark overflow-hidden transform transition-transform duration-500 hover:-translate-y-4 hover:rotate-1 shadow-[8px_8px_0_var(--color-accent)] hover:shadow-[16px_16px_0_var(--color-accent)] block",
+                "flex-none relative w-[240px] sm:w-[280px] snap-start group outline-none block transition-all duration-500 hover:z-10",
                 visible ? "animate-fade-in-up" : "opacity-0"
             )}
-            style={{ animationDelay: `${rank * 80}ms` }}
+            style={{
+                animationDelay: `${rank * 80}ms`,
+                transform: `rotate(${rotation}deg)`,
+            }}
         >
-            <div className="absolute inset-0">
-                <BlurImage
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105"
-                />
-            </div>
+            {/* Main card — white paper with torn edges */}
+            <div className="relative bg-cream p-2.5 shadow-2xl group-hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.5)] transition-shadow group-hover:scale-[1.03]"
+                style={{ transition: 'transform 0.5s, box-shadow 0.5s' }}
+            >
+                {/* Image area */}
+                <div className="relative aspect-[3/4] overflow-hidden bg-bg-dark">
+                    <BlurImage
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 saturate-[0.85] group-hover:saturate-100"
+                    />
 
-            {/* Retro Number Badge */}
-            <div className="absolute top-0 right-0 bg-accent text-cream w-20 h-20 flex items-center justify-center border-b-4 border-l-4 border-bg-dark z-10">
-                <span className="font-editorial text-5xl leading-none">#{rank}</span>
-            </div>
+                    {/* Halftone/grain overlay on image (newspaper print feel) */}
+                    <div className="absolute inset-0 opacity-[0.12] mix-blend-multiply pointer-events-none"
+                        style={{ backgroundImage: 'var(--background-noise)', backgroundSize: '100px' }}
+                    />
 
-            {/* Type/Rating Tag */}
-            <div className="absolute top-4 left-4 bg-cream text-bg-dark font-black textxs uppercase tracking-widest px-3 py-1 border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] z-10 flex gap-2 items-center">
-                <span>{project.type}</span>
-                <span className="w-1 h-1 bg-accent rounded-full" />
-                <span className="flex items-center gap-1"><Star size={10} className="fill-bg-dark" /> {project.studio_rating}</span>
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/40 to-transparent z-0 relative flex flex-col justify-end p-6 border-4 border-transparent group-hover:border-cream/20 transition-all">
-                {/* Title and Metadata */}
-                <div className="relative z-10 transition-transform duration-300 transform group-hover:-translate-y-2">
-                    <h3 className="font-editorial text-3xl md:text-4xl text-cream uppercase leading-[0.9] tracking-tighter mb-2 line-clamp-3">
-                        {project.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-4 text-cream font-bold text-xs uppercase tracking-widest">
-                        <span className="bg-accent px-3 py-1">Watch</span>
-                        <ArrowUpRight size={16} className="text-accent group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    {/* Red stamp rank */}
+                    <div className="absolute top-3 right-3 w-12 h-12 rounded-full border-[3px] border-accent bg-accent/90 flex items-center justify-center z-10 shadow-lg" style={{ transform: `rotate(${-rotation * 2}deg)` }}>
+                        <span className="font-editorial text-cream text-xl leading-none">{rank}</span>
                     </div>
                 </div>
-            </div>
 
-            {/* Japanese Text Vertical */}
-            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none opacity-0 group-hover:opacity-[0.15] transition-opacity duration-500 z-10">
-                <span className="font-editorial text-8xl text-cream writing-vertical-rl ml-4" style={{ writingMode: 'vertical-rl' }}>
-                    トレンド
-                </span>
+                {/* Bottom caption area (like handwritten magazine annotation) */}
+                <div className="pt-3 pb-1 px-1">
+                    <h3 className="font-editorial text-lg sm:text-xl text-bg-dark uppercase leading-[0.9] tracking-tight mb-1 line-clamp-2">
+                        {project.title}
+                    </h3>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-accent">
+                            <Star size={11} className="fill-accent" />
+                            <span className="font-bold text-xs">{project.studio_rating}</span>
+                        </div>
+                        <span className="text-bg-dark/40 font-bold text-[9px] uppercase tracking-widest">{project.type}</span>
+                    </div>
+                </div>
+
+                {/* Tape piece decoration (top-left) */}
+                <div className="absolute -top-2 left-4 w-10 h-6 bg-cream/80 backdrop-blur-sm border border-bg-dark/5 z-20 rotate-[-5deg] shadow-sm opacity-60"
+                    style={{ background: 'linear-gradient(135deg, rgba(220,201,169,0.6) 0%, rgba(220,201,169,0.3) 100%)' }}
+                />
+
+                {/* Tape piece decoration (bottom-right) */}
+                <div className="absolute -bottom-1.5 right-6 w-8 h-5 bg-cream/80 backdrop-blur-sm border border-bg-dark/5 z-20 rotate-[8deg] shadow-sm opacity-60"
+                    style={{ background: 'linear-gradient(135deg, rgba(220,201,169,0.6) 0%, rgba(220,201,169,0.3) 100%)' }}
+                />
             </div>
         </Link>
     );

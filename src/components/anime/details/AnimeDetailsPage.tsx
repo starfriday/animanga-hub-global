@@ -6,6 +6,7 @@ import {
     ChevronUp, ChevronDown, Building2, Clock, Calendar, Award, ShieldAlert, ExternalLink, Play, Film
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ensureFullUrl } from '@/lib/imageUtils';
 import { ShikiText } from '@/components/ui/ShikiText';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { ProjectHero } from './ProjectHero';
@@ -31,21 +32,27 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
     const themeIds = useMemo(() => new Set(THEMES_LIST.map(t => String(t.id))), []);
 
     // Resolve best available poster image
+    // Priority: GraphQL posterUrl > Kodik poster > REST image.original
     const bestImage = useMemo(() => {
-        let posterUrl = '';
+        // 1. GraphQL poster (same method as home page)
+        if (anime.posterUrl) return anime.posterUrl;
+
+        // 2. Kodik poster (Kinopoisk)
         if (videos && videos.length > 0) {
             for (const v of videos) {
                 if (v.material_data?.poster_url) {
-                    posterUrl = v.material_data.poster_url;
-                    break;
+                    return v.material_data.poster_url;
                 }
             }
         }
-        if (!posterUrl && anime.image?.original && !anime.image.original.includes('missing_original')) {
-            posterUrl = `https://shikimori.one${anime.image.original}`;
+
+        // 3. REST image.original fallback
+        if (anime.image?.original && !anime.image.original.includes('missing_original')) {
+            return ensureFullUrl(anime.image.original);
         }
-        return posterUrl;
-    }, [anime.image, videos]);
+
+        return '';
+    }, [anime.posterUrl, anime.image, videos]);
 
     // Filter roles for Cast
     const actorCredits = useMemo(() => {
@@ -55,7 +62,7 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
         const groups: any[] = voiceRoles.map(r => ({
             name: r.person?.russian || r.person?.name || 'Unknown',
             characters: [r.character?.russian || r.character?.name || 'Unknown'],
-            image: r.person?.image?.original ? `https://shikimori.one${r.person.image.original}` : undefined,
+            image: r.person?.image?.original ? ensureFullUrl(r.person.image.original) : undefined,
             isMain: r.roles.includes('Main'),
             roles: ['Voice']
         }));
@@ -241,7 +248,7 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                             {anime.screenshots.slice(0, 6).map((s: any, i: number) => (
                                                 <div key={i} className="aspect-video bg-white border-4 border-bg-dark overflow-hidden shadow-[6px_6px_0_var(--color-bg-dark)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all duration-300">
                                                     <img
-                                                        src={`https://shikimori.one${s.original}`}
+                                                        src={ensureFullUrl(s.original)}
                                                         alt=""
                                                         className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform duration-500"
                                                     />

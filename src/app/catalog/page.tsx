@@ -1,78 +1,30 @@
 import { Suspense } from 'react';
 import { CatalogContent } from '@/components/anime/catalog/CatalogContent';
 import { getKodikAvailability } from '@/services/kodik';
+import { getAnimesGQL } from '@/services/shikimori';
 
 export default async function CatalogPage() {
-    // Fetch top 20 released/ongoing animes (hide anons by default)
-    const url = new URL('https://shikimori.one/api/animes');
-    url.searchParams.append('limit', '20');
-    url.searchParams.append('order', 'popularity');
-    url.searchParams.append('status', 'ongoing,released');
+    // Use GraphQL for reliable poster URLs (same method as home page)
+    // No status filter — show everything including announcements
+    let rawAnimes = await getAnimesGQL({
+        limit: 20,
+        order: 'popularity'
+    });
 
-    let rawAnimes: any[] = [];
-    try {
-        const res = await fetch(url.toString(), {
-            headers: { 'User-Agent': 'AniVaultApp/1.0' },
-            next: { revalidate: 3600 }
-        });
-        if (res.ok) rawAnimes = await res.json();
-    } catch (e) {
-        console.error('Catalog SSR fetch error:', e);
-    }
-
-    // Check Kodik availability + get posters in one pass
+    // Check Kodik availability (for filtering playable content only)
     const shikimoriIds = rawAnimes.map((a: any) => a.id);
     const kodikInfo = await getKodikAvailability(shikimoriIds);
 
-    // Filter: only show items available on Kodik
+    // Filter: show Kodik-available items + all announcements (anons don't have Kodik yet)
     rawAnimes = rawAnimes.filter((a: any) => {
         const info = kodikInfo.get(String(a.id));
-        return info && info.available;
+        return (info && info.available) || a.status === 'anons';
     });
 
-    // For items where Kodik didn't provide a poster, fetch from Shikimori detail API
-    const noPosterIds = rawAnimes
-        .filter((a: any) => {
-            const info = kodikInfo.get(String(a.id));
-            return !info?.posterUrl;
-        })
-        .map((a: any) => a.id);
-
-    const detailedPosters = new Map<string, string>();
-    if (noPosterIds.length > 0) {
-        const detailPromises = noPosterIds.map(async (id: number) => {
-            try {
-                const res = await fetch(`https://shikimori.one/api/animes/${id}`, {
-                    headers: { 'User-Agent': 'AniVaultApp/1.0' },
-                    next: { revalidate: 3600 }
-                });
-                if (res.ok) {
-                    const detail = await res.json();
-                    const posterUrl = detail.poster?.originalUrl
-                        || detail.poster?.mainUrl
-                        || detail.poster?.main2xUrl
-                        || (detail.image?.original ? `https://shikimori.one${detail.image.original}` : null);
-                    if (posterUrl) detailedPosters.set(String(id), posterUrl);
-                }
-            } catch (e) { /* skip */ }
-        });
-        await Promise.all(detailPromises);
-    }
-
-    // Map to expected format — use best available poster
+    // Map to expected format
+    // Poster priority: GraphQL posterUrl (same source as home page)
     const projects = rawAnimes.map((a: any) => {
-        const info = kodikInfo.get(String(a.id));
-
-        let posterUrl = '';
-        if (info?.posterUrl) {
-            posterUrl = info.posterUrl;
-        } else if (detailedPosters.has(String(a.id))) {
-            posterUrl = detailedPosters.get(String(a.id))!;
-        } else if (a.image?.preview) {
-            posterUrl = `https://shikimori.one${a.image.preview}`;
-        } else if (a.image?.original && !a.image.original.includes('missing_original')) {
-            posterUrl = `https://shikimori.one${a.image.original}`;
-        }
+        const posterUrl = a.posterUrl || '';
 
         return {
             id: String(a.id),

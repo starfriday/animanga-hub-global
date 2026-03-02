@@ -1,6 +1,7 @@
-import { getAnimeDetails, getAnimeRoles, getAnimeSimilar, getAnimeRelated, getAnimeGenresGraphQL } from '@/services/shikimori';
+import { getAnimeDetails, getAnimeRoles, getAnimeSimilar, getAnimeRelated, getAnimeGenresGraphQL, getAnimePosterGQL } from '@/services/shikimori';
 import { getVideosByShikimoriId } from '@/services/kodik';
 import { AnimeDetailsPage } from '@/components/anime/details/AnimeDetailsPage';
+import { ensureFullUrl } from '@/lib/imageUtils';
 import { notFound } from 'next/navigation';
 
 interface PageProps {
@@ -12,14 +13,15 @@ interface PageProps {
 export default async function AnimePage({ params }: PageProps) {
     const { id } = await params;
 
-    // Fetch data in parallel (including GraphQL genres for themes)
-    const [anime, roles, similar, videos, related, graphqlGenres] = await Promise.all([
+    // Fetch data in parallel (including GraphQL genres for themes AND GraphQL poster)
+    const [anime, roles, similar, videos, related, graphqlGenres, graphqlPoster] = await Promise.all([
         getAnimeDetails(id),
         getAnimeRoles(id),
         getAnimeSimilar(id),
         getVideosByShikimoriId(id),
         getAnimeRelated(id),
-        getAnimeGenresGraphQL(id)
+        getAnimeGenresGraphQL(id),
+        getAnimePosterGQL(id)
     ]);
 
     if (!anime) {
@@ -29,6 +31,11 @@ export default async function AnimePage({ params }: PageProps) {
     // Enrich anime data with GraphQL genres (which include themes with kind field)
     if (graphqlGenres.length > 0) {
         anime.genres = graphqlGenres;
+    }
+
+    // Enrich anime data with GraphQL poster (reliable URL from poster { originalUrl })
+    if (graphqlPoster) {
+        anime.posterUrl = graphqlPoster;
     }
 
     return (
@@ -55,7 +62,7 @@ export async function generateMetadata({ params }: PageProps) {
         title: `${title} - Смотреть аниме онлайн | AniVault`,
         description,
         openGraph: {
-            images: [anime.image?.original ? `https://shikimori.one${anime.image.original}` : ''],
+            images: [anime.image?.original ? ensureFullUrl(anime.image.original) : ''],
         },
     };
 }
