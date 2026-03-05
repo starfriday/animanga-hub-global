@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Star, Calendar, Film, Play, Check, Bookmark, Award, Share2, Clock } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { cn } from '@/lib/utils';
+import { FavoriteButton } from '@/components/anime/FavoriteButton';
 
 export interface ProjectHeroProps {
     project: any;
@@ -112,16 +113,7 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
                             {nextEpisodeLabel}
                         </button>
 
-                        <button
-                            onClick={onToggleList}
-                            className={cn(
-                                "btn-haptic w-full sm:w-auto justify-center flex items-center gap-3 px-8 py-5 font-black uppercase tracking-widest text-sm md:text-base border-2 border-bg-dark shadow-[6px_6px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 outline-none transition-all",
-                                currentStatus ? "bg-bg-dark text-cream" : "bg-white text-bg-dark hover:bg-bg-dark hover:text-white"
-                            )}
-                        >
-                            {currentStatus ? <Check size={20} /> : <Bookmark size={20} />}
-                            {currentStatus ? 'В СПИСКЕ' : 'В ЗАКЛАДКИ'}
-                        </button>
+                        <FavoriteButton animeId={String(project.id)} variant="brutalist" />
 
                         <div className="flex items-center w-full sm:w-auto bg-white border-2 border-bg-dark shadow-[6px_6px_0_var(--color-bg-dark)] shrink-0">
                             <button

@@ -3,6 +3,16 @@ import { getMovies } from '@/services/shikimori';
 import { WorldHero } from '@/components/world/WorldHero';
 import { CinematicRadar } from '@/components/world/CinematicRadar';
 import { ArchiveGrid } from '@/components/world/ArchiveGrid';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Кинотеатр | AniVault — Аниме-фильмы онлайн",
+    description: "Смотрите лучшие аниме-фильмы онлайн. Подборки топовых фильмов по рейтингу и популярности.",
+    openGraph: {
+        title: "Кинотеатр — AniVault",
+        description: "Лучшие аниме-фильмы в одном месте. Рейтинги и подборки.",
+    },
+};
 
 export default async function CinemaPage() {
     // Fetch data for the WORLD page

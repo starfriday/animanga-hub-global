@@ -2,6 +2,16 @@ import React from 'react';
 import { TeamHero } from '@/components/team/TeamHero';
 import { CoreTeamList } from '@/components/team/CoreTeamList';
 import { WallOfFame } from '@/components/team/WallOfFame';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Команда | AniVault — Наша команда",
+    description: "Познакомьтесь с командой AniVault. Создатели, модераторы и самые активные участники сообщества.",
+    openGraph: {
+        title: "Команда AniVault",
+        description: "Люди, которые стоят за AniVault.",
+    },
+};
 
 export default function CommunityPage() {
     return (

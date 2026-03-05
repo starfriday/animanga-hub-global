@@ -3,6 +3,8 @@
  * Documentation: https://shikimori.one/api/doc
  */
 
+import { prisma } from '@/lib/db';
+
 const SHIKIMORI_BASE_URL = 'https://shikimori.one/api';
 
 // Add delay for rate limiting if necessary (Shikimori recommends 5rps max, 90bpm limit user)
@@ -11,123 +13,44 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-/**
- * Searches for animes by name or other parameters
- */
-export async function searchAnimes(query: string, limit: number = 20) {
-    const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
-    url.searchParams.append('search', query);
-    url.searchParams.append('limit', String(limit));
-
-    try {
-        const response = await fetch(url.toString(), { headers, next: { revalidate: 3600 } });
-        if (!response.ok) throw new Error(`Shikimori search error: ${response.status}`);
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        return [];
-    }
-}
-
-/**
- * Gets detailed information about a specific anime
- */
-export async function getAnimeDetails(id: string | number) {
-    try {
-        const response = await fetch(`${SHIKIMORI_BASE_URL}/animes/${id}`, {
-            headers,
-            next: { revalidate: 86400 } // Cache for 24 hours
-        });
-        if (!response.ok) {
-            if (response.status === 404) return null;
-            throw new Error(`Shikimori details error: ${response.status}`);
-        }
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        return null;
-    }
-}
-
-/**
- * Fetch genres (including themes) via GraphQL API.
- * The REST v1 API only returns old-style genres, but GraphQL includes themes (kind: "theme").
- */
-export async function getAnimeGenresGraphQL(id: string | number): Promise<any[]> {
-    try {
-        const response = await fetch('https://shikimori.one/api/graphql', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                query: `{ animes(ids: "${id}", limit: 1) { genres { id name russian kind } } }`
-            }),
-            next: { revalidate: 86400 }
-        });
-        if (!response.ok) return [];
-        const data = await response.json();
-        return data?.data?.animes?.[0]?.genres || [];
-    } catch (e) {
-        console.error('GraphQL genres fetch failed:', e);
-        return [];
-    }
-}
-
-/**
- * Get roles/characters for a specific anime
- */
-export async function getAnimeRoles(id: string | number) {
-    try {
-        const response = await fetch(`${SHIKIMORI_BASE_URL}/animes/${id}/roles`, {
-            headers,
-            next: { revalidate: 86400 }
-        });
-        if (!response.ok) throw new Error(`Shikimori roles error: ${response.status}`);
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        return [];
-    }
-}
-
-/**
- * Get related titles
- */
-export async function getAnimeSimilar(id: string | number) {
-    try {
-        const response = await fetch(`${SHIKIMORI_BASE_URL}/animes/${id}/similar`, {
-            headers,
-            next: { revalidate: 86400 }
-        });
-        if (!response.ok) throw new Error(`Shikimori similar error: ${response.status}`);
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        return [];
-    }
-}
-
-/**
- * Get franchise/related titles
- */
-export async function getAnimeRelated(id: string | number) {
-    try {
-        const response = await fetch(`${SHIKIMORI_BASE_URL}/animes/${id}/related`, {
-            headers,
-            next: { revalidate: 86400 }
-        });
-        if (!response.ok) throw new Error(`Shikimori related error: ${response.status}`);
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        return [];
-    }
-}
 
 /**
  * Get trending animes (sorted by popularity) via GraphQL for reliable poster URLs
  */
 export async function getTrendingAnimes(limit: number = 20) {
     try {
+        // 1. Try Local DB first (Hybrid)
+        const localAnimes = await prisma.animeCache.findMany({
+            where: {
+                status: { in: ['ongoing', 'released'] },
+                score: { gt: 0 }
+            },
+            orderBy: { popularity: 'desc' },
+            take: limit
+        });
+
+        if (localAnimes.length >= limit) {
+            return localAnimes.map((record: any) => {
+                const data = JSON.parse(record.data);
+                return {
+                    id: String(record.shikimoriId),
+                    name: record.name || data.name,
+                    russian: record.russian || data.russian,
+                    score: record.score || data.score,
+                    status: record.status || data.status,
+                    kind: record.kind || data.kind,
+                    episodes: record.episodes || data.episodes,
+                    aired_on: record.airedOn ? record.airedOn.toISOString() : data.aired_on,
+                    image: {
+                        original: record.posterUrl || data.poster?.originalUrl || '',
+                        preview: record.posterUrl || data.poster?.mainUrl || ''
+                    },
+                    posterUrl: record.posterUrl || data.poster?.originalUrl || ''
+                };
+            });
+        }
+
+        // 2. Fallback to GraphQL
         const query = `{
             animes(limit: ${limit}, order: popularity, status: "ongoing,released") {
                 id
@@ -153,7 +76,6 @@ export async function getTrendingAnimes(limit: number = 20) {
         const data = await response.json();
         const animes = data?.data?.animes || [];
 
-        // Map to REST-compatible format for backward compat
         return animes.map((a: any) => ({
             id: a.id,
             name: a.name,
@@ -167,21 +89,54 @@ export async function getTrendingAnimes(limit: number = 20) {
                 original: a.poster?.originalUrl || a.poster?.mainUrl || '',
                 preview: a.poster?.mainUrl || a.poster?.originalUrl || ''
             },
-            // Direct poster URL for convenience
             posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
         }));
     } catch (e) {
-        console.error('GQL trending failed, falling back to REST:', e);
-        // Fallback to REST API
-        const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
-        url.searchParams.append('limit', String(limit));
-        url.searchParams.append('order', 'popularity');
-        url.searchParams.append('status', 'ongoing,released');
-        try {
-            const response = await fetch(url.toString(), { headers, next: { revalidate: 3600 } });
-            if (!response.ok) return [];
-            return await response.json();
-        } catch { return []; }
+        console.error('getTrendingAnimes error:', e);
+        return [];
+    }
+}
+
+/**
+ * Get currently airing ongoing anime sorted by popularity
+ */
+export async function getOngoingPopular(limit: number = 5) {
+    try {
+        const localAnimes = await prisma.animeCache.findMany({
+            where: {
+                status: 'ongoing',
+                score: { gt: 0 },
+                popularity: { gt: 0 }
+            },
+            orderBy: { popularity: 'desc' },
+            take: limit
+        });
+
+        if (localAnimes.length >= limit) {
+            return localAnimes.map((record: any) => {
+                const data = JSON.parse(record.data);
+                return {
+                    id: String(record.shikimoriId),
+                    name: record.name || data.name,
+                    russian: record.russian || data.russian,
+                    score: record.score || data.score,
+                    status: record.status || data.status,
+                    kind: record.kind || data.kind,
+                    episodes: record.episodes || data.episodes,
+                    aired_on: record.airedOn ? record.airedOn.toISOString() : data.aired_on,
+                    image: {
+                        original: record.posterUrl || data.poster?.originalUrl || '',
+                        preview: record.posterUrl || data.poster?.mainUrl || ''
+                    },
+                    posterUrl: record.posterUrl || data.poster?.originalUrl || ''
+                };
+            });
+        }
+
+        return [];
+    } catch (e) {
+        console.error('getOngoingPopular error:', e);
+        return [];
     }
 }
 
@@ -190,6 +145,35 @@ export async function getTrendingAnimes(limit: number = 20) {
  */
 export async function getUpcomingAnimes(limit: number = 20) {
     try {
+        // 1. Try Local DB first (Hybrid)
+        const localAnimes = await prisma.animeCache.findMany({
+            where: { status: 'anons' },
+            orderBy: { score: 'desc' },
+            take: limit
+        });
+
+        if (localAnimes.length >= limit) {
+            return localAnimes.map((record: any) => {
+                const data = JSON.parse(record.data);
+                return {
+                    id: String(record.shikimoriId),
+                    name: record.name || data.name,
+                    russian: record.russian || data.russian,
+                    score: record.score || data.score,
+                    status: record.status || data.status,
+                    kind: record.kind || data.kind,
+                    episodes: record.episodes || data.episodes,
+                    episodes_aired: record.episodesAired || data.episodes_aired,
+                    aired_on: record.airedOn ? record.airedOn.toISOString() : data.aired_on,
+                    image: {
+                        original: record.posterUrl || data.poster?.originalUrl || '',
+                        preview: record.posterUrl || data.poster?.mainUrl || ''
+                    },
+                    posterUrl: record.posterUrl || data.poster?.originalUrl || ''
+                };
+            });
+        }
+
         const query = `{
             animes(limit: ${limit}, order: popularity, status: "anons") {
                 id
@@ -233,16 +217,8 @@ export async function getUpcomingAnimes(limit: number = 20) {
             posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
         }));
     } catch (e) {
-        console.error('GQL upcoming failed, falling back to REST:', e);
-        const url = new URL(`${SHIKIMORI_BASE_URL}/animes`);
-        url.searchParams.append('limit', String(limit));
-        url.searchParams.append('order', 'popularity');
-        url.searchParams.append('status', 'anons');
-        try {
-            const response = await fetch(url.toString(), { headers, next: { revalidate: 3600 } });
-            if (!response.ok) return [];
-            return await response.json();
-        } catch { return []; }
+        console.error('getUpcomingAnimes error:', e);
+        return [];
     }
 }
 
@@ -268,100 +244,92 @@ export async function getMovies(limit: number = 20, order: string = 'popularity'
     }
 }
 
-/**
- * Universal GraphQL anime list with reliable poster URLs.
- * Use this for catalog, search, etc. — same method as the home page.
- */
-export async function getAnimesGQL(params: {
-    limit?: number;
-    page?: number;
-    order?: string;
-    status?: string;
-    kind?: string;
-    search?: string;
-    genre?: string;
-    ids?: string;
-    season?: string;
-} = {}): Promise<any[]> {
-    const { limit = 20, page = 1, order = 'popularity', status, kind, search, genre, ids, season } = params;
-
-    const args: string[] = [];
-    args.push(`limit: ${limit}`);
-    args.push(`page: ${page}`);
-    args.push(`order: ${order}`);
-    if (status) args.push(`status: "${status}"`);
-    if (kind) args.push(`kind: "${kind}"`);
-    if (search) args.push(`search: "${search.replace(/"/g, '\\"')}"`);
-    if (ids) args.push(`ids: "${ids}"`);
-    if (season) args.push(`season: "${season}"`);
-    if (genre) {
-        const parts = genre.split(',');
-        const included = parts.filter(p => !p.startsWith('!')).join(',');
-        const excluded = parts.filter(p => p.startsWith('!')).map(p => p.slice(1)).join(',');
-        if (included) args.push(`genre: "${included}"`);
-        if (excluded) args.push(`excludeGenre: "${excluded}"`);
-    }
-
-    const query = `{
-        animes(${args.join(', ')}) {
-            id
-            name
-            russian
-            score
-            status
-            kind
-            episodes
-            episodesAired
-            airedOn { date }
-            poster { originalUrl mainUrl }
-            description
-        }
-    }`;
-
-    try {
-        const response = await fetch('https://shikimori.one/api/graphql', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ query }),
-            next: { revalidate: 3600 }
-        });
-
-        if (!response.ok) throw new Error(`GQL animes error: ${response.status}`);
-        const data = await response.json();
-        const animes = data?.data?.animes || [];
-
-        return animes.map((a: any) => ({
-            id: parseInt(a.id),
-            name: a.name,
-            russian: a.russian,
-            score: a.score ? String(a.score) : '0',
-            status: a.status,
-            kind: a.kind,
-            episodes: a.episodes,
-            episodes_aired: a.episodesAired,
-            aired_on: a.airedOn?.date,
-            description: a.description,
-            image: {
-                original: a.poster?.originalUrl || a.poster?.mainUrl || '',
-                preview: a.poster?.mainUrl || a.poster?.originalUrl || ''
-            },
-            posterUrl: a.poster?.originalUrl || a.poster?.mainUrl || ''
-        }));
-    } catch (e) {
-        console.error('getAnimesGQL failed:', e);
-        return [];
-    }
-}
 
 /**
- * Get single anime details with reliable poster via GraphQL.
- * Use this for the project detail page poster enrichment.
+ * Get ALL details for a single anime using the massive GraphQL query.
+ * Replaces multiple REST calls (details, roles, related, genres).
  */
-export async function getAnimePosterGQL(id: string | number): Promise<string> {
+export async function getFullAnimeDetailsGQL(id: string | number) {
     try {
         const query = `{
             animes(ids: "${id}", limit: 1) {
-                poster { originalUrl mainUrl }
+                id
+                malId
+                name
+                russian
+                licenseNameRu
+                english
+                japanese
+                synonyms
+                kind
+                score
+                status
+                episodes
+                episodesAired
+                duration
+                airedOn { year month day date }
+                releasedOn { year month day date }
+                url
+                season
+
+                poster { id originalUrl mainUrl }
+
+                fansubbers
+                fandubbers
+                licensors
+                createdAt
+                updatedAt
+                nextEpisodeAt
+                isCensored
+
+                genres { id name russian kind }
+                studios { id name imageUrl }
+
+                externalLinks { id kind url }
+
+                personRoles {
+                    id
+                    rolesRu
+                    rolesEn
+                    person { id name russian poster { originalUrl mainUrl } }
+                }
+                characterRoles {
+                    id
+                    rolesRu
+                    rolesEn
+                    character { id name russian poster { originalUrl mainUrl } }
+                }
+
+                related {
+                    id
+                    anime {
+                        id
+                        name
+                        russian
+                        kind
+                        score
+                        status
+                        episodes
+                        episodesAired
+                        airedOn { date }
+                        releasedOn { date }
+                        poster { originalUrl mainUrl }
+                        url
+                    }
+                    manga { id name russian }
+                    relationKind
+                    relationText
+                }
+
+                videos { id url name kind playerUrl imageUrl }
+                screenshots { id originalUrl x166Url x332Url }
+
+                scoresStats { score count }
+                statusesStats { status count }
+
+                description
+                descriptionHtml
+                descriptionSource
             }
         }`;
 
@@ -369,16 +337,32 @@ export async function getAnimePosterGQL(id: string | number): Promise<string> {
             method: 'POST',
             headers,
             body: JSON.stringify({ query }),
-            next: { revalidate: 86400 }
+            next: { revalidate: 86400 } // Cache for 24 hours
         });
 
-        if (!response.ok) return '';
+        if (!response.ok) return null;
         const data = await response.json();
+
         const anime = data?.data?.animes?.[0];
-        return anime?.poster?.originalUrl || anime?.poster?.mainUrl || '';
+        if (!anime) return null;
+
+        // Map to standard format to avoid breaking too many things
+        return {
+            ...anime,
+            score: anime.score ? String(anime.score) : '0',
+            episodes_aired: anime.episodesAired,
+            aired_on: anime.airedOn?.date,
+            released_on: anime.releasedOn?.date,
+            next_episode_at: anime.nextEpisodeAt,
+            image: {
+                original: anime.poster?.originalUrl || anime.poster?.mainUrl || '',
+                preview: anime.poster?.mainUrl || anime.poster?.originalUrl || ''
+            },
+            posterUrl: anime.poster?.originalUrl || anime.poster?.mainUrl || ''
+        };
     } catch (e) {
-        console.error('getAnimePosterGQL failed:', e);
-        return '';
+        console.error('getFullAnimeDetailsGQL failed:', e);
+        return null;
     }
 }
 

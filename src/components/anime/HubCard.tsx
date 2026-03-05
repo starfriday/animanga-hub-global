@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Play, BookOpen, Star } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { cn } from '@/lib/utils';
+import { FavoriteButton } from '@/components/anime/FavoriteButton';
 
 export const HubCard = ({ project, viewMode = 'grid' }: { project: any, viewMode?: 'grid' | 'list' }) => {
     const isReading = ['Manga', 'Novel', 'Comics'].includes(project.type);
@@ -56,7 +57,8 @@ export const HubCard = ({ project, viewMode = 'grid' }: { project: any, viewMode
 
                 <div className="absolute inset-0 bg-transparent group-hover:bg-bg-dark/10 transition-colors duration-300 mix-blend-overlay pointer-events-none" />
 
-                <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 items-end">
+                <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 items-end">
+                    <FavoriteButton animeId={String(project.id)} />
                     {lastEp > 0 && (
                         <div className="px-2 py-1 bg-accent border-2 border-bg-dark text-cream text-[9px] font-black uppercase tracking-widest shadow-[2px_2px_0_var(--color-bg-dark)]">
                             EP {lastEp}

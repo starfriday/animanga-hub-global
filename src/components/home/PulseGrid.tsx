@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { resolveAnimeImage } from '@/lib/imageUtils';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { mockProjects } from '@/data/mockProjects';
+
 import { MarqueeStrip } from './MarqueeStrip';
 
 type Category = 'All' | 'Anime' | 'Reading' | 'LiveAction';
@@ -21,7 +21,7 @@ export const PulseGrid = ({ upcoming }: PulseGridProps) => {
     const { ref: sectionRef, isVisible } = useScrollReveal(0.1);
 
     const projects = useMemo(() => {
-        if (!upcoming || upcoming.length === 0) return mockProjects;
+        if (!upcoming || upcoming.length === 0) return [];
 
         return upcoming.map(anime => ({
             id: anime.id,

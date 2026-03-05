@@ -3,6 +3,7 @@ import { Outfit, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { HomeHeader } from "@/components/layout/HomeHeader";
 import { Footer } from "@/components/layout/Footer";
+import { AuthProvider } from "@/components/auth/AuthContext";
 import { cn } from "@/lib/utils";
 
 const outfit = Outfit({
@@ -17,8 +18,13 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "AniVault | Премиальный Аниме и Манга Хаб",
-  description: "Смотрите аниме и читайте мангу онлайн в высочайшем качестве.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://anivault.ru'),
+  title: {
+    default: "AniVault | Премиальный Аниме и Манга Хаб",
+    template: "%s | AniVault",
+  },
+  description: "Смотрите аниме и читайте мангу онлайн в высочайшем качестве. Более 20,000 тайтлов с субтитрами и озвучкой.",
+  keywords: ["аниме", "манга", "смотреть аниме онлайн", "аниме каталог", "anime", "manga", "AniVault"],
   icons: {
     icon: [
       { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
@@ -27,8 +33,22 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
+    type: 'website',
+    locale: 'ru_RU',
+    siteName: 'AniVault',
+    title: "AniVault — Премиальный Аниме Хаб",
+    description: "Смотрите аниме онлайн бесплатно. Тренды, новинки и классика в высочайшем качестве.",
     images: ['/logo-512.png'],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: "AniVault — Премиальный Аниме Хаб",
+    description: "Смотрите аниме онлайн бесплатно в высочайшем качестве.",
+  },
+  other: {
+    'theme-color': '#1A1A1A',
+  },
+  manifest: '/manifest.json',
 };
 
 const Background = () => {
@@ -61,14 +81,16 @@ export default function RootLayout({
           "min-h-screen flex flex-col bg-[#1A1A1A] text-[#DCC9A9] selection:bg-accent/30 selection:text-white"
         )}
       >
-        <Background />
-        <HomeHeader />
+        <AuthProvider>
+          <Background />
+          <HomeHeader />
 
-        <main className="flex-grow relative z-10">
-          {children}
-        </main>
+          <main className="flex-grow relative z-10">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

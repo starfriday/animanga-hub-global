@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { resolveAnimeImage } from '@/lib/imageUtils';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { mockProjects } from '@/data/mockProjects';
+
 
 interface TrendsScrollProps {
     popular?: any[];
@@ -18,7 +18,7 @@ export const TrendsScroll = ({ popular }: TrendsScrollProps) => {
     const { ref: sectionRef, isVisible } = useScrollReveal(0.1);
 
     const trending = useMemo(() => {
-        if (!popular || popular.length === 0) return mockProjects;
+        if (!popular || popular.length === 0) return [];
 
         return popular.map(anime => ({
             id: anime.id,

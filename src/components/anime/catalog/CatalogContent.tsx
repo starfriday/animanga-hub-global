@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimeGrid } from '@/components/anime/AnimeGrid';
-import { LayoutGrid, List, Zap, ChevronDown, Filter, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, List, Zap, ChevronDown, Filter, SlidersHorizontal, Dices } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useQueryFilters } from '@/components/anime/filters/useQueryFilters';
 import { FilterSidebar } from '@/components/anime/filters/FilterSidebar';
@@ -24,8 +25,24 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const { filters, debouncedFilters, updateFilter, resetFilters } = useQueryFilters();
+    const router = useRouter();
+    const [isRandomLoading, setIsRandomLoading] = useState(false);
 
-    // Count active filters for badge
+    const handleRandomAnime = async () => {
+        setIsRandomLoading(true);
+        try {
+            const res = await fetch('/api/anime/random');
+            if (res.ok) {
+                const data = await res.json();
+                router.push(`/anime/${data.id}`);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsRandomLoading(false);
+        }
+    };
+
     const activeFilterCount = useMemo(() => {
         let count = 0;
         if (filters.search) count++;
@@ -33,6 +50,8 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
         count += filters.status.length;
         count += Object.values(filters.genres).filter(v => v && v !== 'none').length;
         if (filters.sortBy !== 'popularity') count++;
+        if (filters.minScore > 0) count++;
+        if (filters.episodeRange[0] > 0 || filters.episodeRange[1] > 0) count++;
         return count;
     }, [filters]);
 
@@ -49,14 +68,13 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
 
         if (debouncedFilters.search) params.append('search', debouncedFilters.search);
 
-        // Map all sort options to Shikimori API order param
+        // Direct sort value mapping
         const sortMap: Record<string, string> = {
             'popularity': 'popularity',
-            'name-asc': 'name',
-            'date': 'aired_on',
-            'rating': 'ranked',
-            'votes': 'popularity',  // Shikimori uses popularity for vote-based
-            'views': 'popularity',  // closest match
+            'name': 'name',
+            'aired_on': 'aired_on',
+            'ranked': 'ranked',
+            'updated_at': 'updated_at',
         };
         params.append('order', sortMap[debouncedFilters.sortBy] || 'popularity');
 
@@ -86,7 +104,7 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             params.append('genre', [...activeGenreIds, ...excludedGenreIds].join(','));
         }
 
-        // Send year range as season filter to API (e.g. "2020_2025")
+        // Year range
         const [yearMin, yearMax] = debouncedFilters.yearRange;
         if (yearMin !== 1990 || yearMax !== 2026) {
             if (yearMin === yearMax) {
@@ -96,7 +114,18 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             }
         }
 
-        if (debouncedFilters.showAnnouncements) params.append('anons', 'true');
+        // Episode range
+        if (debouncedFilters.episodeRange[0] > 0) {
+            params.append('minEpisodes', String(debouncedFilters.episodeRange[0]));
+        }
+        if (debouncedFilters.episodeRange[1] > 0) {
+            params.append('maxEpisodes', String(debouncedFilters.episodeRange[1]));
+        }
+
+        // Min score
+        if (debouncedFilters.minScore > 0) {
+            params.append('minScore', String(debouncedFilters.minScore));
+        }
 
         return params.toString();
     }, [debouncedFilters]);
@@ -113,8 +142,9 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                 debouncedFilters.sortBy === 'popularity' &&
                 debouncedFilters.yearRange[0] === 1990 &&
                 debouncedFilters.yearRange[1] === 2026 &&
-                debouncedFilters.episodeRange[0] === 1 &&
-                debouncedFilters.episodeRange[1] === 1000;
+                debouncedFilters.episodeRange[0] === 0 &&
+                debouncedFilters.episodeRange[1] === 0 &&
+                debouncedFilters.minScore === 0;
 
             if (page === 1 && isDefaultState) {
                 if (projects.length === 0) setProjects(initialProjects);
@@ -237,6 +267,18 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                                     <Filter size={18} />
                                 </div>
 
+                                <button
+                                    onClick={handleRandomAnime}
+                                    disabled={isRandomLoading}
+                                    className={cn(
+                                        "p-3 bg-accent text-cream shrink-0 flex items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5 transition-all outline-none active:scale-95 disabled:opacity-50",
+                                        isRandomLoading && "animate-pulse"
+                                    )}
+                                    title="Случайное аниме"
+                                >
+                                    <Dices size={18} />
+                                </button>
+
                                 <div className="flex-1">
                                     <h2 className="text-lg md:text-xl font-editorial uppercase tracking-tight leading-none text-accent">База Данных</h2>
                                     <p className="text-[10px] md:text-xs font-bold text-bg-dark/60 uppercase tracking-widest mt-1">
@@ -274,12 +316,11 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                                         onChange={(e) => updateFilter('sortBy', e.target.value)}
                                         className="w-full appearance-none flex items-center justify-between md:justify-start gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs md:text-sm font-bold transition-all text-bg-dark hover:border-accent outline-none uppercase tracking-wider cursor-pointer"
                                     >
-                                        <option value="popularity">Громкие хиты</option>
-                                        <option value="name-asc">Названию (А-Я)</option>
-                                        <option value="date">Дате выхода</option>
-                                        <option value="rating">Рейтингу</option>
-                                        <option value="votes">Голосам</option>
-                                        <option value="views">Просмотрам</option>
+                                        <option value="popularity">Популярности</option>
+                                        <option value="ranked">Рейтингу</option>
+                                        <option value="aired_on">Дате выхода</option>
+                                        <option value="name">Алфавиту</option>
+                                        <option value="updated_at">Новизне на сайте</option>
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bg-dark">
                                         <ChevronDown size={16} strokeWidth={3} />

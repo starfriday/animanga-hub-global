@@ -1,19 +1,30 @@
-import { HeroSlider } from "@/components/home/HeroSlider";
-import { MarqueeStrip } from "@/components/home/MarqueeStrip";
-import { TrendsScroll } from "@/components/home/TrendsScroll";
-import { PulseGrid } from "@/components/home/PulseGrid";
-import { CommunitySpotlight } from "@/components/home/CommunitySpotlight";
+import { Suspense } from 'react';
+import { VintageHero } from "@/components/home/VintageHero";
+import { TrendingPolaroids } from "@/components/home/TrendingPolaroids";
+import { AnnouncedSection } from "@/components/home/AnnouncedSection";
 import { MoodSelector } from "@/components/home/MoodSelector";
-import { SectionDivider } from "@/components/home/SectionDivider";
-import { getTrendingAnimes, getUpcomingAnimes } from "@/services/shikimori";
+import { getTrendingAnimes, getUpcomingAnimes, getOngoingPopular } from "@/services/shikimori";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AniVault — Премиальный аниме-хаб | Смотрите онлайн",
+  description: "Смотрите аниме онлайн бесплатно в высочайшем качестве. Тренды сезона, предстоящие релизы и персональные рекомендации на AniVault.",
+  openGraph: {
+    title: "AniVault — Премиальный аниме-хаб",
+    description: "Смотрите аниме онлайн бесплатно. Тренды, новинки и классика.",
+    type: "website",
+  },
+};
 
 export default async function Home() {
   let trending: any[] = [];
+  let ongoing: any[] = [];
   let upcoming: any[] = [];
 
   try {
-    [trending, upcoming] = await Promise.all([
+    [trending, ongoing, upcoming] = await Promise.all([
       getTrendingAnimes(10),
+      getOngoingPopular(20),
       getUpcomingAnimes(14)
     ]);
   } catch (e) {
@@ -22,14 +33,9 @@ export default async function Home() {
 
   return (
     <>
-      <HeroSlider trending={trending} />
-      {/* Marquee is inside PulseGrid now, but we'll add one below TrendsScroll */}
-      <TrendsScroll popular={trending} />
-      <SectionDivider variant="marquee" />
-      <PulseGrid upcoming={upcoming} />
-      <SectionDivider variant="strip" />
-      <CommunitySpotlight />
-      <SectionDivider variant="strip" />
+      <VintageHero trending={trending} />
+      <TrendingPolaroids trending={ongoing} />
+      <AnnouncedSection upcoming={upcoming} />
       <MoodSelector />
     </>
   );

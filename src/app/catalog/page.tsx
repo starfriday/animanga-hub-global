@@ -1,49 +1,72 @@
 import { Suspense } from 'react';
 import { CatalogContent } from '@/components/anime/catalog/CatalogContent';
-import { getKodikAvailability } from '@/services/kodik';
-import { getAnimesGQL } from '@/services/shikimori';
+import { prisma } from '@/lib/db';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Каталог аниме | AniVault — Поиск и фильтрация",
+    description: "Полный каталог аниме с фильтрацией по жанрам, годам, типу и рейтингу. Более 20,000 тайтлов с описаниями и оценками.",
+    openGraph: {
+        title: "Каталог аниме — AniVault",
+        description: "Откройте для себя тысячи аниме. Фильтры по жанрам, рейтингу и статусу.",
+    },
+};
 
 export default async function CatalogPage() {
-    // Use GraphQL for reliable poster URLs (same method as home page)
-    // No status filter — show everything including announcements
-    let rawAnimes = await getAnimesGQL({
-        limit: 20,
-        order: 'popularity'
-    });
+    let projects: any[] = [];
 
-    // Check Kodik availability (for filtering playable content only)
-    const shikimoriIds = rawAnimes.map((a: any) => a.id);
-    const kodikInfo = await getKodikAvailability(shikimoriIds);
+    try {
+        // Fetch initial data from local DB — instant, no external API calls
+        const rawResults = await prisma.animeCache.findMany({
+            take: 20,
+            orderBy: { popularity: 'desc' }
+        });
 
-    // Filter: show Kodik-available items + all announcements (anons don't have Kodik yet)
-    rawAnimes = rawAnimes.filter((a: any) => {
-        const info = kodikInfo.get(String(a.id));
-        return (info && info.available) || a.status === 'anons';
-    });
+        projects = rawResults.map((record: any) => {
+            try {
+                const data = JSON.parse(record.data || '{}');
+                const posterUrl = record.posterUrl || '';
 
-    // Map to expected format
-    // Poster priority: GraphQL posterUrl (same source as home page)
-    const projects = rawAnimes.map((a: any) => {
-        const posterUrl = a.posterUrl || '';
+                const kind = record.kind || data.kind;
+                const status = record.status || data.status;
+                const score = record.score || parseFloat(data.score) || 0;
+                const episodes = record.episodes || data.episodes || 0;
+                const episodesAired = record.episodesAired || data.episodes_aired || data.episodesAired || 0;
 
-        return {
-            id: String(a.id),
-            slug: a.name || String(a.id),
-            title: a.russian || a.name,
-            description: a.description || "",
-            banner: posterUrl,
-            image: posterUrl,
-            posterPosition: "center",
-            studio_rating: parseFloat(a.score) || 0,
-            type: a.kind === 'tv' ? 'TV Series' : a.kind === 'movie' ? 'Movie' : a.kind === 'ova' ? 'OVA' : 'Special',
-            status: a.status === 'released' ? 'Completed' : a.status === 'ongoing' ? 'Ongoing' : 'Announced',
-            genres: [],
-            year: a.aired_on ? parseInt(a.aired_on.split('-')[0]) : 2024,
-            totalEpisodes: a.episodes || 12,
-            episodes: Array.from({ length: a.episodes_aired || a.episodes || 1 }, (_, i) => ({ number: i + 1 })),
-            views: Math.floor(Math.random() * 50000) + 10000
-        };
-    });
+                let year = null;
+                if (record.airedOn) {
+                    year = record.airedOn.getFullYear();
+                } else if (data.aired_on) {
+                    const d = new Date(data.aired_on);
+                    if (!isNaN(d.getTime())) year = d.getFullYear();
+                } else if (data.airedOn?.date) {
+                    const d = new Date(data.airedOn.date);
+                    if (!isNaN(d.getTime())) year = d.getFullYear();
+                }
+
+                return {
+                    id: String(record.shikimoriId),
+                    slug: record.name || data.name || String(record.shikimoriId),
+                    title: record.russian || data.russian || record.name || data.name,
+                    description: data.description || "",
+                    banner: posterUrl,
+                    image: posterUrl,
+                    posterPosition: "center",
+                    studio_rating: score,
+                    type: kind === 'tv' ? 'TV Series' : kind === 'movie' ? 'Movie' : kind === 'ova' ? 'OVA' : 'Special',
+                    status: status === 'released' ? 'Completed' : status === 'ongoing' ? 'Ongoing' : 'Announced',
+                    year,
+                    totalEpisodes: episodes,
+                    episodes: Array.from({ length: episodesAired || episodes || 1 }, (_, i) => ({ number: i + 1 })),
+                    views: 0
+                };
+            } catch {
+                return null;
+            }
+        }).filter(Boolean);
+    } catch (e) {
+        console.error("Catalog SSR error:", e);
+    }
 
     return (
         <Suspense fallback={<div className="min-h-screen bg-bg-cream pt-24 text-center font-editorial text-2xl uppercase tracking-widest text-bg-dark">Loading catalog...</div>}>

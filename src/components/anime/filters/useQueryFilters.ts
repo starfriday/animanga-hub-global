@@ -7,12 +7,10 @@ export interface FilterState {
     genres: Record<string, TagStatus>;
     yearRange: [number, number];
     episodeRange: [number, number];
-    studios: string[];
-    voiceovers: string[];
     types: string[];
     status: string[];
     sortBy: string;
-    showAnnouncements: boolean;
+    minScore: number;
 }
 
 export const useQueryFilters = () => {
@@ -42,15 +40,13 @@ export const useQueryFilters = () => {
                 parseInt(yearParam[1]) || 2026
             ],
             episodeRange: [
-                parseInt(epParam[0]) || 1,
-                parseInt(epParam[1]) || 1000
+                parseInt(epParam[0]) || 0,
+                parseInt(epParam[1]) || 0
             ],
-            studios: searchParams.get('studios')?.split(',').filter(Boolean) || [],
-            voiceovers: searchParams.get('voice')?.split(',').filter(Boolean) || [],
             types: searchParams.get('types')?.split(',').filter(Boolean) || [],
             status: searchParams.get('status')?.split(',').filter(Boolean) || [],
             sortBy: searchParams.get('sort') || 'popularity',
-            showAnnouncements: searchParams.get('anons') === 'true'
+            minScore: parseFloat(searchParams.get('score') || '0'),
         };
     }, [searchParams]);
 
@@ -81,16 +77,14 @@ export const useQueryFilters = () => {
             params.set('years', `${debouncedFilters.yearRange[0]}-${debouncedFilters.yearRange[1]}`);
         }
 
-        if (debouncedFilters.episodeRange[0] !== 1 || debouncedFilters.episodeRange[1] !== 1000) {
+        if (debouncedFilters.episodeRange[0] > 0 || debouncedFilters.episodeRange[1] > 0) {
             params.set('episodes', `${debouncedFilters.episodeRange[0]}-${debouncedFilters.episodeRange[1]}`);
         }
 
-        if (debouncedFilters.studios.length) params.set('studios', debouncedFilters.studios.join(','));
-        if (debouncedFilters.voiceovers.length) params.set('voice', debouncedFilters.voiceovers.join(','));
         if (debouncedFilters.types.length) params.set('types', debouncedFilters.types.join(','));
         if (debouncedFilters.status.length) params.set('status', debouncedFilters.status.join(','));
         if (debouncedFilters.sortBy !== 'popularity') params.set('sort', debouncedFilters.sortBy);
-        if (debouncedFilters.showAnnouncements) params.set('anons', 'true');
+        if (debouncedFilters.minScore > 0) params.set('score', String(debouncedFilters.minScore));
 
         const searchString = params.toString();
         const currentParams = searchParams.toString();
@@ -110,13 +104,11 @@ export const useQueryFilters = () => {
             search: '',
             genres: {},
             yearRange: [1990, 2026],
-            episodeRange: [1, 1000],
-            studios: [],
-            voiceovers: [],
+            episodeRange: [0, 0],
             types: [],
             status: [],
             sortBy: 'popularity',
-            showAnnouncements: false
+            minScore: 0,
         });
     }, []);
 

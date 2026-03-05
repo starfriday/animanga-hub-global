@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique @db.VarChar(255)
+  username     String         @unique @db.VarChar(100)
+  passwordHash String         @map("password_hash") @db.VarChar(255)
+  avatarUrl    String?        @map("avatar_url") @db.VarChar(500)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  favorites    Favorite[]
+  comments     Comment[]
+  watchHistory WatchHistory[]
+
+  @@map("users")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  animeId   Int      @map("anime_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+  @@index([userId])
+  @@index([animeId])
+  @@map("favorites")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  animeId   Int       @map("anime_id")
+  content   String    @db.Text
+  parentId  Int?      @map("parent_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([animeId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model WatchHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  animeId   Int      @map("anime_id")
+  episode   Int      @default(1)
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId, episode])
+  @@index([userId])
+  @@map("watch_history")
+}
+
+model AnimeView {
+  id        Int      @id @default(autoincrement())
+  animeId   Int      @unique @map("anime_id")
+  viewCount Int      @default(0) @map("view_count")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("anime_views")
+}
+
+model AnimeCache {
+  id          Int       @id @default(autoincrement())
+  shikimoriId Int       @unique @map("shikimori_id")
+  name        String    @default("") @db.VarChar(255)
+  russian     String?   @db.VarChar(255)
+  kind        String?   @db.VarChar(50)
+  status      String?   @db.VarChar(50)
+  score       Float?
+  airedOn     DateTime? @map("aired_on")
+  episodes    Int?
+  episodesAired Int?    @map("episodes_aired")
+  season      String?   @db.VarChar(50)
+  genres      String?   @db.Text
+  synonyms    String?   @db.Text
+  data        String    @db.LongText
+  posterUrl   String?   @map("poster_url") @db.VarChar(500)
+  popularity  Int       @default(0)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([score])
+  @@index([status])
+  @@index([kind])
+  @@index([name])
+  @@index([season])
+  @@index([popularity])
+  @@map("anime_cache")
+}

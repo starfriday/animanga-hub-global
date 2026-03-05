@@ -12,21 +12,78 @@ import { BlurImage } from '@/components/ui/BlurImage';
 import { ProjectHero } from './ProjectHero';
 import { ProjectCast } from './ProjectCast';
 import { RelatedReleases } from './RelatedReleases';
+import { CommentsSection } from './CommentsSection';
 import Link from 'next/link';
 import { THEMES_LIST } from '@/lib/constants';
 
+// Internal component for lazy loading YouTube iframes
+const LazyYouTube = ({ video }: { video: any }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Extract video ID from playerUrl or url
+    const url = video.playerUrl || video.url || '';
+    let videoId = '';
+    if (url.includes('youtube.com/embed/')) {
+        videoId = url.split('youtube.com/embed/')[1]?.split('?')[0];
+    } else if (url.includes('youtube.com/watch?v=')) {
+        videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    }
+
+    // Use YouTube's maxresdefault for high-quality thumbnail, fallback to hqdefault
+    const thumbnailUrl = video.imageUrl || (videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : '');
+
+    if (isLoaded || !thumbnailUrl) {
+        return (
+            <iframe
+                src={video.playerUrl || video.url.replace('watch?v=', 'embed/')}
+                className="w-full h-full"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+        );
+    }
+
+    return (
+        <div
+            className="w-full h-full relative cursor-pointer group"
+            onClick={() => setIsLoaded(true)}
+        >
+            <img
+                src={thumbnailUrl}
+                alt={video.name || video.kind}
+                className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700"
+                onError={(e) => {
+                    // Fallback to lower quality if maxresdefault doesn't exist
+                    if (e.currentTarget.src.includes('maxresdefault')) {
+                        e.currentTarget.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                    }
+                }}
+            />
+            <div className="absolute inset-0 bg-bg-dark/20 group-hover:bg-accent/20 transition-colors duration-300" />
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-12 bg-red-600 rounded-lg flex items-center justify-center text-white shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                    <Play fill="currentColor" size={24} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
 interface AnimeDetailsPageProps {
     anime: any;
-    roles: any[];
+    roles: { characterRoles: any[], personRoles: any[] };
     similar: any[];
     videos: any[];
     related: any[];
 }
 
 export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles, similar, videos, related }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'episodes' | 'cast' | 'comments'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'episodes' | 'trailers' | 'cast' | 'comments'>('overview');
     const [isDescExpanded, setDescExpanded] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState(videos?.[0] || null);
+    const [viewLogged, setViewLogged] = useState(false);
 
     // Theme IDs set for quick lookup
     const themeIds = useMemo(() => new Set(THEMES_LIST.map(t => String(t.id))), []);
@@ -55,19 +112,54 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
     }, [anime.posterUrl, anime.image, videos]);
 
     // Filter roles for Cast
+    // Filter roles for Cast
     const actorCredits = useMemo(() => {
-        if (!roles) return [];
-        const voiceRoles = roles.filter(r => r.roles.includes('Main') || r.roles.includes('Supporting'));
+        if (!roles || !roles.characterRoles) return [];
 
-        const groups: any[] = voiceRoles.map(r => ({
-            name: r.person?.russian || r.person?.name || 'Unknown',
-            characters: [r.character?.russian || r.character?.name || 'Unknown'],
-            image: r.person?.image?.original ? ensureFullUrl(r.person.image.original) : undefined,
-            isMain: r.roles.includes('Main'),
-            roles: ['Voice']
+        // Character roles don't have persons directly in GraphQL. 
+        // Person roles (staff + voice actors) don't link to characters directly.
+        // Shikimori's GraphQL API is flawed right now for Voice Actors mapping.
+        // We will display characters. Wait, `personRoles` DOES contain characters according to Shikimori REST API!
+        // No, REST API has role { character, person }. GraphQL has `characterRoles` (only character) and `personRoles` (only person/staff).
+        // Since we can't reliably link them via GraphQL alone without a proper relational field,
+        // we will display characters in the actor slot if person is missing, or fallback gracefully.
+
+        // Let's create an actor credit for every main/supporting character
+        const charRoles = roles.characterRoles.filter((r: any) => r.rolesEn?.includes('Main') || r.rolesEn?.includes('Supporting'));
+
+        const groups: any[] = charRoles.map((r: any) => ({
+            name: r.character?.russian || r.character?.name || 'Unknown',
+            characters: ['Персонаж'], // Swap character and name so character appears prominently
+            image: r.character?.poster?.originalUrl ? ensureFullUrl(r.character.poster.originalUrl) : undefined,
+            isMain: r.rolesEn?.includes('Main'),
+            roles: r.rolesRu || r.rolesEn || ['Voice']
         }));
 
         return groups.slice(0, 12);
+    }, [roles]);
+
+    const crewCredits = useMemo(() => {
+        if (!roles || !roles.personRoles) return [];
+        const crewRoles = roles.personRoles.filter((r: any) => !r.rolesEn?.includes('Main') && !r.rolesEn?.includes('Supporting') && r.person);
+
+        const personMap = new Map();
+        crewRoles.forEach((r: any) => {
+            const personId = r.person.id;
+            const existing = personMap.get(personId);
+            const roleName = (r.rolesRu || r.rolesEn || []).join(', ') || 'Персонал';
+            if (existing) {
+                if (!existing.role.includes(roleName)) {
+                    existing.role += `, ${roleName}`;
+                }
+            } else {
+                personMap.set(personId, {
+                    name: r.person.russian || r.person.name,
+                    role: roleName,
+                    customImage: r.person.poster?.originalUrl ? ensureFullUrl(r.person.poster.originalUrl) : undefined
+                });
+            }
+        });
+        return Array.from(personMap.values());
     }, [roles]);
 
     const handlePlay = () => {
@@ -75,6 +167,26 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
         const playerElement = document.getElementById('player-section');
         if (playerElement) {
             playerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (!viewLogged) {
+            setViewLogged(true);
+            // Log view globally
+            fetch('/api/views', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ animeId: String(anime.id) })
+            }).catch(console.error);
+
+            // Log to user watch history
+            fetch('/api/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    animeId: String(anime.id),
+                    episode: 1
+                })
+            }).catch(console.error);
         }
     };
 
@@ -108,6 +220,7 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                         {[
                             { id: 'overview', label: 'ОБЗОР', icon: <Info size={16} /> },
                             { id: 'episodes', label: 'ПЛЕЕР', icon: <Layers size={16} /> },
+                            { id: 'trailers', label: 'ТРЕЙЛЕРЫ', icon: <Film size={16} /> },
                             { id: 'cast', label: 'ГЕРОИ', icon: <Users size={16} /> },
                             { id: 'comments', label: 'ОТЗЫВЫ', icon: <MessageSquare size={16} /> }
                         ].map(tab => (
@@ -248,7 +361,7 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                             {anime.screenshots.slice(0, 6).map((s: any, i: number) => (
                                                 <div key={i} className="aspect-video bg-white border-4 border-bg-dark overflow-hidden shadow-[6px_6px_0_var(--color-bg-dark)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all duration-300">
                                                     <img
-                                                        src={ensureFullUrl(s.original)}
+                                                        src={ensureFullUrl(s.originalUrl)}
                                                         alt=""
                                                         className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform duration-500"
                                                     />
@@ -272,13 +385,14 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                                 <h3 className="text-xl font-editorial uppercase tracking-widest leading-none text-bg-dark">ПЛЕЕР</h3>
                                                 <p className="text-[10px] font-black text-bg-dark/50 uppercase tracking-wider mt-2">
                                                     {selectedVideo?.translation?.title || 'ВЫБЕРИТЕ ОЗВУЧКУ'}
+                                                    {selectedVideo?.episodes_count ? ` • ${selectedVideo.episodes_count} ЭП.` : ''}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {/* Translation / Voice Selector */}
-                                        <div className="flex flex-wrap justify-center md:justify-end gap-2">
-                                            {videos?.slice(0, 10).map((v: any) => (
+                                        <div className="flex flex-wrap justify-center md:justify-end gap-2 max-h-[120px] overflow-y-auto">
+                                            {videos?.slice(0, 20).map((v: any) => (
                                                 <button
                                                     key={v.id}
                                                     onClick={() => setSelectedVideo(v)}
@@ -298,9 +412,11 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                     <div className="relative aspect-video w-full border-4 border-bg-dark bg-black shadow-[8px_8px_0_var(--color-bg-dark)] overflow-hidden">
                                         {selectedVideo ? (
                                             <iframe
-                                                src={selectedVideo.link}
+                                                src={selectedVideo.link.startsWith('//') ? `https:${selectedVideo.link}` : selectedVideo.link}
                                                 className="w-full h-full"
                                                 allowFullScreen
+                                                allow="autoplay; fullscreen; picture-in-picture"
+                                                referrerPolicy="no-referrer"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center space-y-4 text-white/20">
@@ -309,21 +425,49 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-center text-[10px] text-bg-dark/40 font-bold uppercase tracking-widest">
-                                        * В будущем здесь будет полноценный Kodik плеер с выбором серий и озвучек
-                                    </p>
                                 </div>
                             </div>
                         )}
 
+                        {activeTab === 'trailers' && (
+                            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div className="flex items-center gap-3 border-b-4 border-bg-dark pb-3">
+                                    <div className="w-6 h-6 bg-accent border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]" />
+                                    <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark">Официальные Видео</h2>
+                                </div>
+
+                                {anime.videos?.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {anime.videos.filter((v: any) => v.url?.includes('youtube.com') || v.playerUrl).map((v: any, i: number) => (
+                                            <div key={i} className="space-y-3">
+                                                <div className="relative aspect-video w-full border-4 border-bg-dark bg-bg-cream shadow-[6px_6px_0_var(--color-bg-dark)] overflow-hidden">
+                                                    <LazyYouTube video={v} />
+                                                </div>
+                                                <p className="text-xs font-black uppercase tracking-widest text-bg-dark truncate">{v.name || v.kind}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-12 text-center bg-white border-4 border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)]">
+                                        <p className="text-sm font-black uppercase tracking-widest text-bg-dark/40">Трейлеры не найдены</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {activeTab === 'cast' && (
-                            <ProjectCast actorCredits={actorCredits} crewCredits={[]} />
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <ProjectCast
+                                    actorCredits={actorCredits}
+                                    creators={crewCredits.slice(0, 4)}
+                                    crewCredits={crewCredits.slice(4, 24)}
+                                />
+                            </div>
                         )}
 
                         {activeTab === 'comments' && (
-                            <div className="py-24 text-center space-y-6 border-4 border-dashed border-bg-dark/20 bg-white/50 shadow-[8px_8px_0_var(--color-bg-dark)]">
-                                <MessageSquare size={48} className="mx-auto text-bg-dark/20" strokeWidth={1} />
-                                <p className="text-lg font-editorial uppercase tracking-[0.3em] text-bg-dark/40">ОТЗЫВЫ СКОРО ПОЯВЯТСЯ</p>
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <CommentsSection animeId={String(anime.id)} />
                             </div>
                         )}
                     </div>
@@ -340,9 +484,13 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                     {[
                                         { label: 'Статус', val: anime.status === 'released' ? 'Завершен' : 'Онгоинг', icon: <Clock size={16} className="text-accent" /> },
                                         { label: 'Эпизоды', val: `${anime.episodes_aired || 0} / ${anime.episodes || '?'}`, icon: <Layers size={16} className="text-accent" /> },
-                                        { label: 'Год', val: anime.aired_on?.split('-')[0] || 'TBA', icon: <Calendar size={16} className="text-accent" /> },
+                                        { label: 'Даты', val: `${anime.aired_on ? anime.aired_on.split('-').reverse().join('.') : '?'} ${anime.released_on ? '- ' + anime.released_on.split('-').reverse().join('.') : ''}`, icon: <Calendar size={16} className="text-accent" /> },
+                                        ...(anime.studios?.length > 0 ? [{ label: 'Студия', val: anime.studios.map((s: any) => s.name).join(', '), icon: <Building2 size={16} className="text-accent" /> }] : []),
+                                        ...(anime.licensors?.length > 0 ? [{ label: 'Лицензия', val: anime.licensors.join(', '), icon: <Award size={16} className="text-accent" /> }] : []),
+                                        ...(anime.fansubbers?.length > 0 ? [{ label: 'Фансаб', val: anime.fansubbers.slice(0, 3).join(', ') + (anime.fansubbers.length > 3 ? '...' : ''), icon: <Users size={16} className="text-accent" /> }] : []),
+                                        ...(anime.fandubbers?.length > 0 ? [{ label: 'Фандаб', val: anime.fandubbers.slice(0, 3).join(', ') + (anime.fandubbers.length > 3 ? '...' : ''), icon: <MessageSquare size={16} className="text-accent" /> }] : []),
                                         { label: 'Рейтинг', val: anime.rating?.toUpperCase() || 'N/A', icon: <ShieldAlert size={16} className="text-accent" /> },
-                                        { label: 'Тип', val: anime.kind.toUpperCase(), icon: <Film size={16} className="text-accent" /> }
+                                        { label: 'Тип', val: anime.kind?.toUpperCase(), icon: <Film size={16} className="text-accent" /> }
                                     ].map((item, idx) => (
                                         <div key={idx} className="flex flex-col gap-1 border-b-[2px] border-bg-dark/10 pb-3 last:border-0 group">
                                             <div className="flex items-center gap-2 text-bg-dark/50 group-hover:text-bg-dark transition-colors">
@@ -354,6 +502,75 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Alternative Names */}
+                            {(anime.japanese || anime.english || anime.synonyms?.length > 0) && (
+                                <div className="space-y-5">
+                                    <h3 className="text-sm font-editorial uppercase tracking-widest text-bg-dark">Альтернативные Названия</h3>
+                                    <div className="space-y-3 bg-surface border-2 border-bg-dark p-4 shadow-[4px_4px_0_var(--color-bg-dark)]">
+                                        {anime.japanese && (
+                                            <div>
+                                                <span className="text-[9px] font-black text-bg-dark/40 uppercase tracking-widest block mb-0.5">Японский</span>
+                                                <span className="text-xs font-bold text-bg-dark">{anime.japanese}</span>
+                                            </div>
+                                        )}
+                                        {anime.english && (
+                                            <div>
+                                                <span className="text-[9px] font-black text-bg-dark/40 uppercase tracking-widest block mb-0.5">Английский</span>
+                                                <span className="text-xs font-bold text-bg-dark">{anime.english}</span>
+                                            </div>
+                                        )}
+                                        {anime.synonyms?.length > 0 && (
+                                            <div>
+                                                <span className="text-[9px] font-black text-bg-dark/40 uppercase tracking-widest block mb-0.5">Синонимы</span>
+                                                <span className="text-[11px] font-bold text-bg-dark leading-tight line-clamp-2">{anime.synonyms.join(', ')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Scoring & Status Stats */}
+                            {(anime.statusesStats?.length > 0) && (
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-editorial uppercase tracking-tight text-bg-dark border-b-4 border-bg-dark pb-3 flex items-center gap-3">
+                                        <Users size={20} className="text-accent" /> В СПИСКАХ
+                                    </h3>
+
+                                    <div className="space-y-3 pt-2">
+                                        {anime.statusesStats.map((stat: any, i: number) => {
+                                            const statusLabels: Record<string, string> = {
+                                                'planned': 'В планах',
+                                                'watching': 'Смотрю',
+                                                'rewatching': 'Пересматриваю',
+                                                'completed': 'Просмотрено',
+                                                'on_hold': 'Отложено',
+                                                'dropped': 'Брошено'
+                                            };
+                                            const label = statusLabels[stat.status] || stat.status;
+
+                                            // Calculate a rough percentage bar (assuming highest category is 100% width)
+                                            const maxCount = Math.max(...anime.statusesStats.map((s: any) => s.count));
+                                            const width = Math.max((stat.count / maxCount) * 100, 2);
+
+                                            return (
+                                                <div key={i} className="flex flex-col gap-1.5 group">
+                                                    <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-bg-dark">
+                                                        <span>{label}</span>
+                                                        <span className="text-accent">{stat.count.toLocaleString('ru-RU')}</span>
+                                                    </div>
+                                                    <div className="h-1.5 w-full bg-bg-dark/10 overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-bg-dark group-hover:bg-accent transition-colors duration-500"
+                                                            style={{ width: `${width}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* External Links */}
                             <div className="space-y-5">

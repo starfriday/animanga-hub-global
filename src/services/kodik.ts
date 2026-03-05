@@ -3,7 +3,7 @@
  * Documentation: https://kodik.info/api
  */
 
-// We'll use the provided token as fallback, normally from env vars.
+// Kodik API token — from env or fallback for development
 const KODIK_TOKEN = process.env.KODIK_API_TOKEN || '1a181b998ddb87ae564c7c31afca5df4';
 const KODIK_BASE_URL = 'https://kodikapi.com';
 

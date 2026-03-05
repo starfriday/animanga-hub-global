@@ -6,27 +6,17 @@ import { usePathname } from 'next/navigation';
 import { Search, User, Menu, ShoppingBag, Globe, PlayCircle, Film, Calendar, BookOpen, Users, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useAuth } from '@/components/auth/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const LOGO_URL = "https://xlknusrqbgkbgzvzwdrx.supabase.co/storage/v1/object/public/images/logo.png";
-
-type CurrentUser = {
-    id: string;
-    username: string;
-    avatar?: string;
-    role?: string;
-    level?: number;
-};
-
-const useData = () => ({
-    currentUser: null as CurrentUser | null,
-    logout: () => { },
-});
 
 export function HomeHeader() {
     const [scrolled, setScrolled] = useState(false);
     const [searchActive, setSearchActive] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { currentUser, logout } = useData();
+    const [authModalState, setAuthModalState] = useState<false | 'login' | 'register'>(false);
+    const { user: currentUser, logout } = useAuth();
     const pathname = usePathname();
 
     useEffect(() => {
@@ -99,14 +89,14 @@ export function HomeHeader() {
                                 <ShoppingBag size={20} strokeWidth={2.5} />
                             </Link>
                             {currentUser ? (
-                                <Link href={`/profile/${currentUser.id}`} className="hover:opacity-70 transition-opacity flex items-center gap-2">
+                                <Link href={`/profile`} className="hover:opacity-70 transition-opacity flex items-center gap-2">
                                     <span className="uppercase tracking-widest">{currentUser.username}</span>
                                 </Link>
                             ) : (
-                                <Link href="/login" className="hover:opacity-70 transition-opacity flex items-center gap-2">
+                                <button onClick={() => setAuthModalState('login')} className="hover:opacity-70 transition-opacity flex items-center gap-2">
                                     <User size={20} strokeWidth={2.5} />
                                     <span className="uppercase tracking-widest mt-0.5">LOGIN</span>
-                                </Link>
+                                </button>
                             )}
                         </div>
                     </nav>
@@ -202,17 +192,17 @@ export function HomeHeader() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 border-4 border-cream bg-accent overflow-hidden">
-                                        {currentUser.avatar ? (
-                                            <img src={currentUser.avatar} alt="" className="w-full h-full object-cover grayscale mix-blend-multiply" />
+                                        {currentUser.avatarUrl ? (
+                                            <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover grayscale mix-blend-multiply" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center font-editorial text-3xl text-cream">
-                                                {currentUser.username[0]}
+                                                {currentUser.username[0].toUpperCase()}
                                             </div>
                                         )}
                                     </div>
                                     <div>
                                         <p className="font-editorial text-2xl uppercase tracking-wide leading-none">{currentUser.username}</p>
-                                        <p className="text-xs font-bold text-accent uppercase tracking-widest mt-1">LVL {currentUser.level || 1}</p>
+                                        <p className="text-xs font-bold text-accent uppercase tracking-widest mt-1">LVL 1</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -221,17 +211,22 @@ export function HomeHeader() {
                                 </div>
                             </div>
                         ) : (
-                            <Link
-                                href="/login"
-                                onClick={() => setIsMenuOpen(false)}
+                            <button
+                                onClick={() => { setIsMenuOpen(false); setAuthModalState('login'); }}
                                 className="flex items-center justify-center w-full py-4 border-4 border-cream bg-accent text-cream font-editorial text-3xl uppercase tracking-wider shadow-[4px_4px_0_var(--color-cream)] active:transform active:translate-y-1 active:translate-x-1 active:shadow-none transition-all outline-none"
                             >
                                 START
-                            </Link>
+                            </button>
                         )}
                     </div>
                 </div>
             </div>
+
+            <AuthModal
+                isOpen={!!authModalState}
+                onClose={() => setAuthModalState(false)}
+                initialMode={authModalState || 'login'}
+            />
         </>
     );
 }

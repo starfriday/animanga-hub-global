@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
     Filter, X, RotateCcw, Search, Zap,
-    Eye, EyeOff, Tag, ChevronDown
+    Tag, ChevronDown, Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThreeStateTag, TagStatus } from './ThreeStateTag';
@@ -17,12 +17,26 @@ interface FilterSidebarProps {
     totalCount: number;
     isOpen: boolean;
     onClose: () => void;
-    projects: any[]; // Used for histogram calculation
-    isStrictGenreMatch?: boolean;
-    onToggleStrictMatch?: () => void;
+    projects: any[];
 }
 
-const PRESETS = ['СЕЙЧАС СМОТРЯТ', "ВЫБОР РЕДАКЦИИ", 'СКРЫТЫЕ ШЕДЕВРЫ'];
+type Preset = 'СЕЙЧАС СМОТРЯТ' | 'ЛУЧШЕЕ' | 'СКРЫТЫЕ ШЕДЕВРЫ';
+const PRESETS: Preset[] = ['СЕЙЧАС СМОТРЯТ', 'ЛУЧШЕЕ', 'СКРЫТЫЕ ШЕДЕВРЫ'];
+
+const SCORE_BUTTONS = [
+    { value: 0, label: 'ВСЕ' },
+    { value: 7, label: '7+' },
+    { value: 8, label: '8+' },
+    { value: 9, label: '9+' },
+];
+
+const EPISODE_PRESETS = [
+    { value: [0, 0], label: 'ВСЕ' },
+    { value: [1, 1], label: '1 (Фильм)' },
+    { value: [2, 13], label: '2-13' },
+    { value: [14, 26], label: '14-26' },
+    { value: [27, 0], label: '27+' },
+];
 
 export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     filters,
@@ -32,8 +46,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     isOpen,
     onClose,
     projects,
-    isStrictGenreMatch,
-    onToggleStrictMatch
 }) => {
     const yearHistogram = useMemo(() => {
         const counts = new Array(2027 - 1990).fill(0);
@@ -55,6 +67,37 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             ? current.filter(v => v !== value)
             : [...current, value];
         updateFilter(field, next);
+    };
+
+    // Detect active preset
+    const activePreset = useMemo((): Preset | null => {
+        if (filters.status.length === 1 && filters.status[0] === 'Ongoing' && filters.sortBy === 'popularity' && filters.minScore === 0) {
+            return 'СЕЙЧАС СМОТРЯТ';
+        }
+        if (filters.sortBy === 'ranked' && filters.minScore === 8 && filters.status.length === 0) {
+            return 'ЛУЧШЕЕ';
+        }
+        if (filters.sortBy === 'ranked' && filters.minScore === 7 && filters.status.length === 1 && filters.status[0] === 'Completed') {
+            return 'СКРЫТЫЕ ШЕДЕВРЫ';
+        }
+        return null;
+    }, [filters]);
+
+    const applyPreset = (preset: Preset) => {
+        resetFilters();
+        // Use setTimeout to apply after reset
+        setTimeout(() => {
+            if (preset === 'СЕЙЧАС СМОТРЯТ') {
+                updateFilter('status', ['Ongoing']);
+            } else if (preset === 'ЛУЧШЕЕ') {
+                updateFilter('sortBy', 'ranked');
+                updateFilter('minScore', 8);
+            } else if (preset === 'СКРЫТЫЕ ШЕДЕВРЫ') {
+                updateFilter('sortBy', 'ranked');
+                updateFilter('minScore', 7);
+                updateFilter('status', ['Completed']);
+            }
+        }, 0);
     };
 
     return (
@@ -112,19 +155,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         {PRESETS.map(preset => (
                             <button
                                 key={preset}
-                                onClick={() => {
-                                    if (preset === 'СЕЙЧАС СМОТРЯТ') {
-                                        resetFilters();
-                                        updateFilter('status', ['Ongoing']);
-                                    } else if (preset === "ВЫБОР РЕДАКЦИИ") {
-                                        resetFilters();
-                                        updateFilter('sortBy', 'rating');
-                                    } else if (preset === 'СКРЫТЫЕ ШЕДЕВРЫ') {
-                                        resetFilters();
-                                        updateFilter('sortBy', 'newest');
-                                    }
-                                }}
-                                className="shrink-0 px-4 py-2 bg-white hover:bg-bg-dark hover:text-cream border-2 border-bg-dark text-[9px] font-black uppercase tracking-widest transition-all active:translate-y-[2px] active:translate-x-[2px] shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none outline-none text-bg-dark"
+                                onClick={() => applyPreset(preset)}
+                                className={cn(
+                                    "shrink-0 px-4 py-2 border-2 text-[9px] font-black uppercase tracking-widest transition-all active:translate-y-[2px] active:translate-x-[2px] outline-none",
+                                    activePreset === preset
+                                        ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
+                                        : "bg-white hover:bg-bg-dark hover:text-cream border-bg-dark text-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none"
+                                )}
                             >
                                 {preset}
                             </button>
@@ -151,25 +188,33 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 />
                             ))}
                         </div>
-
-                        {onToggleStrictMatch && (
-                            <button
-                                onClick={onToggleStrictMatch}
-                                className={cn(
-                                    "w-full py-3 border-2 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 mt-4 outline-none",
-                                    isStrictGenreMatch
-                                        ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                        : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream hover:shadow-none shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                )}
-                            >
-                                <Zap size={12} className={cn(isStrictGenreMatch && "fill-current")} />
-                                Логика: {isStrictGenreMatch ? 'СТРОГО (И)' : 'МЯГКО (ИЛИ)'}
-                            </button>
-                        )}
                     </div>
 
                     {/* Themes */}
                     <ThemesSection filters={filters} toggleGenreState={toggleGenreState} />
+
+                    {/* Score filter */}
+                    <div className="space-y-4 border-t-2 border-bg-dark/10 pt-6">
+                        <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                            <Star size={14} className="text-accent fill-accent" /> Минимальный рейтинг
+                        </h3>
+                        <div className="flex gap-2">
+                            {SCORE_BUTTONS.map(btn => (
+                                <button
+                                    key={btn.value}
+                                    onClick={() => updateFilter('minScore', filters.minScore === btn.value ? 0 : btn.value)}
+                                    className={cn(
+                                        "flex-1 py-3 border-2 text-xs font-black uppercase tracking-wider transition-all outline-none",
+                                        filters.minScore === btn.value
+                                            ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
+                                            : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
+                                    )}
+                                >
+                                    {btn.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* Year Range */}
                     <div className="px-1 border-t-2 border-bg-dark/10 pt-6">
@@ -182,49 +227,42 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         />
                     </div>
 
+                    {/* Episode count */}
+                    <div className="space-y-4 border-t-2 border-bg-dark/10 pt-6">
+                        <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                            <Tag size={14} className="text-accent" /> Количество эпизодов
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                            {EPISODE_PRESETS.map((ep, i) => {
+                                const isActive = filters.episodeRange[0] === ep.value[0] && filters.episodeRange[1] === ep.value[1];
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={() => updateFilter('episodeRange', isActive ? [0, 0] : ep.value as [number, number])}
+                                        className={cn(
+                                            "px-4 py-2.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all outline-none",
+                                            isActive
+                                                ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
+                                                : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
+                                        )}
+                                    >
+                                        {ep.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     {/* Format & Status */}
                     <div className="space-y-8 border-t-2 border-bg-dark/10 pt-6">
-                        {/* Announcements Toggle */}
-                        <button
-                            onClick={() => updateFilter('showAnnouncements', !filters.showAnnouncements)}
-                            className={cn(
-                                "w-full p-4 border-2 transition-all flex items-center justify-between group outline-none",
-                                filters.showAnnouncements
-                                    ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                    : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none"
-                            )}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={cn(
-                                    "p-2 border-2 border-bg-dark",
-                                    filters.showAnnouncements ? "bg-white text-bg-dark" : "bg-bg-cream text-bg-dark"
-                                )}>
-                                    {filters.showAnnouncements ? <Eye size={16} strokeWidth={2.5} /> : <EyeOff size={16} strokeWidth={2.5} />}
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 text-inherit">АНОНСЫ</div>
-                                    <div className="text-[8px] font-bold opacity-80 uppercase tracking-tighter text-inherit">
-                                        {filters.showAnnouncements ? 'ПОКАЗАНЫ ВОКРУГ' : 'СКРЫТЫ ИЗ ВИДА'}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={cn(
-                                "w-10 h-6 border-2 border-bg-dark relative transition-colors p-[2px]",
-                                filters.showAnnouncements ? "bg-white" : "bg-bg-cream"
-                            )}>
-                                <div className={cn(
-                                    "w-4 h-4 rounded-sm transition-transform shadow-sm",
-                                    filters.showAnnouncements ? "translate-x-[14px] bg-accent" : "translate-x-0 bg-bg-dark/30"
-                                )} />
-                            </div>
-                        </button>
-
                         <SegmentedControl
                             label="ФОРМАТ ПРОЕКТА"
                             options={[
                                 { value: 'TV Series', label: 'СЕРИАЛ' },
                                 { value: 'Movie', label: 'ФИЛЬМ' },
                                 { value: 'OVA', label: 'OVA' },
+                                { value: 'ONA', label: 'ONA' },
+                                { value: 'Special', label: 'СПЕШЛ' },
                             ]}
                             selected={filters.types}
                             onToggle={(v) => toggleArrayFilter('types', v)}
@@ -249,7 +287,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         <button
                             onClick={resetFilters}
                             className="p-4 border-2 border-bg-dark bg-white hover:bg-bg-dark hover:text-cream text-bg-dark transition-all shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none active:translate-y-0.5 active:translate-x-0.5 outline-none"
-                            title="Reset all"
+                            title="Сбросить"
                         >
                             <RotateCcw size={20} strokeWidth={2.5} />
                         </button>
@@ -263,8 +301,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                     : "bg-surface text-bg-dark/40 cursor-not-allowed shadow-none"
                             )}
                         >
-                            <span className="lg:hidden">ПРИМЕНИТЬ ФИЛЬТРЫ</span>
-                            <span className="hidden lg:inline">ПОКАЗАТЬ РЕЗУЛЬТАТ</span>
+                            <span className="lg:hidden">ПРИМЕНИТЬ</span>
+                            <span className="hidden lg:inline">ПОКАЗАТЬ {totalCount > 0 ? `(${totalCount})` : 'РЕЗУЛЬТАТ'}</span>
                         </button>
                     </div>
                 </div>
@@ -274,9 +312,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 };
 
 // Separated collapsible themes section
-function ThemesSection({ filters, toggleGenreState }: { filters: FilterState; toggleGenreState: (id: string, status: TagStatus) => void }) {
+const ThemesSection = ({ filters, toggleGenreState }: { filters: FilterState; toggleGenreState: (id: string, status: TagStatus) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
 
+    // Count active theme filters
     const activeThemeCount = useMemo(() => {
         return THEMES_LIST.filter(t => filters.genres[t.id] && filters.genres[t.id] !== 'none').length;
     }, [filters.genres]);
@@ -288,35 +327,34 @@ function ThemesSection({ filters, toggleGenreState }: { filters: FilterState; to
                 className="w-full flex items-center justify-between group outline-none"
             >
                 <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Tag size={14} className="text-[#B83A2D] fill-[#B83A2D]/20" /> Темы
+                    <Tag size={14} className="text-accent" /> Темы
                     {activeThemeCount > 0 && (
-                        <span className="bg-[#B83A2D] text-cream text-[9px] px-2 py-0.5 font-black border border-bg-dark">
+                        <span className="min-w-[20px] h-[20px] flex items-center justify-center bg-accent text-cream text-[10px] font-black rounded-full border-2 border-bg-dark px-1">
                             {activeThemeCount}
                         </span>
                     )}
                 </h3>
-                <ChevronDown
-                    size={16}
-                    strokeWidth={3}
-                    className={cn(
-                        "text-bg-dark/50 transition-transform duration-300",
-                        isOpen && "rotate-180"
-                    )}
-                />
+                <ChevronDown size={18} className={cn(
+                    "text-bg-dark/50 transition-transform duration-300",
+                    isOpen && "rotate-180"
+                )} />
             </button>
 
-            {isOpen && (
-                <div className="flex flex-wrap gap-2 animate-fade-in-up">
+            <div className={cn(
+                "overflow-hidden transition-all duration-500 ease-out",
+                isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+            )}>
+                <div className="flex flex-wrap gap-2 pt-2">
                     {THEMES_LIST.map(theme => (
                         <ThreeStateTag
-                            key={`theme-${theme.id}`}
+                            key={theme.id}
                             label={theme.russian}
                             status={filters.genres[theme.id] || 'none'}
                             onChange={(status) => toggleGenreState(theme.id, status)}
                         />
                     ))}
                 </div>
-            )}
+            </div>
         </div>
     );
-}
+};

@@ -6,7 +6,7 @@ import { Play, BookOpen, ArrowRight, ChevronLeft, ChevronRight, Star } from 'luc
 import { cn } from '@/lib/utils';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { resolveAnimeImage } from '@/lib/imageUtils';
-import { mockProjects } from '@/data/mockProjects';
+
 
 interface HeroSliderProps {
     trending?: any[];
@@ -18,7 +18,7 @@ export function HeroSlider({ trending }: HeroSliderProps) {
     const [isTransitioning, setIsTransitioning] = useState(false);
 
     const featured = useMemo(() => {
-        if (!trending || trending.length === 0) return mockProjects;
+        if (!trending || trending.length === 0) return [];
 
         return trending.slice(0, 5).map(anime => {
             const imageUrl = resolveAnimeImage(anime);
