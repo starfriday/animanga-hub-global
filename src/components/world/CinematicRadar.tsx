@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, ChevronLeft, Radio, Share2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Star, Play } from 'lucide-react';
 import { WorldMovie } from './constants';
 
 interface CinematicRadarProps {
@@ -27,114 +27,83 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
     if (!movies || movies.length === 0) return null;
 
     return (
-        <section className="w-full py-24 lg:py-32 border-b-4 border-bg-dark bg-bg-cream relative overflow-hidden">
-            {/* Background HUD Grid */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-                <svg width="100%" height="100%">
-                    <pattern id="radar-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <circle cx="20" cy="20" r="1" fill="currentColor" />
-                    </pattern>
-                    <rect width="100%" height="100%" fill="url(#radar-grid)" />
-                </svg>
-            </div>
+        <section className="w-full py-20 bg-bg-dark relative overflow-hidden">
+            <div className="max-w-[1800px] mx-auto px-4 lg:px-12 flex flex-col gap-8">
 
-            <div className="max-w-[1800px] mx-auto px-4 lg:px-12 flex flex-col gap-12 relative z-10">
-
-                {/* Header: Signal Scan HUD */}
-                <div className="flex flex-col md:flex-row items-end justify-between border-b-[3px] border-bg-dark pb-6 gap-6">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <Radio size={18} className="text-accent animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Frequency.Scan: High.Priority</span>
+                {/* Header */}
+                <div className="flex items-end justify-between">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-accent text-sm font-bold uppercase tracking-wider">
+                            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                            В тренде
                         </div>
-                        <h2 className="font-editorial text-5xl lg:text-7xl italic uppercase tracking-tighter text-bg-dark">
-                            Сигнальный <span className="text-accent underline decoration-[6px] underline-offset-8">Радар</span>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
+                            Популярное кино
                         </h2>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="hidden md:flex flex-col text-right text-[9px] font-black uppercase tracking-widest text-bg-dark/30">
-                            <span>Scanning.Registry</span>
-                            <span>Points.Detected: {movies.length}</span>
-                        </div>
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => scroll('left')}
-                                className="w-14 h-14 flex items-center justify-center border-[3px] border-bg-dark bg-white hover:bg-bg-dark hover:text-white transition-all active:scale-90 shadow-solid-sm hover:shadow-none translate-x-[-4px] translate-y-[-4px] hover:translate-x-0 hover:translate-y-0"
-                            >
-                                <ChevronLeft size={28} />
-                            </button>
-                            <button
-                                onClick={() => scroll('right')}
-                                className="w-14 h-14 flex items-center justify-center border-[3px] border-bg-dark bg-white hover:bg-bg-dark hover:text-white transition-all active:scale-90 shadow-solid-sm hover:shadow-none translate-x-[-4px] translate-y-[-4px] hover:translate-x-0 hover:translate-y-0"
-                            >
-                                <ChevronRight size={28} />
-                            </button>
-                        </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => scroll('left')}
+                            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95 outline-none backdrop-blur-sm border border-white/10"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                        <button
+                            onClick={() => scroll('right')}
+                            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95 outline-none backdrop-blur-sm border border-white/10"
+                        >
+                            <ChevronRight size={24} />
+                        </button>
                     </div>
                 </div>
 
-                {/* Radar Scroll Rail */}
+                {/* Carousel */}
                 <div
                     ref={scrollRef}
-                    className="flex overflow-x-auto gap-8 lg:gap-12 pb-12 pt-4 hide-scrollbar snap-x snap-mandatory"
+                    className="flex overflow-x-auto gap-6 pb-8 pt-4 hide-scrollbar snap-x snap-mandatory"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                    {movies.map((movie, idx) => (
-                        <div key={movie.id} className="min-w-[320px] lg:min-w-[500px] snap-center group relative">
-                            {/* Card Shadow */}
-                            <div className="absolute top-4 left-4 w-full h-full bg-bg-dark border-[3px] border-bg-dark transition-transform group-hover:translate-x-2 group-hover:translate-y-2 z-0" />
+                    {movies.map((movie) => (
+                        <div key={movie.id} className="min-w-[280px] lg:min-w-[340px] snap-start group relative">
+                            <Link href={`/anime/${movie.id}`} className="block relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-bg-dark border border-white/5 select-none shadow-lg">
+                                {/* Image */}
+                                <Image
+                                    src={`https://shikimori.one${movie.image?.original}`}
+                                    alt={movie.name}
+                                    fill
+                                    unoptimized
+                                    referrerPolicy="no-referrer"
+                                    className="object-cover transition-all duration-700 group-hover:scale-105 group-hover:opacity-80"
+                                    sizes="(max-width: 1024px) 100vw, 400px"
+                                />
 
-                            <Link href={`/anime/${movie.id}`} className="relative block z-10 w-full bg-white border-[3px] border-bg-dark p-6 transition-transform group-hover:-translate-x-2 group-hover:-translate-y-2">
-                                {/* Top HUD Meta */}
-                                <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-bg-dark/5">
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-accent uppercase tracking-widest">Entry.Point</span>
-                                        <span className="text-xl font-editorial italic text-bg-dark">#{String(idx + 1).padStart(2, '0')}</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-right">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-bg-dark/30 uppercase tracking-widest">Status</span>
-                                            <span className="text-xs font-black text-bg-dark uppercase">Captured</span>
-                                        </div>
-                                        <Share2 size={16} className="text-bg-dark/20" />
-                                    </div>
-                                </div>
+                                {/* Dark Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
-                                {/* Main Visual Focal */}
-                                <div className="w-full aspect-video bg-bg-dark border-2 border-bg-dark mb-6 overflow-hidden relative group/frame">
-                                    <Image
-                                        src={`https://shikimori.one${movie.image?.original}`}
-                                        alt={movie.name}
-                                        fill
-                                        unoptimized
-                                        referrerPolicy="no-referrer"
-                                        className="object-cover grayscale hover:grayscale-0 transition-all duration-700 opacity-90 group-hover/frame:scale-110"
-                                        sizes="(max-width: 1024px) 100vw, 500px"
-                                    />
-                                    {/* Score Focal Point */}
-                                    <div className="absolute top-4 right-4 bg-accent text-white px-3 py-1 text-sm font-black border-2 border-bg-dark shadow-solid-xs">
-                                        {movie.score || '0.0'}
+                                {/* Top Badge */}
+                                {(movie.score || 0) > 0 && (
+                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300">
+                                        <Star size={14} className="text-accent fill-accent" />
+                                        <span className="text-white text-xs font-bold">{movie.score}</span>
                                     </div>
-                                    <div className="absolute inset-0 border-[16px] border-transparent group-hover/frame:border-white/10 transition-all pointer-events-none" />
-                                </div>
+                                )}
 
-                                <div className="space-y-4">
-                                    <h3 className="font-editorial text-3xl lg:text-4xl italic uppercase tracking-tighter text-bg-dark line-clamp-1 leading-none">
+                                {/* Bottom Content */}
+                                <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col justify-end transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 line-clamp-2 leading-tight drop-shadow-md">
                                         {movie.russian || movie.name}
                                     </h3>
 
-                                    {/* Progress Tracker Hook */}
-                                    <div className="h-1 w-full bg-bg-dark/5 relative">
-                                        <div
-                                            className="h-full bg-bg-dark transition-all duration-1000 group-hover:w-full"
-                                            style={{ width: `${(movie.score || 0) * 10}%` }}
-                                        />
+                                    <div className="flex items-center gap-4 text-xs font-medium text-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                        <span>{movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
+                                        <div className="w-1 h-1 rounded-full bg-white/30" />
+                                        <span>Аниме фильм</span>
                                     </div>
 
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-bg-dark/40">
-                                        <span>Year: {movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
-                                        <span className="text-accent underline decoration-2 underline-offset-4 cursor-pointer">Download.Manifest</span>
+                                    {/* Secret Play Button that appears on hover */}
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300 shadow-xl shadow-accent/20">
+                                        <Play size={24} fill="currentColor" className="ml-1" />
                                     </div>
                                 </div>
                             </Link>

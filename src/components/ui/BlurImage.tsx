@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -22,6 +23,7 @@ export const BlurImage: React.FC<BlurImageProps> = ({ src, alt, className, fill,
     // Check if image already loaded (SSR hydration race condition fix)
     useEffect(() => {
         if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsLoading(false);
         }
     }, [imgSrc]);

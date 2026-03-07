@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
 

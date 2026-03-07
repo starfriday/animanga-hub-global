@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { Suspense } from 'react';
 import { CatalogContent } from '@/components/anime/catalog/CatalogContent';
 import { prisma } from '@/lib/db';

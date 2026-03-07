@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
     Layers, PlayCircle,
-    ChevronUp, ChevronDown, Building2, Clock, Calendar, ShieldAlert, ExternalLink
+    ChevronUp, Building2, Clock, Calendar, ShieldAlert, ExternalLink, Hash, FileText, UserCog, MonitorPlay, Link2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ensureFullUrl } from '@/lib/imageUtils';
@@ -86,11 +86,13 @@ interface AnimeDetailsPageProps {
 
 export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles, videos, related }) => {
     const [isDescExpanded, setDescExpanded] = useState(false);
+    const [isDecrypting, setIsDecrypting] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(videos?.[0] || null);
     const [viewLogged, setViewLogged] = useState(false);
     const [sessionToken, setSessionToken] = useState<string>('');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSessionToken(Math.floor(Math.random() * 0xFFFFFF).toString(16));
     }, []);
 
@@ -208,7 +210,6 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
 
                     {/* LEFT COLUMN (8 Cols) - Primary Assets */}
                     <div className="lg:col-span-8 space-y-16">
-                        {/* HERO BLOCK */}
                         <ProjectHero
                             project={{
                                 ...anime,
@@ -218,130 +219,155 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                                 status: anime.status === 'released' ? 'Completed' : anime.status === 'ongoing' ? 'Ongoing' : 'Announced',
                                 banner: bestImage,
                                 image: bestImage,
+                                episodes_total: anime.episodes,
+                                episodes_aired: anime.episodes_aired || anime.episodesAired,
+                                studio: anime.studios?.[0]?.name || 'UNKNOWN',
+                                genres: anime.genres || []
                             }}
                             nextEpisodeLabel={nextEpisodeLabel}
                             onPlay={handlePlay}
                             onShare={() => { }}
                         />
 
-                        {/* SYNOPSIS BLOCK */}
-                        <section className="relative group">
+                        {/* TACTICAL SUB-NAVIGATION */}
+                        <div className="sticky top-[120px] md:top-[128px] z-40 bg-white/95 backdrop-blur-md border-[3px] border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)] flex overflow-x-auto hide-scrollbar snap-x">
+                            <a href="#overview" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
+                                <FileText size={16} /> OVERVIEW
+                            </a>
+                            <a href="#personnel" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
+                                <UserCog size={16} /> PERSONNEL
+                            </a>
+                            <a href="#player-section" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
+                                <MonitorPlay size={16} /> MEDIA TERMINAL
+                            </a>
+                            <a href="#related" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors shrink-0 snap-start">
+                                <Link2 size={16} /> RELATED
+                            </a>
+                        </div>
+
+                        {/* SYNOPSIS BLOCK / M.O.T.H.E.R LOG */}
+                        <section id="overview" className="relative group scroll-mt-48">
                             <div className="absolute -left-4 top-0 bottom-0 w-1 bg-accent/20 group-hover:bg-accent transition-colors" />
                             <div className="space-y-6 pl-4 md:pl-8">
                                 <div className="flex items-center gap-4">
                                     <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
                                         <span className="text-sm font-black not-italic opacity-20 font-mono">[ 01 ]</span>
-                                        Сюжет
+                                        M.O.T.H.E.R. Log
                                     </h2>
                                     <div className="flex-1 h-[2px] bg-bg-dark/5" />
                                 </div>
-                                <div className="max-w-4xl">
+                                <div className="relative max-w-4xl p-6 bg-white border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-bg-dark)]">
+                                    {/* Noise Overlay when encrypted */}
+                                    {!isDescExpanded && (
+                                        <div className="absolute inset-0 z-10 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay opacity-30" />
+                                    )}
+                                    {isDecrypting && (
+                                        <div className="absolute inset-0 z-20 bg-accent mix-blend-color-burn opacity-50 pointer-events-none animate-pulseHard" />
+                                    )}
+
                                     <div className={cn(
-                                        "prose prose-sm md:prose-base max-w-none prose-p:leading-relaxed prose-headings:font-editorial prose-headings:text-bg-dark prose-p:text-bg-dark/80 prose-strong:text-bg-dark prose-a:text-accent font-medium leading-relaxed tracking-wide transition-all duration-700",
-                                        !isDescExpanded && "line-clamp-10"
+                                        "prose prose-sm md:prose-base max-w-none prose-p:leading-relaxed prose-headings:font-editorial prose-headings:text-bg-dark prose-p:text-bg-dark/80 prose-strong:text-bg-dark prose-a:text-accent font-medium leading-relaxed tracking-wide transition-all duration-700 relative z-0",
+                                        !isDescExpanded ? "line-clamp-4 blur-[2px] select-none" : "blur-none",
+                                        isDecrypting && "animate-pulse"
                                     )}>
-                                        <ShikiText text={anime.description || ""} />
+                                        <ShikiText text={anime.description || "NO DATA"} />
                                     </div>
-                                    {(anime.description?.length ?? 0) > 500 && (
+
+                                    {(anime.description?.length ?? 0) > 100 && !isDescExpanded && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent z-10 flex items-end justify-center pb-6">
+                                            <button
+                                                onClick={() => {
+                                                    setIsDecrypting(true);
+                                                    setTimeout(() => {
+                                                        setIsDecrypting(false);
+                                                        setDescExpanded(true);
+                                                    }, 800);
+                                                }}
+                                                className="group/btn flex items-center gap-4 px-6 py-3 bg-bg-dark text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-accent transition-colors shadow-[4px_4px_0_var(--color-accent)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                                            >
+                                                <Hash size={16} className={cn("group-hover/btn:animate-spin", isDecrypting && "animate-spin")} />
+                                                {isDecrypting ? 'DECRYPTING...' : 'DECRYPT FULL LOG'}
+                                            </button>
+                                        </div>
+                                    )}
+                                    {isDescExpanded && (
                                         <button
-                                            onClick={() => setDescExpanded(!isDescExpanded)}
-                                            className="mt-8 group/btn flex items-center gap-4 outline-none"
+                                            onClick={() => setDescExpanded(false)}
+                                            className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-bg-dark/40 hover:text-bg-dark transition-colors"
                                         >
-                                            <div className="w-12 h-12 rounded-full border-2 border-bg-dark flex items-center justify-center group-hover/btn:bg-bg-dark group-hover/btn:text-white transition-all">
-                                                {isDescExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                                            </div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-bg-dark/40 group-hover/btn:text-bg-dark">
-                                                {isDescExpanded ? 'Collapse.Dossier' : 'Expand.Dossier'}
-                                            </span>
+                                            <ChevronUp size={14} /> COLLAPSE LOG
                                         </button>
                                     )}
                                 </div>
                             </div>
                         </section>
 
-                        {/* SYS.REACTOR (Player) */}
-                        <section id="player-section" className="space-y-8 animate-reveal-up">
-                            <div className="flex items-center gap-4 pl-4 md:pl-8">
-                                <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
-                                    <span className="text-sm font-black not-italic opacity-20 font-mono">[ 02 ]</span>
-                                    Реактор
-                                </h2>
-                                <div className="flex-1 h-[2px] bg-bg-dark/5" />
-                            </div>
-
-                            <div className="bg-white border-[3px] border-bg-dark shadow-[20px_20px_0_var(--color-bg-dark)] md:shadow-[32px_32px_0_var(--color-bg-dark)] p-4 md:p-8 relative overflow-hidden group">
-                                {/* Industrial HUD elements */}
-                                <div className="absolute top-0 left-0 w-full h-1 bg-accent/20" />
-                                <div className="absolute top-4 right-4 flex gap-2 opacity-20">
-                                    <div className="w-2 h-2 bg-bg-dark" />
-                                    <div className="w-2 h-2 bg-bg-dark" />
-                                    <div className="w-2 h-2 bg-bg-dark" />
+                        {/* THE PLAYER (Kodik Integration) */}
+                        <section id="player-section" className="space-y-4 animate-reveal-up pt-8">
+                            {/* Translation Selection HUD Box */}
+                            <div className="bg-white border-[1px] border-bg-dark/10 p-4 md:p-6 flex flex-col relative w-full overflow-hidden">
+                                {/* Top right squares */}
+                                <div className="absolute top-2 right-2 flex gap-1 opacity-20">
+                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
+                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
+                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
                                 </div>
 
-                                <div className="flex flex-col gap-6">
-                                    {/* Translation Selection HUD */}
-                                    <div className="flex flex-wrap gap-2 p-3 bg-bg-cream/50 border-2 border-bg-dark/10">
-                                        <div className="w-full text-[9px] font-black uppercase tracking-widest text-bg-dark/30 mb-2 border-b border-bg-dark/5 pb-1">
-                                            Payload.Source: Select Translation
-                                        </div>
-                                        {videos?.slice(0, 15).map((v: VideoData) => (
-                                            <button
-                                                key={v.id}
-                                                onClick={() => setSelectedVideo(v)}
-                                                className={cn(
-                                                    "px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative overflow-hidden",
-                                                    selectedVideo?.id === v.id
-                                                        ? "bg-bg-dark text-white shadow-solid-sm"
-                                                        : "bg-white border-2 border-bg-dark/10 text-bg-dark/40 hover:border-bg-dark hover:text-bg-dark hover:shadow-solid-sm"
-                                                )}
-                                            >
-                                                {selectedVideo?.id === v.id && (
-                                                    <div className="absolute inset-0 bg-accent/20 animate-scan pointer-events-none" />
-                                                )}
-                                                {v.translation?.title || "Unknown"}
-                                            </button>
-                                        ))}
-                                    </div>
+                                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-bg-dark/30 mb-4 border-b-[1px] border-bg-dark/5 pb-2 inline-block">
+                                    Payload.Source: Select Translation
+                                </div>
 
-                                    {/* The Viewport */}
-                                    <div className="relative aspect-video w-full border-[3px] border-bg-dark bg-black shadow-inner overflow-hidden group/viewport">
-                                        {selectedVideo?.link ? (
-                                            <iframe
-                                                src={selectedVideo.link.startsWith('//') ? `https:${selectedVideo.link}` : selectedVideo.link}
-                                                className="w-full h-full"
-                                                allowFullScreen
-                                                allow="autoplay; fullscreen; picture-in-picture"
-                                                referrerPolicy="no-referrer"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center space-y-6 text-white/10 group-hover/viewport:text-accent/20 transition-colors">
-                                                <PlayCircle size={80} strokeWidth={0.5} className="animate-pulse" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.8em]">System.Awaiting.Input</p>
-                                            </div>
-                                        )}
-                                        {/* Corner markings */}
-                                        <div className="absolute top-4 left-4 w-4 h-[1px] bg-white/20" />
-                                        <div className="absolute top-4 left-4 w-[1px] h-4 bg-white/20" />
-                                        <div className="absolute bottom-4 right-4 w-4 h-[1px] bg-white/20" />
-                                        <div className="absolute bottom-4 right-4 w-[1px] h-4 bg-white/20" />
-                                    </div>
+                                <div className="flex flex-wrap gap-2 md:gap-3">
+                                    {videos?.map((v: VideoData) => (
+                                        <button
+                                            key={v.id}
+                                            onClick={() => setSelectedVideo(v)}
+                                            className={cn(
+                                                "px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-colors",
+                                                selectedVideo?.id === v.id
+                                                    ? "bg-bg-dark text-white border-[1px] border-bg-dark"
+                                                    : "bg-white text-bg-dark/40 border-[1px] border-bg-dark/10 hover:border-bg-dark/30 hover:text-bg-dark"
+                                            )}
+                                        >
+                                            {v.translation?.title || "Subtitles"}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_var(--color-green)]" />
-                                            <span className="text-bg-dark/40 italic">Stream.Online</span>
-                                        </div>
-                                        <div className="flex gap-4 text-bg-dark/30">
-                                            <span>Resolution: 1080p</span>
-                                            <span>Buffering: 0.02ms</span>
-                                        </div>
+                            {/* The Viewport */}
+                            <div className="relative aspect-video w-full bg-black shadow-[0_10px_40px_rgba(0,0,0,0.1)] overflow-hidden">
+                                {selectedVideo?.link ? (
+                                    <iframe
+                                        src={selectedVideo.link.startsWith('//') ? `https:${selectedVideo.link}` : selectedVideo.link}
+                                        className="w-full h-full"
+                                        allowFullScreen
+                                        allow="autoplay; fullscreen; picture-in-picture"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-6 text-white/10 group-hover/viewport:text-accent/20 transition-colors">
+                                        <PlayCircle size={80} strokeWidth={0.5} className="animate-pulse" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.8em]">System.Awaiting.Input</p>
                                     </div>
+                                )}
+                            </div>
+
+                            {/* Bottom Status Bar */}
+                            <div className="flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] pt-2 px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-[#00ff88]" />
+                                    <span className="text-bg-dark/40 italic">Stream.Online</span>
+                                </div>
+                                <div className="flex gap-4 md:gap-8 text-bg-dark/30">
+                                    <span>Resolution: 1080p</span>
+                                    <span>Buffering: 0.02ms</span>
                                 </div>
                             </div>
                         </section>
 
                         {/* PERSONNEL BLOCK */}
-                        <section className="space-y-8">
+                        <section id="personnel" className="space-y-8 scroll-mt-48">
                             <div className="flex items-center gap-4 pl-4 md:pl-8">
                                 <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
                                     <span className="text-sm font-black not-italic opacity-20 font-mono">[ 03 ]</span>
@@ -448,7 +474,7 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                         </div>
 
                         {/* RELATED BLOCK */}
-                        <div className="space-y-8 sticky top-32">
+                        <div id="related" className="space-y-8 sticky top-32 scroll-mt-48">
                             <div className="flex items-center gap-3 border-b-[3px] border-bg-dark pb-3">
                                 <div className="w-5 h-5 bg-accent border-2 border-bg-dark" />
                                 <h3 className="text-2xl font-editorial uppercase tracking-tight italic">Rel.Connections</h3>

@@ -4,6 +4,7 @@ import React from 'react';
 import { Play, Share2 } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { FavoriteButton } from '@/components/anime/FavoriteButton';
+import { cn } from '@/lib/utils';
 
 export interface ProjectHeroProps {
     project: {
@@ -15,6 +16,11 @@ export interface ProjectHeroProps {
         banner?: string;
         year?: string | number;
         studio_rating?: string | number;
+        status?: string;
+        episodes_aired?: number;
+        episodes_total?: number;
+        studio?: string;
+        genres?: { id: string | number; name: string; russian?: string }[];
         [key: string]: unknown;
     };
     nextEpisodeLabel: string;
@@ -31,6 +37,14 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
     isMobile
 }) => {
     const displayBanner = isMobile ? (project.image || project.banner) : (project.banner || project.image);
+
+    // Dynamic text sizing based on title length to prevent layout blowout on long Light Novel titles
+    const titleLength = project.title?.length || 0;
+    const titleSizeClass = titleLength > 45
+        ? "text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl"
+        : titleLength > 25
+            ? "text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl"
+            : "text-5xl sm:text-7xl lg:text-8xl xl:text-9xl";
 
     return (
         <section className="relative min-h-[70vh] w-full bg-bg-dark border-[3px] border-bg-dark shadow-[20px_20px_0_var(--color-bg-dark)] overflow-hidden group/hero">
@@ -50,20 +64,38 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
             <div className="relative z-20 h-full flex flex-col md:flex-row items-end md:items-stretch">
 
                 {/* Left: Huge Title Monolith */}
-                <div className="flex-1 p-8 md:p-16 flex flex-col justify-end gap-8">
+                <div className="flex-1 min-w-0 p-8 md:p-16 flex flex-col justify-end gap-8 relative z-20">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-[2px] bg-accent" />
                             <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent animate-pulse">Classification.Dossier</span>
                         </div>
-                        <h1 className="text-5xl sm:text-7xl lg:text-9xl font-editorial uppercase tracking-tighter leading-[0.8] text-white italic drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]">
-                            {project.title}
-                        </h1>
+                        <div className="w-full max-w-[800px]">
+                            <h1
+                                className={cn(
+                                    "font-editorial uppercase tracking-tighter leading-[0.85] text-white italic drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] break-words w-full",
+                                    titleSizeClass,
+                                    titleLength > 60 && "line-clamp-4"
+                                )}
+                                title={project.title}
+                            >
+                                {project.title}
+                            </h1>
+                        </div>
                         <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-white/40">
                             <span>{project.originalTitle}</span>
                             <div className="h-1 w-1 bg-accent rounded-full" />
                             <span>{project.type}</span>
                         </div>
+                        {project.genres && project.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider mt-4">
+                                {project.genres.slice(0, 4).map((g, i) => (
+                                    <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 text-cream whitespace-nowrap">
+                                        {g.russian || g.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Action Cluster HUD */}
@@ -91,7 +123,7 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
                 </div>
 
                 {/* Right: Technical Poster Frame */}
-                <div className="hidden lg:flex w-[400px] border-l-[3px] border-white/10 bg-white/5 backdrop-blur-xl flex-col p-12 gap-8 justify-between relative overflow-hidden">
+                <div className="hidden lg:flex w-[350px] xl:w-[400px] shrink-0 border-l-[3px] border-white/10 bg-white/5 backdrop-blur-xl flex-col p-8 xl:p-12 gap-8 justify-between relative overflow-hidden z-20">
                     {/* Decorative scanline for the poster frame */}
                     <div className="absolute inset-0 bg-accent/5 animate-scan pointer-events-none" />
 
@@ -111,18 +143,44 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
                     </div>
 
                     <div className="space-y-4 relative z-10">
-                        <div className="flex justify-between items-end">
+                        <div className="flex justify-between items-end pb-4 border-b border-white/10">
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Temporal.Signature</span>
-                                <div className="text-4xl font-editorial text-white italic">{project.year}</div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Temporal.Signature</span>
+                                <div className="text-3xl font-editorial text-white italic">{project.year || 'TBA'}</div>
                             </div>
                             <div className="text-right space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Stream.Rating</span>
-                                <div className="text-4xl font-editorial text-accent italic">{project.studio_rating}</div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Stream.Rating</span>
+                                <div className="text-3xl font-editorial text-accent italic">{project.studio_rating || 'N/A'}</div>
                             </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/10">
+                            <div className="space-y-1">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate block">Sys.Status</span>
+                                <div className="text-xs font-black text-white uppercase tracking-widest truncate">
+                                    {project.status === 'released' ? 'RELEASED' : project.status === 'ongoing' ? 'ON AIR' : 'ANNOUNCED'}
+                                </div>
+                            </div>
+                            <div className="text-right space-y-1">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate block">Dev.Studio</span>
+                                <div className="text-xs font-black text-white uppercase tracking-widest truncate">
+                                    {project.studio || 'UNKNOWN'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Vol.Sequence</span>
+                            <div className="text-xs font-black text-white uppercase tracking-widest">
+                                {project.episodes_aired || project.episodes_total || '?'} / {project.episodes_total || '?'} EPS
+                            </div>
+                        </div>
+
                         <div className="h-1 w-full bg-white/10">
-                            <div className="h-full bg-accent w-[85%] relative overflow-hidden">
+                            <div
+                                className="h-full bg-accent relative overflow-hidden transition-all duration-1000"
+                                style={{ width: `${Math.min(100, ((project.episodes_aired || 0) / (project.episodes_total || 1)) * 100 || 100)}%` }}
+                            >
                                 <div className="absolute inset-0 bg-white/50 animate-scan" />
                             </div>
                         </div>

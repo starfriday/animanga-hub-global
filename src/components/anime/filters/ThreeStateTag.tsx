@@ -22,41 +22,36 @@ export const ThreeStateTag: React.FC<ThreeStateTagProps> = ({ label, status, onC
             type="button"
             onClick={handleClick}
             className={cn(
-                "group relative px-4 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center gap-2 select-none active:translate-y-0.5 active:translate-x-0.5 outline-none",
-                status === 'none' && "bg-bg-dark border-secondary-muted text-cream hover:border-cream hover:bg-cream hover:text-bg-dark shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5",
-                status === 'included' && "bg-accent border-accent text-cream shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)] translate-y-0.5 translate-x-0.5",
-                status === 'excluded' && "bg-bg-dark border-accent text-cream/50 line-through decoration-2 decoration-accent shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-0.5 translate-x-0.5"
+                "group relative px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ease-out flex items-center gap-2 select-none active:scale-95 outline-none border",
+                status === 'none' && "bg-secondary-muted/10 border-transparent text-bg-dark/80 hover:bg-secondary-muted/20 hover:text-bg-dark",
+                status === 'included' && "bg-accent border-accent text-white shadow-md shadow-accent/20",
+                status === 'excluded' && "bg-red-50 border-red-200 text-red-400 line-through decoration-1"
             )}
         >
             <div className="relative w-3 h-3 flex items-center justify-center">
                 {/* Icons with smooth flip/fade */}
                 <div className={cn(
                     "absolute transition-all duration-300",
-                    status === 'included' ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-0 rotate-90"
+                    status === 'included' ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-90"
                 )}>
                     <Check size={12} strokeWidth={3} />
                 </div>
 
                 <div className={cn(
                     "absolute transition-all duration-300",
-                    status === 'excluded' ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-0 -rotate-90"
+                    status === 'excluded' ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 -rotate-90"
                 )}>
                     <X size={12} strokeWidth={3} />
                 </div>
 
-                {/* Neutral state dot */}
+                {/* Neutral state dot (removed for cleaner look, handled by padding/layout if empty) */}
                 <div className={cn(
-                    "w-1.5 h-1.5 rounded-full bg-current transition-all duration-300",
-                    status !== 'none' ? "opacity-0 scale-0" : "opacity-40 scale-100"
+                    "w-1 h-1 rounded-full bg-current transition-all duration-300",
+                    status === 'none' ? "opacity-40 scale-100" : "opacity-0 scale-0"
                 )} />
             </div>
 
             {label}
-
-            {/* Micro-tooltip replacement for brutalist block */}
-            <div className={cn(
-                "absolute inset-0 opacity-0 transition-opacity group-hover:opacity-10 pointer-events-none mix-blend-overlay bg-black",
-            )} />
         </button>
     );
 };

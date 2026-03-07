@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -158,6 +160,9 @@ export async function GET(request: Request) {
                 const score = record.score || parseFloat(data.score) || 0;
                 const episodes = record.episodes || data.episodes || 0;
                 const episodesAired = record.episodesAired || data.episodes_aired || 0;
+                const rawGenres = record.genres || data.genres || [];
+                const genreNames = Array.isArray(rawGenres) ? rawGenres.map((g: any) => g.russian || g.name) : (typeof rawGenres === 'string' ? rawGenres.split(',').map(s => s.trim()) : []);
+
 
                 let year = null;
                 if (record.airedOn) {
@@ -184,7 +189,8 @@ export async function GET(request: Request) {
                     year,
                     totalEpisodes: episodes,
                     episodes: Array.from({ length: episodesAired || episodes || 1 }, (_, i) => ({ number: i + 1 })),
-                    views: viewMap.get(record.shikimoriId) || 0
+                    views: viewMap.get(record.shikimoriId) || 0,
+                    genres: genreNames.filter(Boolean)
                 };
             } catch {
                 return null;

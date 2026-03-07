@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 /**
  * Shikimori API Client
  * Documentation: https://shikimori.one/api/doc

@@ -15,4 +15,5 @@ export interface AnimeProject {
     totalEpisodes: number;
     episodes: { number: number }[];
     views: number;
+    genres?: string[];
 }

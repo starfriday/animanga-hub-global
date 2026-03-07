@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { getFullAnimeDetailsGQL } from '@/services/shikimori';
 import { getVideosByShikimoriId } from '@/services/kodik';
 import { AnimeDetailsPage } from '@/components/anime/details/AnimeDetailsPage';

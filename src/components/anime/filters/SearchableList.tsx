@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Pin, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';

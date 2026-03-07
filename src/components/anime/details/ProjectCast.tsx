@@ -52,9 +52,9 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="flex overflow-x-auto snap-x hide-scrollbar gap-6 pb-4">
                         {actorCredits.map((c, i) => (
-                            <div key={i} className="group flex bg-white border-[3px] border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all overflow-hidden relative">
+                            <div key={i} className="group flex bg-white border-[3px] border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all overflow-hidden relative shrink-0 snap-start w-[300px] md:w-[350px]">
                                 {/* Character/Voice Unit Poster */}
                                 <div className="relative w-24 h-32 md:w-32 md:h-40 border-r-[3px] border-bg-dark shrink-0 bg-bg-cream overflow-hidden">
                                     <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 animate-scan z-10 pointer-events-none" />
@@ -123,11 +123,11 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div className="flex overflow-x-auto snap-x hide-scrollbar gap-8 pb-4">
                         {creators.map((c, i) => {
                             const personImg = c.customImage || getPersonData(c.personId)?.image;
                             return (
-                                <div key={i} className="group flex items-center gap-6 p-6 bg-bg-dark text-white border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-accent)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all relative overflow-hidden">
+                                <div key={i} className="group flex items-center gap-6 p-6 bg-bg-dark text-white border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-accent)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all relative overflow-hidden shrink-0 snap-start w-[300px] md:w-[400px]">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rotate-45 translate-x-12 -translate-y-12" />
 
                                     <div className="relative w-20 h-20 md:w-24 md:h-24 border-2 border-white/20 shrink-0 bg-white/5 overflow-hidden">
@@ -177,12 +177,12 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
                         </h2>
                     </div>
 
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex overflow-x-auto snap-x hide-scrollbar gap-4 pb-4">
                         {crewCredits.map((c, i) => (
                             <Link
                                 key={i}
                                 href="/team"
-                                className="group flex items-center gap-4 px-4 py-3 bg-white border-2 border-bg-dark hover:bg-bg-dark hover:text-white transition-all shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 min-w-[200px]"
+                                className="group flex items-center gap-4 px-4 py-3 bg-white border-2 border-bg-dark hover:bg-bg-dark hover:text-white transition-all shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 shrink-0 snap-start w-[220px] md:w-[260px]"
                             >
                                 <div className="w-10 h-10 border-2 border-bg-dark shrink-0 bg-bg-cream overflow-hidden group-hover:border-white transition-colors relative">
                                     {c.customImage ? (

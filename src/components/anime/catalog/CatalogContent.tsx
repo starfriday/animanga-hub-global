@@ -1,38 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Zap, ChevronDown, SlidersHorizontal, Search, Dices, RotateCcw } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, RotateCcw, Ghost } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
 import { useQueryFilters } from '@/components/anime/filters/useQueryFilters';
-import { FilterOverlay } from '@/components/anime/catalog/FilterOverlay';
-import { IndexRow } from '@/components/anime/catalog/IndexRow';
-import { StickyViewer } from '@/components/anime/catalog/StickyViewer';
+import { FilterSidebar } from '@/components/anime/filters/FilterSidebar';
+import { CatalogCard } from '@/components/anime/catalog/CatalogCard';
 import { AnimeProject } from './types';
 
 export function CatalogContent({ initialProjects }: { initialProjects: AnimeProject[] }) {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const { filters, debouncedFilters, updateFilter, resetFilters } = useQueryFilters();
-    const router = useRouter();
-    const [isRandomLoading, setIsRandomLoading] = useState(false);
-
-    // Hover state for the Sticky Viewer
-    const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-    const handleRandomAnime = async () => {
-        setIsRandomLoading(true);
-        try {
-            const res = await fetch('/api/anime/random');
-            if (res.ok) {
-                const data = await res.json();
-                router.push(`/anime/${data.id}`);
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsRandomLoading(false);
-        }
-    };
 
     const activeFilterCount = useMemo(() => {
         let count = 0;
@@ -55,7 +33,7 @@ export function CatalogContent({ initialProjects }: { initialProjects: AnimeProj
     const buildSearchParams = useCallback((pageNum: number) => {
         const params = new URLSearchParams();
         params.append('page', String(pageNum));
-        params.append('limit', '20');
+        params.append('limit', '24');
 
         if (debouncedFilters.search) params.append('search', debouncedFilters.search);
 
@@ -148,8 +126,6 @@ export function CatalogContent({ initialProjects }: { initialProjects: AnimeProj
                     setProjects(data.data || []);
                     setPage(1);
                     setHasMore(data.hasMore);
-                    // Reset hover state when data changes
-                    setHoveredId(null);
                 }
             } catch (error) {
                 console.error("Error fetching filtered data:", error);
@@ -161,10 +137,7 @@ export function CatalogContent({ initialProjects }: { initialProjects: AnimeProj
         fetchInitial();
         return () => { isCancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedFilters, buildSearchParams, initialProjects]); // Removing projects.length/page to avoid redundant runs and hook size issues
-    // Note: projects.length and page are not strictly needed in dependencies if we only want to refetch on filter change
-    // But page is used in the condition. Removing page from dependency if we resetting it to 1 anyway.
-    // Actually the lint says page should be included because it's used in the logic.
+    }, [debouncedFilters, buildSearchParams, initialProjects]);
 
 
     const fetchNextPage = useCallback(async () => {
@@ -194,183 +167,147 @@ export function CatalogContent({ initialProjects }: { initialProjects: AnimeProj
         }
     }, [page, hasMore, isLoading, isFetchingMore, buildSearchParams]);
 
-    const activeProject = useMemo(() => {
-        if (hoveredId) {
-            return projects.find(p => p.id === hoveredId) || null;
-        }
-        return null; // Don't default to the first project to encourage hover interaction
-    }, [hoveredId, projects]);
-
     return (
-        <div className="min-h-screen bg-white text-bg-dark relative selection:bg-accent selection:text-cream font-mono">
-            {/* BACKGROUND PATTERN for white area */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="var(--color-bg-dark)" strokeWidth="2" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#diagonalHatch)" />
-                </svg>
-            </div>
+        <div className="min-h-screen bg-[#f8f9fa] text-bg-dark font-sans flex flex-col pt-16 md:pt-[72px] lg:pt-[88px]">
 
-            {/* FULL SCREEN FILTER OVERLAY */}
-            <FilterOverlay
-                filters={filters}
-                updateFilter={updateFilter}
-                resetFilters={resetFilters}
-                totalCount={projects.length}
-                isOpen={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                projects={projects}
-            />
+            {/* Top Toolbar */}
+            <div className="sticky top-[72px] lg:top-[88px] z-30 bg-white border-b border-secondary-muted/20 shadow-sm py-4 px-4 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-            <main className="w-full flex flex-col pt-16 md:pt-[72px] lg:pt-[88px]">
+                {/* Search Box */}
+                <div className="relative flex-1 max-w-2xl group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary-muted group-focus-within:text-accent transition-colors" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Какой тайтл вы ищете?"
+                        value={filters.search}
+                        onChange={(e) => updateFilter('search', e.target.value)}
+                        className="w-full bg-secondary-muted/5 border border-secondary-muted/20 focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-xl py-3 pl-12 pr-12 text-sm font-medium outline-none transition-all placeholder:text-secondary-muted"
+                    />
+                    {filters.search && (
+                        <button
+                            onClick={() => updateFilter('search', '')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-secondary-muted hover:text-accent hover:bg-accent/10 rounded-full transition-all"
+                        >
+                            <RotateCcw size={16} />
+                        </button>
+                    )}
+                </div>
 
-                {/* MASSIVE SEARCH / HEADER ROW */}
-                <div className="sticky top-[72px] lg:top-[88px] z-40 bg-white border-b-[6px] border-bg-dark flex flex-col md:flex-row md:items-stretch shadow-[0_10px_20px_rgba(0,0,0,0.1)]">
-
-                    {/* Search Input */}
-                    <div className="flex-1 relative flex items-center border-b-4 md:border-b-0 md:border-r-4 border-bg-dark group">
-                        <Search className="absolute left-6 text-bg-dark/30 group-focus-within:text-accent transition-colors" size={28} strokeWidth={3} />
-                        <input
-                            type="text"
-                            placeholder="ПОИСК В БАЗЕ ДАННЫХ..."
-                            value={filters.search}
-                            onChange={(e) => updateFilter('search', e.target.value)}
-                            className="w-full h-full min-h-[72px] lg:min-h-[88px] bg-transparent pl-16 pr-6 py-4 font-editorial text-2xl md:text-3xl uppercase tracking-tighter text-bg-dark placeholder:text-bg-dark/20 focus:outline-none"
-                        />
-                        {filters.search && (
-                            <button
-                                onClick={() => updateFilter('search', '')}
-                                className="absolute right-6 p-2 bg-bg-dark text-cream hover:bg-accent active:scale-95 transition-all outline-none"
-                            >
-                                <RotateCcw size={18} strokeWidth={3} />
-                            </button>
-                        )}
+                {/* Right Actions */}
+                <div className="flex items-center gap-3">
+                    {/* Sort Dropdown */}
+                    <div className="relative">
+                        <select
+                            value={filters.sortBy}
+                            onChange={(e) => updateFilter('sortBy', e.target.value)}
+                            className="appearance-none bg-white border border-secondary-muted/20 rounded-xl py-3 pl-4 pr-10 text-sm font-bold text-bg-dark outline-none cursor-pointer hover:border-accent/50 focus:border-accent transition-colors shadow-sm"
+                        >
+                            <option value="popularity">Популярные</option>
+                            <option value="ranked">Лучшие оценки</option>
+                            <option value="aired_on">Новинки</option>
+                            <option value="name">По алфавиту</option>
+                        </select>
+                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary-muted pointer-events-none" />
                     </div>
 
-                    {/* Filter Button */}
+                    {/* Mobile Filter Button */}
                     <button
                         onClick={() => setIsFilterOpen(true)}
-                        className="h-[72px] lg:h-auto md:w-[300px] lg:w-[40%] bg-bg-dark text-cream font-editorial text-3xl uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-accent transition-colors outline-none shrink-0"
+                        className="lg:hidden flex items-center justify-center gap-2 bg-white border border-secondary-muted/20 rounded-xl py-3 px-4 text-sm font-bold text-bg-dark shadow-sm hover:border-accent/50 transition-colors"
                     >
-                        <SlidersHorizontal size={28} />
-                        <span>ФИЛЬТРЫ</span>
+                        <SlidersHorizontal size={18} />
+                        Фильтры
                         {activeFilterCount > 0 && (
-                            <span className="font-mono text-xl font-black bg-white text-bg-dark px-2 border-2 border-white shadow-[2px_2px_0_var(--color-accent)] transform -rotate-6">
+                            <span className="w-5 h-5 flex items-center justify-center bg-accent text-white rounded-full text-[10px] font-black">
                                 {activeFilterCount}
                             </span>
                         )}
                     </button>
                 </div>
+            </div>
 
-                {/* SPLIT SCREEN BODY */}
-                <div className="w-full flex flex-col lg:flex-row flex-1 relative z-10">
+            {/* Main Content Area */}
+            <div className="flex-1 w-full max-w-[1600px] mx-auto flex flex-row items-start lg:gap-8 lg:p-8">
 
-                    {/* LEFT (60%): INDEX LIST */}
-                    <div className="w-full lg:w-[60%] flex flex-col border-r-0 lg:border-r-[6px] border-bg-dark flex-shrink-0">
-                        {/* Sub-toolbar */}
-                        <div className="sticky top-[144px] lg:top-[176px] z-30 p-2 border-b-[6px] border-bg-dark bg-[#f5f5f5] flex items-center justify-between">
-                            <div className="relative min-w-[200px]">
-                                <select
-                                    value={filters.sortBy}
-                                    onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                    className="w-full appearance-none flex items-center justify-between gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs font-black transition-all text-bg-dark outline-none uppercase tracking-widest cursor-pointer shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
-                                >
-                                    <option value="popularity">SORT: ПОПУЛЯРНОСТЬ</option>
-                                    <option value="ranked">SORT: РЕЙТИНГ МАСТЕРОВ</option>
-                                    <option value="aired_on">SORT: ДАТА РЕЛИЗА</option>
-                                    <option value="name">SORT: ИНДЕКС (A-Z)</option>
-                                    <option value="updated_at">SORT: НЕДАВНО ДОБАВЛЕНО</option>
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bg-dark">
-                                    <ChevronDown size={14} strokeWidth={4} />
+                {/* Fixed Sidebar */}
+                <FilterSidebar
+                    filters={filters}
+                    updateFilter={updateFilter}
+                    resetFilters={resetFilters}
+                    totalCount={projects.length}
+                    isOpen={isFilterOpen}
+                    onClose={() => setIsFilterOpen(false)}
+                    projects={projects}
+                />
+
+                {/* Grid Container */}
+                <div className="flex-1 w-full px-4 py-6 md:px-8 lg:p-0 min-w-0">
+
+                    {isLoading && projects.length === 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 w-full">
+                            {Array.from({ length: 12 }).map((_, i) => (
+                                <div key={i} className="flex flex-col gap-2 animate-pulse">
+                                    <div className="w-full aspect-[2/3] bg-secondary-muted/10 rounded-xl" />
+                                    <div className="h-4 bg-secondary-muted/10 rounded w-3/4 mt-1" />
+                                    <div className="h-3 bg-secondary-muted/10 rounded w-1/2" />
                                 </div>
-                            </div>
+                            ))}
+                        </div>
+                    )}
 
+                    {!isLoading && projects.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-2xl border border-secondary-muted/10 shadow-sm">
+                            <div className="w-20 h-20 bg-secondary-muted/5 rounded-full flex items-center justify-center mb-6">
+                                <Ghost size={32} className="text-secondary-muted opacity-50" />
+                            </div>
+                            <h3 className="text-xl font-bold text-bg-dark mb-2">Тайтлы не найдены</h3>
+                            <p className="text-secondary-muted text-sm max-w-md mx-auto mb-6">
+                                Попробуйте изменить параметры фильтрации или поисковый запрос.
+                            </p>
                             <button
-                                onClick={handleRandomAnime}
-                                disabled={isRandomLoading}
-                                className={cn(
-                                    "px-4 py-3 bg-accent text-white font-black text-xs uppercase tracking-widest border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5 transition-all outline-none flex items-center gap-2",
-                                    isRandomLoading && "animate-pulse"
-                                )}
+                                onClick={resetFilters}
+                                className="px-6 py-2.5 bg-accent text-white font-bold rounded-xl shadow-md shadow-accent/20 hover:-translate-y-0.5 transition-all"
                             >
-                                <Dices size={16} strokeWidth={3} />
-                                <span className="hidden sm:inline">СЛУЧАЙНЫЙ ФАЙЛ</span>
+                                Сбросить фильтры
                             </button>
                         </div>
+                    )}
 
-                        {/* List Items */}
-                        <div className="flex flex-col bg-[#e0e0e0]">
-                            {projects.map((project, index) => (
-                                <IndexRow
-                                    key={project.id}
-                                    project={project}
-                                    index={index}
-                                    isHovered={hoveredId === project.id}
-                                    onHover={setHoveredId}
-                                    onLeave={() => setHoveredId(null)}
-                                />
+                    {projects.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8 w-full">
+                            {projects.map((project) => (
+                                <CatalogCard key={project.id} project={project} />
                             ))}
-
-                            {isLoading && projects.length === 0 && (
-                                <div className="p-12 flex justify-center border-b-[3px] border-bg-dark bg-white">
-                                    <div className="w-12 h-12 border-4 border-bg-dark/10 border-t-accent rounded-full animate-spin" />
-                                </div>
-                            )}
-
-                            {!isLoading && projects.length === 0 && (
-                                <div className="flex flex-col items-center justify-center p-24 text-center border-b-[3px] border-bg-dark bg-white">
-                                    <Zap size={48} className="text-secondary-muted mb-4 opacity-50" />
-                                    <h3 className="font-editorial text-4xl uppercase tracking-tighter text-secondary-muted">БАЗА ПУСТА</h3>
-                                    <p className="text-sm font-black uppercase tracking-widest text-secondary-muted/50 mt-2">ИЗМЕНИТЕ ПАРАМЕТРЫ ЗАПРОСА</p>
-                                </div>
-                            )}
-
-                            {/* Load More Block */}
-                            {hasMore && projects.length > 0 && (
-                                <button
-                                    onClick={fetchNextPage}
-                                    disabled={isFetchingMore}
-                                    className={cn(
-                                        "group relative w-full h-32 md:h-40 flex items-center justify-center gap-4 bg-bg-dark text-cream border-t-[6px] border-bg-dark font-editorial text-4xl lg:text-5xl uppercase tracking-widest transition-all duration-[400ms] outline-none active:scale-[0.98] overflow-hidden",
-                                        isFetchingMore && "pointer-events-none"
-                                    )}
-                                >
-                                    <div className="absolute inset-0 bg-accent text-white flex items-center justify-center gap-6 translate-y-full group-hover:translate-y-0 transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]">
-                                        <Zap size={40} className={cn("fill-current outline-none", isFetchingMore ? "animate-pulseHard" : "")} />
-                                        {isFetchingMore ? 'РАСШИРЕНИЕ ИНДЕКСА...' : 'РАЗВЕРНУТЬ СПИСОК'}
-                                    </div>
-
-                                    <div className="flex items-center justify-center gap-6 group-hover:-translate-y-full transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]">
-                                        <ChevronDown size={40} className={cn("text-secondary-muted stroke-[3] group-hover:text-accent", isFetchingMore ? "animate-pulseHard" : "")} />
-                                        <span>{isFetchingMore ? 'ЗАГРУЗКА...' : 'СЛЕДУЮЩИЕ ЗАПИСИ (20)'}</span>
-                                    </div>
-                                </button>
-                            )}
                         </div>
-                    </div>
+                    )}
 
-                    {/* RIGHT (40%): STICKY VIEWER */}
-                    <div className="hidden lg:block w-[40%] bg-bg-dark flex-shrink-0">
-                        {/* 
-                            We subtract the navigation header and local sticky header from viewport height.
-                            Top Navigation = ~88px. Local Search Header = ~88px. Sub-toolbar = ~64px.
-                            Total offset top is roughly 88+88 = 176px. Height calc(100vh - 176px).
-                        */}
-                        <div className="sticky top-[176px] h-[calc(100vh-176px)] overflow-hidden">
-                            <StickyViewer project={activeProject} />
+                    {/* Pagination / Load More */}
+                    {hasMore && projects.length > 0 && (
+                        <div className="mt-12 flex justify-center pb-12">
+                            <button
+                                onClick={fetchNextPage}
+                                disabled={isFetchingMore}
+                                className={cn(
+                                    "px-8 py-3.5 bg-white border border-secondary-muted/20 text-bg-dark font-bold text-sm rounded-xl hover:border-accent hover:text-accent shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-accent/20 flex items-center gap-2",
+                                    isFetchingMore && "opacity-70 pointer-events-none"
+                                )}
+                            >
+                                {isFetchingMore ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-accent border-r-transparent rounded-full animate-spin" />
+                                        Загрузка...
+                                    </>
+                                ) : (
+                                    'Показать еще тайтлы'
+                                )}
+                            </button>
                         </div>
-                    </div>
+                    )}
+
                 </div>
-
-            </main>
+            </div>
         </div>
     );
 }
 
-// Ensure the default export is present if required by Next.js app router dynamic imports, although this component is likely just exported directly as a named export.
 export default CatalogContent;

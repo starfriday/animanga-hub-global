@@ -1,0 +1,235 @@
+
+> animanga-hub-global@0.1.0 lint
+> eslint
+
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\clear_db.js
+  1:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\scripts\master_sync.ts
+  50:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\scripts\migrate_cache_columns.ts
+  41:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:22  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\scripts\sync_anime.ts
+  40:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\scripts\test_graphql.ts
+  1:10  warning  'getFullAnimeDetailsGQL' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\anime\[id]\page.tsx
+  34:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\api\admin\sync\route.ts
+   6:27  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  72:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\api\anime\route.ts
+   54:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  162:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  206:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\api\favorites\route.ts
+   5:27  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  40:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\api\history\route.ts
+  5:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\catalog\page.tsx
+  16:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\cinema\page.tsx
+  43:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\collection\page.tsx
+  10:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\page.tsx
+  19:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\profile\page.tsx
+    6:78  warning  'UserIcon' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   15:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   45:45  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   83:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  151:50  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\app\sitemap.ts
+  22:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\AnimeGrid.tsx
+  7:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\FavoriteButton.tsx
+  16:54  warning  'showText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  33:59  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\HubCard.tsx
+   5:10   warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
+   8:68   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:118  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\details\AnimeDetailsPage.tsx
+  97:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\details\AnimeDetailsPage.tsx:97:13
+   95 |         // Run only once on mount to avoid cascading renders
+   96 |         if (!sessionToken) {
+>  97 |             setSessionToken(Math.floor(Math.random() * 0xFFFFFF).toString(16));
+      |             ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+   98 |         }
+   99 |     }, [sessionToken]);
+  100 |  react-hooks/set-state-in-effect
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\filters\FilterSidebar.tsx
+  15:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\filters\HistogramSlider.tsx
+  65:8  warning  React Hook useEffect has a missing dependency: 'handleMouseMove'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\filters\SearchableList.tsx
+   2:18  warning  'Pin' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  96:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\filters\SegmentedControl.tsx
+  22:5  warning  'multi' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\anime\filters\useQueryFilters.ts
+  71:23  warning  '_' is defined but never used             @typescript-eslint/no-unused-vars
+  98:72  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\auth\AuthModal.tsx
+  50:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\AnnouncedSection.tsx
+  12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\BrutalistHero.tsx
+   10:57   error  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  149:104  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  149:129  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\CommunitySpotlight.tsx
+   3:17  warning  'useMemo' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   5:10  warning  'Users' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  70:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  90:55  warning  'i' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\HUDContinueWatching.tsx
+  12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\HeroSlider.tsx
+   12:16   error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   71:11   warning  'padTotal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  215:42   error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  238:112  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\MangaPulseGrid.tsx
+  12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\MoodEditorialPicks.tsx
+  15:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\MoodSelector.tsx
+  15:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\PulseGrid.tsx
+   16:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\TrendingPolaroids.tsx
+  12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\TrendsScroll.tsx
+   13:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\home\VintageHero.tsx
+   12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\layout\HomeHeader.tsx
+    6:18  warning  'User' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    6:30  warning  'ShoppingBag' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+    6:43  warning  'Globe' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    6:68  warning  'Calendar' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    6:78  warning  'BookOpen' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    6:95  warning  'LogOut' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    8:8   warning  'Image' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   12:7   warning  'LOGO_URL' is assigned a value but never used                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  192:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\team\TeamHero.tsx
+  31:29   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  31:117  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\ui\BlurImage.tsx
+  14:76  warning  'fill' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  25:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\ui\BlurImage.tsx:25:13
+  23 |     useEffect(() => {
+  24 |         if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+> 25 |             setIsLoading(false);
+     |             ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |         }
+  27 |     }, [imgSrc]);
+  28 |  react-hooks/set-state-in-effect
+  52:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @next/next/no-img-element
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\components\ui\ShikiText.tsx
+  5:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\services\kodik.ts
+   31:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\StarFriday1\Desktop\animanga-hub-global\src\services\shikimori.ts
+   33:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  156:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+тЬЦ 110 problems (78 errors, 32 warnings)
+

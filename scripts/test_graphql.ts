@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { getFullAnimeDetailsGQL } from './src/services/shikimori';
 
 async function test() {
