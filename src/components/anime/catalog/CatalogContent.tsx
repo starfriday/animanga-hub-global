@@ -1,32 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AnimeGrid } from '@/components/anime/AnimeGrid';
-import { LayoutGrid, List, Zap, ChevronDown, Filter, SlidersHorizontal, Dices } from 'lucide-react';
+import { Zap, ChevronDown, SlidersHorizontal, Search, Dices, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useQueryFilters } from '@/components/anime/filters/useQueryFilters';
-import { FilterSidebar } from '@/components/anime/filters/FilterSidebar';
-import { SearchableList } from '@/components/anime/filters/SearchableList';
-import { GENRES_LIST } from '@/lib/constants';
+import { FilterOverlay } from '@/components/anime/catalog/FilterOverlay';
+import { IndexRow } from '@/components/anime/catalog/IndexRow';
+import { StickyViewer } from '@/components/anime/catalog/StickyViewer';
+import { AnimeProject } from './types';
 
-const QUICK_GENRES = [
-    { id: '1', name: 'Action', russian: 'Экшен' },
-    { id: '22', name: 'Romance', russian: 'Романтика' },
-    { id: '10', name: 'Fantasy', russian: 'Фэнтези' },
-    { id: '4', name: 'Comedy', russian: 'Комедия' },
-    { id: '8', name: 'Drama', russian: 'Драма' },
-];
-
-export function CatalogContent({ initialProjects }: { initialProjects: any[] }) {
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const { ref: toolbarRef, isVisible: toolbarVisible } = useScrollReveal(0.1);
-
+export function CatalogContent({ initialProjects }: { initialProjects: AnimeProject[] }) {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const { filters, debouncedFilters, updateFilter, resetFilters } = useQueryFilters();
     const router = useRouter();
     const [isRandomLoading, setIsRandomLoading] = useState(false);
+
+    // Hover state for the Sticky Viewer
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
 
     const handleRandomAnime = async () => {
         setIsRandomLoading(true);
@@ -55,7 +46,7 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
         return count;
     }, [filters]);
 
-    const [projects, setProjects] = useState<any[]>(initialProjects);
+    const [projects, setProjects] = useState<AnimeProject[]>(initialProjects);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +59,6 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
 
         if (debouncedFilters.search) params.append('search', debouncedFilters.search);
 
-        // Direct sort value mapping
         const sortMap: Record<string, string> = {
             'popularity': 'popularity',
             'name': 'name',
@@ -93,18 +83,17 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
         }
 
         const activeGenreIds = Object.entries(debouncedFilters.genres)
-            .filter(([_, status]) => status === 'included')
+            .filter(([, status]) => status === 'included')
             .map(([id]) => id);
 
         const excludedGenreIds = Object.entries(debouncedFilters.genres)
-            .filter(([_, status]) => status === 'excluded')
+            .filter(([, status]) => status === 'excluded')
             .map(([id]) => `!${id}`);
 
         if (activeGenreIds.length > 0 || excludedGenreIds.length > 0) {
             params.append('genre', [...activeGenreIds, ...excludedGenreIds].join(','));
         }
 
-        // Year range
         const [yearMin, yearMax] = debouncedFilters.yearRange;
         if (yearMin !== 1990 || yearMax !== 2026) {
             if (yearMin === yearMax) {
@@ -114,7 +103,6 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             }
         }
 
-        // Episode range
         if (debouncedFilters.episodeRange[0] > 0) {
             params.append('minEpisodes', String(debouncedFilters.episodeRange[0]));
         }
@@ -122,7 +110,6 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             params.append('maxEpisodes', String(debouncedFilters.episodeRange[1]));
         }
 
-        // Min score
         if (debouncedFilters.minScore > 0) {
             params.append('minScore', String(debouncedFilters.minScore));
         }
@@ -133,7 +120,6 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
     useEffect(() => {
         let isCancelled = false;
         const fetchInitial = async () => {
-            // Only skip API call and use SSR data when ALL filters are at defaults
             const isDefaultState =
                 !debouncedFilters.search &&
                 debouncedFilters.types.length === 0 &&
@@ -162,6 +148,8 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                     setProjects(data.data || []);
                     setPage(1);
                     setHasMore(data.hasMore);
+                    // Reset hover state when data changes
+                    setHoveredId(null);
                 }
             } catch (error) {
                 console.error("Error fetching filtered data:", error);
@@ -172,7 +160,12 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
 
         fetchInitial();
         return () => { isCancelled = true; };
-    }, [debouncedFilters, buildSearchParams]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedFilters, buildSearchParams, initialProjects]); // Removing projects.length/page to avoid redundant runs and hook size issues
+    // Note: projects.length and page are not strictly needed in dependencies if we only want to refetch on filter change
+    // But page is used in the condition. Removing page from dependency if we resetting it to 1 anyway.
+    // Actually the lint says page should be included because it's used in the logic.
+
 
     const fetchNextPage = useCallback(async () => {
         if (!hasMore || isLoading || isFetchingMore) return;
@@ -188,7 +181,7 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
             if (data.data && data.data.length > 0) {
                 setProjects(prev => {
                     const existingIds = new Set(prev.map(p => p.id));
-                    const newProjects = data.data.filter((p: any) => !existingIds.has(p.id));
+                    const newProjects = data.data.filter((p: AnimeProject) => !existingIds.has(p.id));
                     return [...prev, ...newProjects];
                 });
                 setPage(nextPage);
@@ -201,10 +194,16 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
         }
     }, [page, hasMore, isLoading, isFetchingMore, buildSearchParams]);
 
-    return (
-        <div className="min-h-screen bg-bg-cream text-bg-dark pt-24 px-4 md:px-6 lg:px-8 max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-8 relative items-start selection:bg-accent selection:text-cream">
+    const activeProject = useMemo(() => {
+        if (hoveredId) {
+            return projects.find(p => p.id === hoveredId) || null;
+        }
+        return null; // Don't default to the first project to encourage hover interaction
+    }, [hoveredId, projects]);
 
-            {/* BACKGROUND EDITORIAL TOUCHES */}
+    return (
+        <div className="min-h-screen bg-white text-bg-dark relative selection:bg-accent selection:text-cream font-mono">
+            {/* BACKGROUND PATTERN for white area */}
             <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -216,7 +215,8 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                 </svg>
             </div>
 
-            <FilterSidebar
+            {/* FULL SCREEN FILTER OVERLAY */}
+            <FilterOverlay
                 filters={filters}
                 updateFilter={updateFilter}
                 resetFilters={resetFilters}
@@ -226,190 +226,151 @@ export function CatalogContent({ initialProjects }: { initialProjects: any[] }) 
                 projects={projects}
             />
 
-            <main className="w-full flex-1 space-y-8 md:space-y-10 min-w-0 relative z-10">
-                <div className="flex flex-col mb-4">
-                    <div className="flex items-center gap-4 mb-2">
-                        <span className="w-12 h-1 bg-accent inline-block" />
-                        <span className="font-bold uppercase tracking-widest text-[#B83A2D] text-sm md:text-base">THE DIRECTORY</span>
+            <main className="w-full flex flex-col pt-16 md:pt-[72px] lg:pt-[88px]">
+
+                {/* MASSIVE SEARCH / HEADER ROW */}
+                <div className="sticky top-[72px] lg:top-[88px] z-40 bg-white border-b-[6px] border-bg-dark flex flex-col md:flex-row md:items-stretch shadow-[0_10px_20px_rgba(0,0,0,0.1)]">
+
+                    {/* Search Input */}
+                    <div className="flex-1 relative flex items-center border-b-4 md:border-b-0 md:border-r-4 border-bg-dark group">
+                        <Search className="absolute left-6 text-bg-dark/30 group-focus-within:text-accent transition-colors" size={28} strokeWidth={3} />
+                        <input
+                            type="text"
+                            placeholder="ПОИСК В БАЗЕ ДАННЫХ..."
+                            value={filters.search}
+                            onChange={(e) => updateFilter('search', e.target.value)}
+                            className="w-full h-full min-h-[72px] lg:min-h-[88px] bg-transparent pl-16 pr-6 py-4 font-editorial text-2xl md:text-3xl uppercase tracking-tighter text-bg-dark placeholder:text-bg-dark/20 focus:outline-none"
+                        />
+                        {filters.search && (
+                            <button
+                                onClick={() => updateFilter('search', '')}
+                                className="absolute right-6 p-2 bg-bg-dark text-cream hover:bg-accent active:scale-95 transition-all outline-none"
+                            >
+                                <RotateCcw size={18} strokeWidth={3} />
+                            </button>
+                        )}
                     </div>
-                    <h1 className="font-editorial text-6xl md:text-8xl lg:text-9xl text-bg-dark uppercase tracking-tighter leading-[0.85] mix-blend-multiply flex items-baseline gap-4">
-                        КАТАЛОГ
-                        <span className="text-3xl md:text-5xl text-accent pb-2">АНИМЕ</span>
-                    </h1>
+
+                    {/* Filter Button */}
+                    <button
+                        onClick={() => setIsFilterOpen(true)}
+                        className="h-[72px] lg:h-auto md:w-[300px] lg:w-[40%] bg-bg-dark text-cream font-editorial text-3xl uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-accent transition-colors outline-none shrink-0"
+                    >
+                        <SlidersHorizontal size={28} />
+                        <span>ФИЛЬТРЫ</span>
+                        {activeFilterCount > 0 && (
+                            <span className="font-mono text-xl font-black bg-white text-bg-dark px-2 border-2 border-white shadow-[2px_2px_0_var(--color-accent)] transform -rotate-6">
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </button>
                 </div>
 
-                <section
-                    ref={toolbarRef}
-                    className={cn(
-                        "space-y-5 transition-all duration-700",
-                        toolbarVisible ? "animate-fade-in-up" : "opacity-0 translate-y-8"
-                    )}
-                >
-                    {/* Retro-Editorial Toolbar */}
-                    <div className="sticky top-[88px] z-30 bg-bg-cream border-4 border-bg-dark p-3 md:p-5 shadow-[4px_4px_0_var(--color-bg-dark)]">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+                {/* SPLIT SCREEN BODY */}
+                <div className="w-full flex flex-col lg:flex-row flex-1 relative z-10">
 
-                            {/* Left: Filter Toggle & Title */}
-                            <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
-                                <button
-                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                    className="relative p-3 bg-bg-dark text-cream hover:bg-accent transition-colors shrink-0 outline-none flex lg:hidden items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
+                    {/* LEFT (60%): INDEX LIST */}
+                    <div className="w-full lg:w-[60%] flex flex-col border-r-0 lg:border-r-[6px] border-bg-dark flex-shrink-0">
+                        {/* Sub-toolbar */}
+                        <div className="sticky top-[144px] lg:top-[176px] z-30 p-2 border-b-[6px] border-bg-dark bg-[#f5f5f5] flex items-center justify-between">
+                            <div className="relative min-w-[200px]">
+                                <select
+                                    value={filters.sortBy}
+                                    onChange={(e) => updateFilter('sortBy', e.target.value)}
+                                    className="w-full appearance-none flex items-center justify-between gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs font-black transition-all text-bg-dark outline-none uppercase tracking-widest cursor-pointer shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
                                 >
-                                    <Filter size={18} />
-                                    {activeFilterCount > 0 && (
-                                        <span className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center bg-accent text-cream text-[10px] font-black rounded-full border-2 border-cream px-1">
-                                            {activeFilterCount}
-                                        </span>
-                                    )}
-                                </button>
-
-                                <div className="hidden lg:flex p-3 bg-bg-dark text-cream shrink-0 items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)]">
-                                    <Filter size={18} />
-                                </div>
-
-                                <button
-                                    onClick={handleRandomAnime}
-                                    disabled={isRandomLoading}
-                                    className={cn(
-                                        "p-3 bg-accent text-cream shrink-0 flex items-center justify-center border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5 transition-all outline-none active:scale-95 disabled:opacity-50",
-                                        isRandomLoading && "animate-pulse"
-                                    )}
-                                    title="Случайное аниме"
-                                >
-                                    <Dices size={18} />
-                                </button>
-
-                                <div className="flex-1">
-                                    <h2 className="text-lg md:text-xl font-editorial uppercase tracking-tight leading-none text-accent">База Данных</h2>
-                                    <p className="text-[10px] md:text-xs font-bold text-bg-dark/60 uppercase tracking-widest mt-1">
-                                        Загружено: {projects.length} тайтлов
-                                    </p>
+                                    <option value="popularity">SORT: ПОПУЛЯРНОСТЬ</option>
+                                    <option value="ranked">SORT: РЕЙТИНГ МАСТЕРОВ</option>
+                                    <option value="aired_on">SORT: ДАТА РЕЛИЗА</option>
+                                    <option value="name">SORT: ИНДЕКС (A-Z)</option>
+                                    <option value="updated_at">SORT: НЕДАВНО ДОБАВЛЕНО</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bg-dark">
+                                    <ChevronDown size={14} strokeWidth={4} />
                                 </div>
                             </div>
 
-                            {/* Right: View Mode & Sorting */}
-                            <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
-                                <div className="flex items-center gap-1 border-2 border-bg-dark p-1 shrink-0 bg-white">
-                                    <button
-                                        onClick={() => setViewMode('grid')}
-                                        className={cn(
-                                            "p-2 transition-all active:scale-95 outline-none",
-                                            viewMode === 'grid'
-                                                ? "bg-bg-dark text-cream shadow-inner"
-                                                : "text-bg-dark hover:bg-bg-dark/10"
-                                        )}
-                                    ><LayoutGrid size={16} /></button>
-                                    <button
-                                        onClick={() => setViewMode('list')}
-                                        className={cn(
-                                            "p-2 transition-all active:scale-95 outline-none",
-                                            viewMode === 'list'
-                                                ? "bg-bg-dark text-cream shadow-inner"
-                                                : "text-bg-dark hover:bg-bg-dark/10"
-                                        )}
-                                    ><List size={16} /></button>
-                                </div>
-
-                                <div className="relative flex-1 md:flex-initial min-w-[160px]">
-                                    <select
-                                        value={filters.sortBy}
-                                        onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                        className="w-full appearance-none flex items-center justify-between md:justify-start gap-2 px-4 py-3 bg-white border-2 border-bg-dark text-xs md:text-sm font-bold transition-all text-bg-dark hover:border-accent outline-none uppercase tracking-wider cursor-pointer"
-                                    >
-                                        <option value="popularity">Популярности</option>
-                                        <option value="ranked">Рейтингу</option>
-                                        <option value="aired_on">Дате выхода</option>
-                                        <option value="name">Алфавиту</option>
-                                        <option value="updated_at">Новизне на сайте</option>
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bg-dark">
-                                        <ChevronDown size={16} strokeWidth={3} />
-                                    </div>
-                                </div>
-                            </div>
+                            <button
+                                onClick={handleRandomAnime}
+                                disabled={isRandomLoading}
+                                className={cn(
+                                    "px-4 py-3 bg-accent text-white font-black text-xs uppercase tracking-widest border-2 border-transparent shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5 transition-all outline-none flex items-center gap-2",
+                                    isRandomLoading && "animate-pulse"
+                                )}
+                            >
+                                <Dices size={16} strokeWidth={3} />
+                                <span className="hidden sm:inline">СЛУЧАЙНЫЙ ФАЙЛ</span>
+                            </button>
                         </div>
 
-                        {/* Quick Genre Pills */}
-                        <div className="flex gap-2 mt-4 overflow-x-auto scrollbar-hide pb-1 -mx-3 px-3 md:-mx-5 md:px-5">
-                            {QUICK_GENRES.map(genre => {
-                                const isActive = filters.genres[genre.id] === 'included';
-                                return (
-                                    <button
-                                        key={genre.id}
-                                        onClick={() => updateFilter('genres', { ...filters.genres, [genre.id]: isActive ? 'none' : 'included' })}
-                                        className={cn(
-                                            "shrink-0 px-4 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap outline-none",
-                                            isActive
-                                                ? "bg-accent border-accent text-cream shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                                : "bg-surface border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
-                                        )}
-                                    >
-                                        {genre.russian}
-                                    </button>
-                                );
-                            })}
+                        {/* List Items */}
+                        <div className="flex flex-col bg-[#e0e0e0]">
+                            {projects.map((project, index) => (
+                                <IndexRow
+                                    key={project.id}
+                                    project={project}
+                                    index={index}
+                                    isHovered={hoveredId === project.id}
+                                    onHover={setHoveredId}
+                                    onLeave={() => setHoveredId(null)}
+                                />
+                            ))}
+
+                            {isLoading && projects.length === 0 && (
+                                <div className="p-12 flex justify-center border-b-[3px] border-bg-dark bg-white">
+                                    <div className="w-12 h-12 border-4 border-bg-dark/10 border-t-accent rounded-full animate-spin" />
+                                </div>
+                            )}
+
+                            {!isLoading && projects.length === 0 && (
+                                <div className="flex flex-col items-center justify-center p-24 text-center border-b-[3px] border-bg-dark bg-white">
+                                    <Zap size={48} className="text-secondary-muted mb-4 opacity-50" />
+                                    <h3 className="font-editorial text-4xl uppercase tracking-tighter text-secondary-muted">БАЗА ПУСТА</h3>
+                                    <p className="text-sm font-black uppercase tracking-widest text-secondary-muted/50 mt-2">ИЗМЕНИТЕ ПАРАМЕТРЫ ЗАПРОСА</p>
+                                </div>
+                            )}
+
+                            {/* Load More Block */}
+                            {hasMore && projects.length > 0 && (
+                                <button
+                                    onClick={fetchNextPage}
+                                    disabled={isFetchingMore}
+                                    className={cn(
+                                        "group relative w-full h-32 md:h-40 flex items-center justify-center gap-4 bg-bg-dark text-cream border-t-[6px] border-bg-dark font-editorial text-4xl lg:text-5xl uppercase tracking-widest transition-all duration-[400ms] outline-none active:scale-[0.98] overflow-hidden",
+                                        isFetchingMore && "pointer-events-none"
+                                    )}
+                                >
+                                    <div className="absolute inset-0 bg-accent text-white flex items-center justify-center gap-6 translate-y-full group-hover:translate-y-0 transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+                                        <Zap size={40} className={cn("fill-current outline-none", isFetchingMore ? "animate-pulseHard" : "")} />
+                                        {isFetchingMore ? 'РАСШИРЕНИЕ ИНДЕКСА...' : 'РАЗВЕРНУТЬ СПИСОК'}
+                                    </div>
+
+                                    <div className="flex items-center justify-center gap-6 group-hover:-translate-y-full transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+                                        <ChevronDown size={40} className={cn("text-secondary-muted stroke-[3] group-hover:text-accent", isFetchingMore ? "animate-pulseHard" : "")} />
+                                        <span>{isFetchingMore ? 'ЗАГРУЗКА...' : 'СЛЕДУЮЩИЕ ЗАПИСИ (20)'}</span>
+                                    </div>
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    <AnimeGrid projects={projects} isLoading={isLoading} viewMode={viewMode} />
-
-                    {/* Manual Load More Button */}
-                    {hasMore && (
-                        <div className="w-full py-16 flex flex-col items-center justify-center gap-6 relative z-10">
-                            <button
-                                onClick={fetchNextPage}
-                                disabled={isFetchingMore}
-                                className={cn(
-                                    "group relative flex items-center justify-center gap-4 px-12 py-5 bg-cream text-bg-dark border-4 border-bg-dark font-editorial text-2xl uppercase tracking-wider transition-all disabled:opacity-50 disabled:pointer-events-none outline-none shadow-[8px_8px_0_var(--color-accent)] hover:shadow-[4px_4px_0_var(--color-accent)] hover:translate-y-1 hover:translate-x-1 active:translate-y-2 active:translate-x-2 active:shadow-none overflow-hidden",
-                                    isFetchingMore && "pr-14"
-                                )}
-                            >
-                                <div className="absolute inset-0 w-full h-full bg-accent text-cream flex items-center justify-center -translate-y-full group-hover:translate-y-0 transition-transform duration-300 font-editorial text-2xl uppercase tracking-wider gap-4">
-                                    <Zap size={20} className={cn(isFetchingMore ? "animate-pulse" : "")} />
-                                    {isFetchingMore ? 'ЗАГРУЗКА...' : 'ПОКАЗАТЬ ЕЩЕ'}
-                                </div>
-                                <div className="flex items-center justify-center gap-4 transition-transform duration-300 group-hover:translate-y-full">
-                                    <Zap size={20} className={cn(isFetchingMore ? "animate-pulse" : "")} />
-                                    <span>{isFetchingMore ? 'ЗАГРУЗКА...' : 'ПОКАЗАТЬ ЕЩЕ'}</span>
-                                </div>
-
-                                {isFetchingMore && (
-                                    <div className="absolute right-6 w-5 h-5 border-2 border-bg-dark/20 border-t-bg-dark rounded-full animate-spin z-20 group-hover:border-cream/20 group-hover:border-t-cream" />
-                                )}
-                            </button>
-
-                            <p className="text-[10px] font-bold text-bg-dark/60 uppercase tracking-widest bg-white outline outline-2 outline-bg-dark/10 px-3 py-1 mt-4">
-                                Страница {page} • Загружено {projects.length} тайтлов
-                            </p>
+                    {/* RIGHT (40%): STICKY VIEWER */}
+                    <div className="hidden lg:block w-[40%] bg-bg-dark flex-shrink-0">
+                        {/* 
+                            We subtract the navigation header and local sticky header from viewport height.
+                            Top Navigation = ~88px. Local Search Header = ~88px. Sub-toolbar = ~64px.
+                            Total offset top is roughly 88+88 = 176px. Height calc(100vh - 176px).
+                        */}
+                        <div className="sticky top-[176px] h-[calc(100vh-176px)] overflow-hidden">
+                            <StickyViewer project={activeProject} />
                         </div>
-                    )}
+                    </div>
+                </div>
 
-                    {!hasMore && projects.length > 0 && (
-                        <div className="w-full py-16 flex justify-center text-bg-dark">
-                            <div className="font-editorial text-2xl uppercase tracking-wider px-6 py-2 border-y-4 border-bg-dark bg-white">
-                                Конец Списка
-                            </div>
-                        </div>
-                    )}
-                </section>
             </main>
-
-            {/* Mobile Floating Filter Button (FAB) */}
-            <button
-                onClick={() => setIsFilterOpen(true)}
-                className={cn(
-                    "fixed bottom-6 right-6 z-[100] lg:hidden flex items-center gap-3 px-5 py-4 bg-bg-dark text-cream border-4 border-cream shadow-[4px_4px_0_var(--color-accent)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all",
-                    isFilterOpen && "hidden"
-                )}
-            >
-                <SlidersHorizontal size={20} strokeWidth={2.5} />
-                <span className="font-editorial text-sm uppercase tracking-wider">Фильтры</span>
-                {activeFilterCount > 0 && (
-                    <span className="min-w-[22px] h-[22px] flex items-center justify-center bg-accent text-cream text-[11px] font-black rounded-full border-2 border-cream px-1">
-                        {activeFilterCount}
-                    </span>
-                )}
-            </button>
         </div>
     );
 }
+
+// Ensure the default export is present if required by Next.js app router dynamic imports, although this component is likely just exported directly as a named export.
+export default CatalogContent;

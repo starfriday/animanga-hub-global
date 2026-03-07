@@ -23,9 +23,9 @@ export const ThreeStateTag: React.FC<ThreeStateTagProps> = ({ label, status, onC
             onClick={handleClick}
             className={cn(
                 "group relative px-4 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center gap-2 select-none active:translate-y-0.5 active:translate-x-0.5 outline-none",
-                status === 'none' && "bg-surface border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5",
-                status === 'included' && "bg-accent border-accent text-cream shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-0.5 translate-x-0.5",
-                status === 'excluded' && "bg-white border-bg-dark text-bg-dark line-through decoration-2 decoration-red-500 shadow-[inset_0_2px_5px_rgba(0,0,0,0.1)] translate-y-0.5 translate-x-0.5"
+                status === 'none' && "bg-bg-dark border-secondary-muted text-cream hover:border-cream hover:bg-cream hover:text-bg-dark shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5",
+                status === 'included' && "bg-accent border-accent text-cream shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)] translate-y-0.5 translate-x-0.5",
+                status === 'excluded' && "bg-bg-dark border-accent text-cream/50 line-through decoration-2 decoration-accent shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-0.5 translate-x-0.5"
             )}
         >
             <div className="relative w-3 h-3 flex items-center justify-center">

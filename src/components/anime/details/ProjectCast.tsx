@@ -1,7 +1,6 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface ActorGroup {
@@ -23,8 +22,8 @@ export interface ProjectCastProps {
     actorCredits: ActorGroup[];
     crewCredits: CrewMember[];
     creators?: CrewMember[]; // Used primarily in MovieProject
-    actorsData?: any[];      // Fallback data if needed
-    teamData?: any[];        // Fallback data if needed
+    actorsData?: Array<{ id: string | number; image?: string;[key: string]: unknown }>;
+    teamData?: Array<{ id: string | number; image?: string;[key: string]: unknown }>;
 }
 
 export const ProjectCast: React.FC<ProjectCastProps> = ({
@@ -41,46 +40,71 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
     };
 
     return (
-        <div className="space-y-16 anim-reveal-up">
-            {/* Voice Actors & Characters */}
+        <div className="space-y-24 anim-reveal-up">
+            {/* Personnel.Registry: Voice Actors & Characters */}
             {actorCredits && actorCredits.length > 0 && (
-                <div className="space-y-10">
-                    <div className="flex items-center gap-3 border-b-4 border-bg-dark pb-3">
-                        <div className="w-6 h-6 bg-accent border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]" />
-                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark">Актеры & Герои</h2>
+                <div className="space-y-12">
+                    <div className="flex items-center gap-4">
+                        <div className="h-6 w-1 bg-accent" />
+                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-3">
+                            Personnel.Registry
+                            <span className="text-[10px] font-black not-italic opacity-20 font-mono tracking-widest">[ VOX.UNITS ]</span>
+                        </h2>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {actorCredits.map((c, i) => (
-                            <div key={i} className="group flex items-center gap-6 p-4 bg-white border-4 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
-                                <div className="relative w-16 h-16 md:w-20 md:h-20 border-4 border-bg-dark shrink-0 bg-bg-cream overflow-hidden">
+                            <div key={i} className="group flex bg-white border-[3px] border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all overflow-hidden relative">
+                                {/* Character/Voice Unit Poster */}
+                                <div className="relative w-24 h-32 md:w-32 md:h-40 border-r-[3px] border-bg-dark shrink-0 bg-bg-cream overflow-hidden">
+                                    <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 animate-scan z-10 pointer-events-none" />
                                     {c.image ? (
-                                        <img src={c.image} alt={c.name} loading="lazy" className="w-full h-full object-cover grayscale mix-blend-multiply group-hover:grayscale-0 transition-all duration-500" />
+                                        <Image
+                                            src={c.image}
+                                            alt={c.name}
+                                            fill
+                                            unoptimized
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                            sizes="(max-width: 768px) 96px, 128px"
+                                        />
                                     ) : (
-                                        <div className="w-full h-full bg-accent text-cream flex items-center justify-center font-editorial text-3xl uppercase">
+                                        <div className="w-full h-full bg-bg-dark/5 flex items-center justify-center font-editorial text-4xl uppercase opacity-20">
                                             {c.name[0]}
                                         </div>
                                     )}
+                                    {/* ID Marker */}
+                                    <div className="absolute bottom-1 left-1 bg-bg-dark text-white text-[7px] font-mono px-1 py-0.5 opacity-40">
+                                        VX-{i.toString().padStart(2, '0')}
+                                    </div>
                                 </div>
-                                <div className="flex-1 min-w-0 space-y-2">
-                                    <h4 className="font-editorial text-lg md:text-xl uppercase tracking-tight text-bg-dark group-hover:text-accent transition-colors truncate leading-none">
-                                        {c.name}
-                                    </h4>
-                                    <div className="flex flex-col gap-1.5">
+
+                                <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                                    <div className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-0.5 bg-bg-dark/20" />
-                                            <p className="text-[10px] font-black text-bg-dark/50 uppercase tracking-widest truncate">
-                                                {c.characters.join(' / ') || 'Роль в проекте'}
-                                            </p>
+                                            <div className={cn("w-1.5 h-1.5 rounded-full", c.isMain ? "bg-accent shadow-[0_0_8px_var(--color-accent)]" : "bg-bg-dark/20")} />
+                                            <h4 className="font-editorial text-lg md:text-xl uppercase tracking-tight text-bg-dark group-hover:text-accent transition-colors truncate">
+                                                {c.name}
+                                            </h4>
                                         </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-black text-bg-dark/40 uppercase tracking-[0.2em] truncate">
+                                                {c.characters.join(' / ') || 'Designated Role'}
+                                            </p>
+                                            {c.isMain && (
+                                                <div className="inline-block bg-accent/10 text-accent text-[8px] font-black px-2 py-0.5 border border-accent/20">
+                                                    CORE.UNIT
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between border-t border-bg-dark/5 pt-2">
+                                        <div className="text-[8px] font-mono text-bg-dark/20">STATUS: VERIFIED</div>
                                         {c.roles.includes('Voice Director') && (
-                                            <p className="text-[9px] font-black text-accent uppercase tracking-widest ml-6">Режиссер озвучки</p>
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Voice Director" />
                                         )}
                                     </div>
-                                    {c.isMain && (
-                                        <span className="inline-block px-2 py-1 bg-yellow-400 border-2 border-bg-dark text-[9px] font-black text-bg-dark uppercase tracking-widest shadow-[2px_2px_0_var(--color-bg-dark)]">
-                                            ВЕДУЩАЯ РОЛЬ
-                                        </span>
-                                    )}
                                 </div>
                             </div>
                         ))}
@@ -88,32 +112,52 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
                 </div>
             )}
 
-            {/* Creators — Directors / Writers etc. */}
+            {/* Architecture.Lead: Creators */}
             {creators && creators.length > 0 && (
-                <div className="space-y-10">
-                    <div className="flex items-center gap-3 border-b-4 border-bg-dark pb-3">
-                        <div className="w-6 h-6 bg-accent border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]" />
-                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark">Создатели</h2>
+                <div className="space-y-12">
+                    <div className="flex items-center gap-4">
+                        <div className="h-6 w-1 bg-accent" />
+                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-3">
+                            Architecture.Lead
+                            <span className="text-[10px] font-black not-italic opacity-20 font-mono tracking-widest">[ CMD.STRC ]</span>
+                        </h2>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-6">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                         {creators.map((c, i) => {
                             const personImg = c.customImage || getPersonData(c.personId)?.image;
                             return (
-                                <div key={i} className="flex gap-5 group p-4 bg-white border-4 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
-                                    <div className="w-16 h-16 border-4 border-bg-dark shrink-0 bg-bg-cream overflow-hidden">
+                                <div key={i} className="group flex items-center gap-6 p-6 bg-bg-dark text-white border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-accent)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rotate-45 translate-x-12 -translate-y-12" />
+
+                                    <div className="relative w-20 h-20 md:w-24 md:h-24 border-2 border-white/20 shrink-0 bg-white/5 overflow-hidden">
+                                        <div className="absolute inset-0 bg-white/10 animate-scan z-10" />
                                         {personImg ? (
-                                            <img src={personImg} alt="" loading="lazy" className="w-full h-full object-cover mix-blend-multiply grayscale group-hover:grayscale-0 transition-all duration-500" />
+                                            <Image
+                                                src={personImg}
+                                                alt={c.name}
+                                                fill
+                                                unoptimized
+                                                referrerPolicy="no-referrer"
+                                                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                                                sizes="(max-width: 768px) 80px, 96px"
+                                            />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-cream bg-accent font-editorial text-2xl uppercase">
-                                                {c.name[0]}
+                                            <div className="w-full h-full flex items-center justify-center text-white/20 font-editorial text-4xl uppercase italic">
+                                                ?
                                             </div>
                                         )}
                                     </div>
-                                    <div className="justify-center flex flex-col gap-1.5">
-                                        <p className="text-[10px] font-black text-bg-dark/50 uppercase tracking-widest">{c.role}</p>
-                                        <p className="text-lg font-editorial uppercase tracking-tight text-bg-dark group-hover:text-accent transition-colors leading-none">
-                                            {c.name}
-                                        </p>
+
+                                    <div className="space-y-3 relative z-10 flex-1">
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-black text-accent uppercase tracking-[0.3em] font-mono">{c.role}</p>
+                                            <p className="text-2xl md:text-3xl font-editorial uppercase tracking-tighter text-white group-hover:text-accent transition-colors leading-none italic">
+                                                {c.name}
+                                            </p>
+                                        </div>
+                                        <div className="h-[1px] w-full bg-white/10" />
+                                        <div className="text-[8px] font-mono text-white/30 tracking-widest uppercase">Security.Clearance: Level-5</div>
                                     </div>
                                 </div>
                             );
@@ -122,34 +166,46 @@ export const ProjectCast: React.FC<ProjectCastProps> = ({
                 </div>
             )}
 
-            {/* Staff Team */}
+            {/* Logistics.Fleet: Staff Team */}
             {crewCredits && crewCredits.length > 0 && (
-                <div className="space-y-10">
-                    <div className="flex items-center gap-3 border-b-4 border-bg-dark pb-3">
-                        <div className="w-6 h-6 bg-accent border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]" />
-                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark">Над проектом работали</h2>
+                <div className="space-y-12">
+                    <div className="flex items-center gap-4">
+                        <div className="h-6 w-1 bg-accent" />
+                        <h2 className="text-2xl md:text-4xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-3">
+                            Logistics.Fleet
+                            <span className="text-[10px] font-black not-italic opacity-20 font-mono tracking-widest">[ STAFF.SYNC ]</span>
+                        </h2>
                     </div>
-                    <div className="flex flex-wrap gap-6">
+
+                    <div className="flex flex-wrap gap-4">
                         {crewCredits.map((c, i) => (
                             <Link
                                 key={i}
                                 href="/team"
-                                className="group flex flex-col items-center text-center gap-4 p-4 border-4 border-transparent hover:border-bg-dark transition-all"
+                                className="group flex items-center gap-4 px-4 py-3 bg-white border-2 border-bg-dark hover:bg-bg-dark hover:text-white transition-all shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 min-w-[200px]"
                             >
-                                <div className="relative w-20 h-20 border-4 border-bg-dark bg-bg-cream overflow-hidden shadow-[4px_4px_0_var(--color-bg-dark)] group-hover:shadow-[2px_2px_0_var(--color-bg-dark)] group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all">
+                                <div className="w-10 h-10 border-2 border-bg-dark shrink-0 bg-bg-cream overflow-hidden group-hover:border-white transition-colors relative">
                                     {c.customImage ? (
-                                        <img src={c.customImage} alt="" loading="lazy" className="w-full h-full object-cover mix-blend-multiply grayscale group-hover:grayscale-0 transition-all" />
+                                        <Image
+                                            src={c.customImage}
+                                            alt={c.name}
+                                            fill
+                                            unoptimized
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover grayscale group-hover:grayscale-0 transition-all"
+                                            sizes="40px"
+                                        />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-cream text-3xl font-editorial uppercase bg-accent">
+                                        <div className="w-full h-full flex items-center justify-center text-bg-dark/40 text-lg font-editorial uppercase bg-bg-dark/5 group-hover:text-white group-hover:bg-accent transition-all">
                                             {c.name[0]}
                                         </div>
                                     )}
                                 </div>
-                                <div className="space-y-1">
-                                    <h4 className="text-sm font-editorial uppercase tracking-tight text-bg-dark group-hover:text-accent transition-colors">
+                                <div className="space-y-0.5">
+                                    <h4 className="text-[11px] font-black uppercase tracking-widest truncate leading-none">
                                         {c.name}
                                     </h4>
-                                    <p className="text-[9px] font-black text-bg-dark/40 uppercase tracking-widest">
+                                    <p className="text-[8px] font-black text-bg-dark/40 group-hover:text-white/40 uppercase tracking-widest transition-colors font-mono">
                                         {c.role}
                                     </p>
                                 </div>

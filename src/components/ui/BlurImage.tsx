@@ -55,6 +55,7 @@ export const BlurImage: React.FC<BlurImageProps> = ({ src, alt, className, fill,
                 alt={alt}
                 loading="lazy"
                 decoding="async"
+                referrerPolicy="no-referrer"
                 className={cn(
                     "duration-700 ease-in-out w-full h-full object-cover",
                     isLoading ? "scale-110 blur-2xl grayscale" : "scale-100 blur-0 grayscale-0"

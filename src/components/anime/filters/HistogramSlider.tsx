@@ -67,20 +67,20 @@ export const HistogramSlider: React.FC<HistogramSliderProps> = ({
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <label className="text-[10px] font-black text-bg-dark uppercase tracking-widest flex items-center gap-2"><span className="w-2 h-2 bg-accent inline-block rounded-sm"></span>{label}</label>
+                <label className="text-[10px] font-black text-cream uppercase tracking-widest flex items-center gap-2"><span className="w-2 h-2 bg-accent inline-block rounded-sm"></span>{label}</label>
                 <div className="flex items-center gap-2">
                     <input
                         type="number"
                         value={start}
                         onChange={(e) => onChange([parseInt(e.target.value) || min, end])}
-                        className="w-14 bg-white border-2 border-bg-dark py-1.5 px-2 text-[10px] font-bold text-center text-bg-dark focus:border-accent outline-none shadow-[2px_2px_0_var(--color-bg-dark)] transition-all"
+                        className="w-14 bg-bg-dark border-2 border-secondary-muted py-1.5 px-2 text-[10px] font-bold text-center text-cream focus:border-accent focus:shadow-[2px_2px_0_var(--color-accent)] outline-none shadow-[2px_2px_0_var(--color-secondary-muted)] transition-all"
                     />
-                    <span className="text-bg-dark/30 font-black">—</span>
+                    <span className="text-secondary font-black">—</span>
                     <input
                         type="number"
                         value={end}
                         onChange={(e) => onChange([start, parseInt(e.target.value) || max])}
-                        className="w-14 bg-white border-2 border-bg-dark py-1.5 px-2 text-[10px] font-bold text-center text-bg-dark focus:border-accent outline-none shadow-[2px_2px_0_var(--color-bg-dark)] transition-all"
+                        className="w-14 bg-bg-dark border-2 border-secondary-muted py-1.5 px-2 text-[10px] font-bold text-center text-cream focus:border-accent focus:shadow-[2px_2px_0_var(--color-accent)] outline-none shadow-[2px_2px_0_var(--color-secondary-muted)] transition-all"
                     />
                 </div>
             </div>
@@ -97,9 +97,9 @@ export const HistogramSlider: React.FC<HistogramSliderProps> = ({
                             <div
                                 key={i}
                                 className={cn(
-                                    "flex-1 bg-bg-dark/20 transition-all duration-300",
+                                    "flex-1 bg-secondary/20 transition-all duration-300",
                                     !isInRange && "opacity-30 scale-y-75",
-                                    isInRange && "bg-accent scale-y-100 opacity-100 border border-bg-dark"
+                                    isInRange && "bg-cream scale-y-100 opacity-100 border border-bg-dark"
                                 )}
                                 style={{ height: `${height}%` }}
                             />
@@ -108,9 +108,9 @@ export const HistogramSlider: React.FC<HistogramSliderProps> = ({
                 </div>
 
                 {/* Slider Track */}
-                <div className="absolute bottom-2 inset-x-0 h-1 bg-bg-dark/10">
+                <div className="absolute bottom-2 inset-x-0 h-1 bg-secondary-muted/20">
                     <div
-                        className="absolute h-full bg-accent border-y border-bg-dark shadow-[0_2px_0_var(--color-bg-dark)]"
+                        className="absolute h-full bg-cream border-y border-secondary-muted shadow-[0_2px_0_rgba(255,255,255,0.2)]"
                         style={{
                             left: `${translateValueToPos(start)}%`,
                             right: `${100 - translateValueToPos(end)}%`
@@ -122,14 +122,14 @@ export const HistogramSlider: React.FC<HistogramSliderProps> = ({
                 <button
                     type="button"
                     onMouseDown={() => setDragging('start')}
-                    className="absolute bottom-2 -translate-x-1/2 -translate-y-[calc(50%-1px)] w-4 h-4 bg-white border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] cursor-grab active:cursor-grabbing hover:bg-bg-dark transition-colors outline-none hover:shadow-none active:translate-y-0.5 active:translate-x-0.5"
+                    className="absolute bottom-2 -translate-x-1/2 -translate-y-[calc(50%-1px)] w-4 h-4 bg-bg-dark border-2 border-cream shadow-[2px_2px_0_var(--color-cream)] cursor-grab active:cursor-grabbing hover:bg-cream transition-colors outline-none hover:shadow-none active:translate-y-0.5 active:translate-x-0.5"
                     style={{ left: `${translateValueToPos(start)}%` }}
                 />
 
                 <button
                     type="button"
                     onMouseDown={() => setDragging('end')}
-                    className="absolute bottom-2 -translate-x-1/2 -translate-y-[calc(50%-1px)] w-4 h-4 bg-white border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] cursor-grab active:cursor-grabbing hover:bg-bg-dark transition-colors outline-none hover:shadow-none active:translate-y-0.5 active:translate-x-0.5"
+                    className="absolute bottom-2 -translate-x-1/2 -translate-y-[calc(50%-1px)] w-4 h-4 bg-bg-dark border-2 border-cream shadow-[2px_2px_0_var(--color-cream)] cursor-grab active:cursor-grabbing hover:bg-cream transition-colors outline-none hover:shadow-none active:translate-y-0.5 active:translate-x-0.5"
                     style={{ left: `${translateValueToPos(end)}%` }}
                 />
             </div>

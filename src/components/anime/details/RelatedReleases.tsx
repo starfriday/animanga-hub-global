@@ -2,12 +2,12 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { TrendingUp, ChevronRight, Calendar, Star } from 'lucide-react';
-import { BlurImage } from '@/components/ui/BlurImage';
+import { ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { ensureFullUrl } from '@/lib/imageUtils';
 
-interface RelatedRelease {
+export interface RelatedRelease {
     relation: string;
     relation_russian: string;
     anime: {
@@ -29,18 +29,17 @@ interface RelatedRelease {
         aired_on: string;
         released_on: string;
     } | null;
-    manga: any | null;
+    manga: Record<string, unknown> | null;
 }
 
 interface RelatedReleasesProps {
-    currentAnimeId: number;
+    currentAnimeId: string | number;
     related: RelatedRelease[];
     className?: string;
 }
 
 export const RelatedReleases: React.FC<RelatedReleasesProps> = ({ currentAnimeId, related, className }) => {
-    // Filter out entries that don't have an anime object (manga adaptation, etc. for now as we don't have manga pages yet)
-    // and sort them by year if possible
+    // Filter out entries that don't have an anime object
     const sortedRelated = useMemo(() => {
         if (!related) return [];
         return related
@@ -55,73 +54,74 @@ export const RelatedReleases: React.FC<RelatedReleasesProps> = ({ currentAnimeId
     if (sortedRelated.length === 0) return null;
 
     return (
-        <div className={cn("space-y-8", className)}>
-            <div className="flex items-center justify-between border-b-4 border-bg-dark pb-3">
+        <div className={cn("space-y-6", className)}>
+            <div className="flex items-center justify-between border-b-[3px] border-bg-dark pb-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-accent border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]" />
-                    <h3 className="text-xl font-editorial uppercase tracking-tight text-bg-dark">Связанные релизы</h3>
+                    <div className="w-5 h-5 bg-accent border-[3px] border-bg-dark/10" />
+                    <h3 className="text-xl font-editorial uppercase tracking-tight text-bg-dark italic">Rel.Connections</h3>
                 </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-bg-dark/40">
-                    {sortedRelated.length} тайтлов
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-20 hidden sm:block">
+                    {sortedRelated.length} UNITS.SYNC
                 </div>
             </div>
 
-            <div className="relative space-y-4 before:absolute before:left-[27px] before:top-2 before:bottom-2 before:w-1 before:bg-bg-dark">
-                {sortedRelated.map((r, idx) => {
+            <div className="relative space-y-4 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-bg-dark/5">
+                {sortedRelated.map((r) => {
                     const anime = r.anime!;
-                    const isCurrent = anime.id === currentAnimeId;
+                    const isCurrent = String(anime.id) === String(currentAnimeId);
                     const year = anime.aired_on ? anime.aired_on.split('-')[0] : 'TBA';
 
                     return (
-                        <div key={anime.id} className="relative pl-14 group">
+                        <div key={anime.id} className="relative pl-8 group">
                             {/* Chronology Dot */}
                             <div className={cn(
-                                "absolute left-[24.5px] top-1/2 -translate-y-1/2 border-2 border-bg-dark transition-all z-10",
+                                "absolute left-[11px] top-4 border-[3px] border-bg-cream transition-all z-10 rounded-full",
                                 isCurrent
-                                    ? "w-3 h-3 bg-accent shadow-[2px_2px_0_var(--color-bg-dark)] scale-125"
-                                    : "w-2.5 h-2.5 bg-white group-hover:bg-bg-dark"
+                                    ? "w-3 h-3 bg-accent shadow-[0_0_8px_var(--color-accent)] scale-125"
+                                    : "w-2.5 h-2.5 bg-bg-dark group-hover:bg-accent"
                             )} />
 
                             <Link
                                 href={`/anime/${anime.id}`}
                                 className={cn(
-                                    "flex items-center gap-4 p-3 border-4 transition-all outline-none",
+                                    "flex items-center gap-4 p-3 bg-white border border-bg-dark/5 transition-all outline-none group/card",
                                     isCurrent
-                                        ? "bg-white border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] -translate-y-1 -translate-x-1"
-                                        : "bg-transparent border-transparent hover:bg-white hover:border-bg-dark hover:shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-1 hover:-translate-x-1"
+                                        ? "border-accent bg-accent/[0.03] shadow-[4px_4px_0_var(--color-accent)]"
+                                        : "hover:border-bg-dark hover:shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-0.5"
                                 )}
                             >
-                                <div className="w-12 h-16 bg-bg-cream border-2 border-bg-dark overflow-hidden flex-shrink-0">
-                                    <BlurImage
+                                <div className="w-10 h-14 bg-bg-cream border border-bg-dark/10 overflow-hidden shrink-0 relative">
+                                    <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover/card:opacity-100 animate-scan z-10 pointer-events-none" />
+                                    <Image
                                         src={anime.image?.original ? ensureFullUrl(anime.image.original) : ''}
                                         alt={anime.russian || anime.name}
-                                        className="w-full h-full object-cover mix-blend-multiply"
+                                        fill
+                                        unoptimized
+                                        referrerPolicy="no-referrer"
+                                        className="object-cover grayscale group-hover/card:grayscale-0 transition-all duration-500"
+                                        sizes="40px"
                                     />
                                 </div>
 
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-[9px] font-black text-accent uppercase tracking-widest mb-1">
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    <div className="text-[8px] font-black text-accent uppercase tracking-widest leading-none">
                                         {r.relation_russian}
                                     </div>
                                     <div className={cn(
-                                        "text-sm font-editorial uppercase tracking-tight line-clamp-1 transition-colors leading-tight",
-                                        isCurrent ? "text-accent" : "text-bg-dark group-hover:text-accent"
+                                        "text-[13px] font-editorial uppercase tracking-tight line-clamp-1 transition-colors leading-tight italic",
+                                        isCurrent ? "text-accent" : "text-bg-dark group-hover/card:text-accent"
                                     )}>
                                         {anime.russian || anime.name}
                                     </div>
-                                    <div className="flex items-center gap-3 mt-1.5">
-                                        <span className="text-[9px] font-black text-bg-dark/50 uppercase tracking-widest flex items-center gap-1">
-                                            <Calendar size={10} /> {year}
-                                        </span>
-                                        <span className="text-[9px] font-black text-bg-dark/50 uppercase tracking-widest flex items-center gap-1">
-                                            <Star size={10} className="fill-accent text-accent" /> {anime.score}
-                                        </span>
+                                    <div className="flex items-center gap-3 opacity-30">
+                                        <span className="text-[9px] font-mono tracking-tighter uppercase whitespace-nowrap">REF: {anime.id}</span>
+                                        <span className="text-[9px] font-mono tracking-tighter uppercase whitespace-nowrap">{year}</span>
                                     </div>
                                 </div>
 
-                                <ChevronRight size={16} className={cn(
-                                    "text-bg-dark transition-transform text-opacity-0 group-hover:text-opacity-100 group-hover:translate-x-1",
-                                    isCurrent ? "text-opacity-100" : ""
+                                <ChevronRight size={14} className={cn(
+                                    "text-bg-dark transition-all opacity-0 group-hover/card:opacity-100 group-hover/card:translate-x-1",
+                                    isCurrent ? "opacity-100 text-accent font-bold" : ""
                                 )} />
                             </Link>
                         </div>

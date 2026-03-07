@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  /* === AZUKI RETRO-EDITORIAL PALETTE === */
-  --background: #1A1A1A;
-  --foreground: #DCC9A9;
+  /* === ANIVAULT 2.0 BRUTALIST PALETTE === */
+  --background: #F4F4F0;
+  /* Off-White/Cream */
+  --foreground: #0D0D0D;
+  /* Jet Black */
 
   /* Primary Palette */
-  --color-bg-dark: #1A1A1A;
-  --color-bg-cream: #DCC9A9;
-  --color-accent: #B83A2D;
-  --color-accent-hover: #9A2F24;
-  --color-accent-glow: rgba(184, 58, 45, 0.45);
-  --color-green: #4E6851;
-  --color-green-hover: #3D5340;
+  --color-bg-dark: #0D0D0D;
+  /* Jet Black */
+  --color-bg-cream: #F4F4F0;
+  /* Off-White/Cream */
+  --color-accent: #E60012;
+  /* Crimson Red */
+  --color-accent-hover: #B3000E;
+  --color-accent-glow: rgba(230, 0, 18, 0.45);
+  --color-green: #00FF55;
+  /* Acid Green for contrast */
+  --color-green-hover: #00CC44;
 
   /* Supporting palette */
-  --color-warm: #C4A265;
-  --color-warm-hover: #A8894F;
+  --color-blue: #0A00FF;
+  /* High contrast blue */
 
-  --color-secondary: #A09080;
-  --color-secondary-muted: #6B5E50;
+  /* Gray scales (hard) */
+  --color-secondary: #808080;
+  --color-secondary-muted: #555555;
 
-  /* Dark Layers */
-  --color-dark: #1A1A1A;
-  --color-dark-layer: #222222;
-  --color-dark-card: #2A2A2A;
-  --color-dark-elevated: #333333;
+  /* Solid layers */
+  --color-dark: #0D0D0D;
+  --color-dark-layer: #1A1A1A;
+  --color-dark-card: #222222;
 
   --color-light: #FFFFFF;
-  --color-text: #DCC9A9;
-  --color-text-dark: #1A1A1A;
-  --color-cream: #DCC9A9;
+  --color-text: #0D0D0D;
+  --color-text-dark: #F4F4F0;
+  --color-cream: #F4F4F0;
 }
 
 @theme {
@@ -39,14 +45,12 @@
   --color-accent-glow: var(--color-accent-glow);
   --color-green: var(--color-green);
   --color-green-hover: var(--color-green-hover);
-  --color-warm: var(--color-warm);
-  --color-warm-hover: var(--color-warm-hover);
+  --color-blue: var(--color-blue);
   --color-secondary: var(--color-secondary);
   --color-secondary-muted: var(--color-secondary-muted);
   --color-dark: var(--color-dark);
   --color-dark-layer: var(--color-dark-layer);
   --color-dark-card: var(--color-dark-card);
-  --color-dark-elevated: var(--color-dark-elevated);
   --color-light: var(--color-light);
   --color-text: var(--color-text);
   --color-text-dark: var(--color-text-dark);
@@ -54,110 +58,41 @@
   --color-bg-cream: var(--color-bg-cream);
   --color-bg-dark: var(--color-bg-dark);
 
-  /* Font Families */
-  --font-display: 'Outfit', Montserrat, system-ui, sans-serif;
-  --font-body: 'Nunito Sans', system-ui, sans-serif;
-  --font-sans: 'Outfit', Montserrat, system-ui, sans-serif;
-  --font-serif: 'PT Serif', Georgia, serif;
-  --font-mono: 'PT Mono', ui-monospace, monospace;
-  --font-editorial: 'Outfit', Impact, 'Arial Black', sans-serif;
+  /* Brutalist Font Families */
+  --font-display: 'Impact', 'Arial Black', sans-serif;
+  --font-body: 'Outfit', 'Helvetica Neue', sans-serif;
+  --font-sans: 'Outfit', 'Helvetica Neue', sans-serif;
+  --font-editorial: 'Impact', 'Arial Black', sans-serif;
+  --font-kanji: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', sans-serif;
 
   /* Backgrounds */
-  --background-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --background-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  --background-grid: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 20 0 L 0 0 0 20' fill='none' stroke='%230D0D0D' stroke-width='1' stroke-opacity='0.1'/%3E%3C/svg%3E");
+  --background-dots: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%230D0D0D' fill-opacity='0.2'/%3E%3C/svg%3E");
 
-  /* Shadows */
-  --box-shadow-glow: 0 0 40px -10px rgba(184, 58, 45, 0.5);
-  --box-shadow-glow-sm: 0 0 20px -5px rgba(184, 58, 45, 0.4);
-  --box-shadow-glow-warm: 0 0 40px -10px rgba(196, 162, 101, 0.4);
-  --box-shadow-card: 0 4px 24px -4px rgba(0, 0, 0, 0.3), 0 8px 48px -8px rgba(0, 0, 0, 0.25);
-  --box-shadow-card-hover: 0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 40px -10px rgba(184, 58, 45, 0.25);
+  /* Hard Brutalist Shadows */
+  --box-shadow-solid-sm: 2px 2px 0px var(--color-dark);
+  --box-shadow-solid: 4px 4px 0px var(--color-dark);
+  --box-shadow-solid-lg: 8px 8px 0px var(--color-dark);
+  --box-shadow-solid-accent: 4px 4px 0px var(--color-accent);
+  --box-shadow-solid-light: 4px 4px 0px var(--color-bg-cream);
 
-  /* Transition */
-  --transition-duration-400: 400ms;
+  /* Transition Spring Physics (crisp, snappy) */
+  --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-duration-150: 150ms;
+  --transition-duration-300: 300ms;
 
   /* Animations */
-  --animate-fade-in: fadeIn 0.4s ease-out forwards;
-  --animate-fade-in-up: fadeInUp 0.6s ease-out forwards;
-  --animate-pop-in: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  --animate-shine: shine 1.5s ease-in-out infinite;
-  --animate-shimmer: shimmer 2s linear infinite;
-  --animate-slide-in-right: slideInRight 0.4s ease-out forwards;
-  --animate-card-reveal: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-hero-fade: heroFade 1.2s ease-out forwards;
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-nav-underline: navUnderline 0.25s ease-out forwards;
-  --animate-dropdown-enter: dropdownEnter 0.2s ease-out forwards;
-  --animate-ring: ring 2s ease-in-out infinite;
-  --animate-swing: swing 1s ease-in-out infinite;
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-slow-zoom: slowZoom 20s ease-in-out infinite;
-  --animate-bounce-slow: bounceSlow 3s ease-in-out infinite;
-  --animate-marquee: marqueeScroll 30s linear infinite;
-  --animate-marquee-fast: marqueeScroll 15s linear infinite;
-  --animate-editorial-reveal: editorialReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-letter-spread: letterSpread 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-glitch: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+  --animate-slide-up-fade: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marqueeScroll 20s linear infinite;
+  --animate-marquee-fast: marqueeScroll 10s linear infinite;
+  --animate-pulse-hard: pulseHard 1s steps(2, end) infinite;
+  --animate-scan: scan 3s linear infinite;
 }
 
 @layer utilities {
-  @keyframes ring {
-
-    0%,
-    100% {
-      transform: rotate(0deg);
-    }
-
-    20% {
-      transform: rotate(-15deg);
-    }
-
-    40% {
-      transform: rotate(15deg);
-    }
-
-    60% {
-      transform: rotate(-10deg);
-    }
-
-    80% {
-      transform: rotate(10deg);
-    }
-  }
-
-  @keyframes swing {
-
-    0%,
-    100% {
-      transform: rotate(0deg);
-    }
-
-    20% {
-      transform: rotate(15deg);
-    }
-
-    40% {
-      transform: rotate(-10deg);
-    }
-
-    60% {
-      transform: rotate(5deg);
-    }
-
-    80% {
-      transform: rotate(-5deg);
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes fadeInUp {
+  @keyframes slideUpFade {
     0% {
       opacity: 0;
       transform: translateY(20px);
@@ -169,131 +104,41 @@
     }
   }
 
-  @keyframes popIn {
+  @keyframes glitch {
     0% {
-      opacity: 0;
-      transform: scale(0.9) translateY(10px);
+      transform: translate(0);
+    }
+
+    20% {
+      transform: translate(-2px, 2px);
+    }
+
+    40% {
+      transform: translate(-2px, -2px);
+    }
+
+    60% {
+      transform: translate(2px, 2px);
+    }
+
+    80% {
+      transform: translate(2px, -2px);
     }
 
     100% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
+      transform: translate(0);
     }
   }
 
-  @keyframes shine {
-    0% {
-      transform: translateX(-100%) skewX(-15deg);
-    }
-
-    100% {
-      transform: translateX(200%) skewX(-15deg);
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  @keyframes slideInRight {
-    0% {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes cardReveal {
-    0% {
-      opacity: 0;
-      transform: translateY(24px) scale(0.98);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  @keyframes heroFade {
-    0% {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes float {
+  @keyframes pulseHard {
 
     0%,
     100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  @keyframes navUnderline {
-    0% {
-      transform: scaleX(0);
-      opacity: 0;
-    }
-
-    100% {
-      transform: scaleX(1);
       opacity: 1;
     }
-  }
 
-  @keyframes dropdownEnter {
-    0% {
+    50% {
       opacity: 0;
-      transform: translateY(-8px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slowZoom {
-
-    0%,
-    100% {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.1);
-    }
-  }
-
-  @keyframes bounceSlow {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
     }
   }
 
@@ -307,78 +152,78 @@
     }
   }
 
-  @keyframes editorialReveal {
+  @keyframes scan {
     0% {
-      opacity: 0;
-      transform: translateY(40px) skewY(2deg);
+      transform: translateY(-200%);
     }
 
     100% {
-      opacity: 1;
-      transform: translateY(0) skewY(0deg);
-    }
-  }
-
-  @keyframes letterSpread {
-    0% {
-      letter-spacing: -0.1em;
-      opacity: 0;
-    }
-
-    100% {
-      letter-spacing: 0.05em;
-      opacity: 1;
+      transform: translateY(200%);
     }
   }
 }
+
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
+  /* Brutalist base grid */
+  background-image: var(--background-grid);
+  background-attachment: fixed;
 }
 
 /* Scrollbar styling for retro feel */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-dark);
+  background: var(--color-bg-cream);
+  border-left: 2px solid var(--color-bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
-  border-radius: 4px;
+  background: var(--color-bg-dark);
+  border-left: 2px solid var(--color-bg-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-accent);
 }
 
 /* Base custom classes */
 @layer components {
+
+  /* Brutalist Outline Text */
   .text-border {
-    -webkit-text-stroke: 1px rgba(220, 201, 169, 0.4);
+    -webkit-text-stroke: 1px var(--color-bg-dark);
     color: transparent;
   }
 
-  .text-border-active {
-    -webkit-text-stroke: 1px var(--color-accent);
+  .text-border-thick {
+    -webkit-text-stroke: 2px var(--color-bg-dark);
     color: transparent;
   }
 
-  .text-border-dark {
-    -webkit-text-stroke: 2px rgba(26, 26, 26, 0.3);
+  .text-border-light {
+    -webkit-text-stroke: 2px var(--color-bg-cream);
     color: transparent;
   }
 
-  .glass-panel {
-    @apply bg-dark-card/50 backdrop-blur-md border border-cream/10;
+  /* Physical Brutalist Cards */
+  .brutal-card {
+    @apply border-2 md:border-4 border-bg-dark bg-bg-cream text-bg-dark transition-all duration-150 ease-[var(--transition-spring)];
+    box-shadow: var(--box-shadow-solid);
   }
 
-  .retro-card {
-    @apply border-2 border-current transition-all duration-300;
+  .brutal-card:hover {
+    @apply -translate-x-1 -translate-y-1;
+    box-shadow: var(--box-shadow-solid-lg);
+  }
+
+  .brutal-card:active {
+    @apply translate-x-1 translate-y-1 shadow-none;
   }
 
   .editorial-heading {
@@ -389,9 +234,10 @@ body {
     letter-spacing: -0.02em;
   }
 
+  /* Structural Colors */
   .cream-section {
     background-color: var(--color-bg-cream);
-    color: var(--color-text-dark);
+    color: var(--color-bg-dark);
   }
 
   .dark-section {
@@ -399,67 +245,28 @@ body {
     color: var(--color-cream);
   }
 
+  .accent-section {
+    background-color: var(--color-accent);
+    color: var(--color-bg-cream);
+  }
+
   /* Marquee container */
   .marquee-track {
     display: flex;
     width: max-content;
-    animation: marqueeScroll 30s linear infinite;
+    animation: marqueeScroll 20s linear infinite;
   }
 
   .marquee-track:hover {
     animation-play-state: paused;
   }
 
-  /* Torn paper ripped edge effect */
-  .torn-edge-bottom {
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 20' preserveAspectRatio='none'%3E%3Cpath d='M0 0h1200v8c-20 4-30-2-50 3s-25 5-40 2-20-6-35-3-30 7-45 4-15-5-30-2-25 6-40 3-20-4-35-1-30 5-45 2-15-3-30 0-25 4-40 1-20-2-35 1-30 4-45 1-15-3-30-1-25 5-40 2-20-4-35-1-30 5-45 2-15-3-30 0-25 4-40 1-20-3-35 0-30 5-45 2-15-4-30-1-25 6-40 3-20-5-35-2-30 4-45 1-15-2-30 1-25 3-40 0H0z' fill='%23000'/%3E%3C/svg%3E");
-    mask-size: 100% 20px;
-    mask-position: bottom;
-    mask-repeat: no-repeat;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 20' preserveAspectRatio='none'%3E%3Cpath d='M0 0h1200v8c-20 4-30-2-50 3s-25 5-40 2-20-6-35-3-30 7-45 4-15-5-30-2-25 6-40 3-20-4-35-1-30 5-45 2-15-3-30 0-25 4-40 1-20-2-35 1-30 4-45 1-15-3-30-1-25 5-40 2-20-4-35-1-30 5-45 2-15-3-30 0-25 4-40 1-20-3-35 0-30 5-45 2-15-4-30-1-25 6-40 3-20-5-35-2-30 4-45 1-15-2-30 1-25 3-40 0H0z' fill='%23000'/%3E%3C/svg%3E");
-    -webkit-mask-size: 100% 20px;
-    -webkit-mask-position: bottom;
-    -webkit-mask-repeat: no-repeat;
-    padding-bottom: 16px;
+  /* Brutalist Diagonal Cuts */
+  .diagonal-cut-bottom {
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
   }
 
-  .torn-edge-top {
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 20' preserveAspectRatio='none'%3E%3Cpath d='M0 20h1200v-8c-20-4-30 2-50-3s-25-5-40-2-20 6-35 3-30-7-45-4-15 5-30 2-25-6-40-3-20 4-35 1-30-5-45-2-15 3-30 0-25-4-40-1-20 2-35-1-30-4-45-1-15 3-30 1-25-5-40-2-20 4-35 1-30-5-45-2-15 3-30 0-25-4-40-1-20 3-35 0-30-5-45-2-15 4-30 1-25-6-40-3-20 5-35 2-30-4-45-1-15 2-30-1-25-3-40 0H0z' fill='%23000'/%3E%3C/svg%3E");
-    mask-size: 100% 20px;
-    mask-position: top;
-    mask-repeat: no-repeat;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 20' preserveAspectRatio='none'%3E%3Cpath d='M0 20h1200v-8c-20-4-30 2-50-3s-25-5-40-2-20 6-35 3-30-7-45-4-15 5-30 2-25-6-40-3-20 4-35 1-30-5-45-2-15 3-30 0-25-4-40-1-20 2-35-1-30-4-45-1-15 3-30 1-25-5-40-2-20 4-35 1-30-5-45-2-15 3-30 0-25-4-40-1-20 3-35 0-30-5-45-2-15 4-30 1-25-6-40-3-20 5-35 2-30-4-45-1-15 2-30-1-25-3-40 0H0z' fill='%23000'/%3E%3C/svg%3E");
-    -webkit-mask-size: 100% 20px;
-    -webkit-mask-position: top;
-    -webkit-mask-repeat: no-repeat;
-    padding-top: 16px;
-  }
-
-  /* Cinema ticket notch cutout */
-  .ticket-notch-left::before,
-  .ticket-notch-right::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-  }
-
-  .ticket-notch-left::before {
-    left: -10px;
-    background: var(--color-bg-cream);
-  }
-
-  .ticket-notch-right::after {
-    right: -10px;
-    background: var(--color-bg-cream);
-  }
-
-  /* Perforated dashed line */
-  .ticket-perforation {
-    border-left: 3px dashed var(--color-bg-cream);
+  .diagonal-cut-top {
+    clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
   }
 }

@@ -14,10 +14,10 @@ export const AnimeGrid: React.FC<AnimeGridProps> = ({ projects, isLoading, viewM
         return (
             <section className="pb-20">
                 <div className={cn(
-                    "grid gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10",
+                    "grid gap-1 md:gap-2",
                     viewMode === 'list'
                         ? "grid-cols-1 md:grid-cols-2"
-                        : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                        : "grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
                 )}>
                     {Array.from({ length: 15 }).map((_, i) => (
                         <div key={i} className="aspect-[2/3] overflow-hidden bg-bg-cream border-4 border-bg-dark relative shadow-[4px_4px_0_var(--color-bg-dark)]">
@@ -55,10 +55,10 @@ export const AnimeGrid: React.FC<AnimeGridProps> = ({ projects, isLoading, viewM
     return (
         <section className="pb-20 overflow-hidden">
             <div className={cn(
-                "grid gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10",
+                "grid gap-1 md:gap-2",
                 viewMode === 'list'
                     ? "grid-cols-1 md:grid-cols-2"
-                    : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                    : "grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
             )}>
                 {projects.map((project, idx) => (
                     <div

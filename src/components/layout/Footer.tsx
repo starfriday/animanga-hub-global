@@ -5,105 +5,109 @@ import { Send } from "lucide-react";
 
 export function Footer() {
     return (
-        <footer className="relative bg-[#1a1411] text-[#f5ead6] overflow-hidden z-20">
-            {/* Torn edge top */}
-            <div className="h-6" style={{ background: 'linear-gradient(to bottom, #f5ead6, #1a1411)' }} />
+        <footer className="relative bg-bg-dark text-cream border-t-8 border-bg-dark pt-12 overflow-hidden z-20">
+            {/* Background Texture */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'var(--background-grid)' }} />
 
-            {/* Halftone texture */}
-            <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{ backgroundImage: `radial-gradient(circle, #f5ead6 0.5px, transparent 0.5px)`, backgroundSize: '5px 5px' }}
-            />
-
-            <div className="max-w-[1600px] mx-auto px-6 md:px-16 pt-16 pb-8 relative z-10">
-
-                {/* Top: Brand + Navigation */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 pb-16 border-b-2 border-[#f5ead6]/10">
-
-                    {/* Brand Column */}
-                    <div className="md:col-span-5 space-y-5">
-                        <div className="flex items-center gap-3">
-                            <img src="/logo.png" alt="AniVault" className="w-10 h-10 object-contain invert brightness-200" />
-                            <h2 className="font-editorial text-4xl md:text-5xl uppercase tracking-tighter">ANIVAULT</h2>
+            {/* Marquee Header */}
+            <div className="w-full border-y-4 border-bg-dark bg-accent overflow-hidden shadow-[inset_0_4px_15px_-3px_rgba(0,0,0,0.5)]">
+                <div className="marquee-track flex py-3 items-center">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex items-center text-cream font-editorial text-2xl uppercase tracking-widest whitespace-nowrap">
+                            <span className="mx-8 font-black">СИСТЕМА ОБНОВЛЕНА: АНИМЕ-ХАБ 2.0 ЗАПУЩЕН</span>
+                            <span className="w-4 h-4 bg-bg-dark border-2 border-cream rotate-45" />
                         </div>
-                        <p className="text-sm font-bold uppercase tracking-widest text-[#f5ead6]/40 leading-relaxed max-w-md">
-                            Твой персональный аниме-хаб — каталог, просмотр и коллекция в одном месте.
-                            Более 23,000 тайтлов с актуальными данными.
-                        </p>
-                        <div className="w-16 h-1 bg-[#b83a2d]" />
+                    ))}
+                </div>
+            </div>
+
+            <div className="max-w-[1800px] mx-auto px-4 lg:px-8 py-16 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
+                    {/* Left Column (Brand & Massive Logo) */}
+                    <div className="lg:col-span-6 flex flex-col justify-between border-4 border-secondary-muted p-8 bg-dark-layer shadow-solid-lg">
+                        <div className="mb-12">
+                            <h2 className="font-editorial text-7xl md:text-9xl uppercase tracking-tighter leading-none text-cream mix-blend-difference mb-4 group cursor-default">
+                                <span className="block group-hover:text-accent transition-colors">ANI</span>
+                                <span className="block text-border-light group-hover:text-accent transition-colors">VAULT</span>
+                            </h2>
+                            <p className="font-mono text-xs uppercase tracking-widest text-secondary max-w-sm leading-relaxed border-l-4 border-accent pl-4">
+                                Премиальный аниме-хаб. Отборная коллекция, динамичный просмотр и живое сообщество. Создан для 2026 года.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-6 mt-auto">
+                            <div className="flex flex-col border-2 border-secondary-muted p-4 bg-bg-dark w-full max-w-[200px]">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary mb-1">БАЗА ДАННЫХ</span>
+                                <span className="font-editorial text-4xl text-accent">23,462</span>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Navigation Columns */}
-                    <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
-                        {/* Discover */}
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b83a2d]">Навигация</h4>
-                            <ul className="space-y-2.5">
+                    {/* Right Columns (Links & Info) */}
+                    <div className="lg:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-8">
+                        {/* Navigation */}
+                        <div className="flex flex-col border-l-4 border-secondary-muted pl-6">
+                            <h4 className="font-editorial text-xl uppercase tracking-widest text-accent mb-6 bg-white text-bg-dark px-2 py-1 select-none w-fit">НАВИГАЦИЯ</h4>
+                            <ul className="space-y-4">
                                 {[
-                                    { name: 'Каталог', path: '/catalog' },
-                                    { name: 'Коллекция', path: '/collection' },
-                                    { name: 'Случайное', path: '/random' },
+                                    { name: 'КАТАЛОГ', path: '/catalog' },
+                                    { name: 'КОЛЛЕКЦИЯ', path: '/collection' },
+                                    { name: 'СЛУЧАЙНОЕ', path: '/random' },
                                 ].map(item => (
                                     <li key={item.name}>
-                                        <Link href={item.path} className="text-sm font-bold uppercase tracking-wider text-[#f5ead6]/60 hover:text-[#b83a2d] transition-colors">
-                                            {item.name}
+                                        <Link href={item.path} className="group relative font-sans font-bold uppercase tracking-wider text-cream hover:text-accent transition-colors inline-block text-sm">
+                                            <span>{item.name}</span>
+                                            <span className="absolute -left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:-left-6 transition-all">
+                                                <div className="w-2 h-2 bg-accent rotate-45" />
+                                            </span>
                                         </Link>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        {/* Info */}
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b83a2d]">Информация</h4>
-                            <ul className="space-y-2.5">
+                        {/* Legal */}
+                        <div className="flex flex-col border-l-4 border-secondary-muted pl-6">
+                            <h4 className="font-editorial text-xl uppercase tracking-widest text-accent mb-6 bg-white text-bg-dark px-2 py-1 select-none w-fit">ИНФОРМАЦИЯ</h4>
+                            <ul className="space-y-4">
                                 {[
-                                    { name: 'О проекте', path: '/about' },
-                                    { name: 'Конфиденциальность', path: '/privacy' },
-                                    { name: 'Условия', path: '/terms' },
+                                    { name: 'О ПРОЕКТЕ', path: '/about' },
+                                    { name: 'КОНФИДЕНЦИАЛЬНОСТЬ', path: '/privacy' },
+                                    { name: 'УСЛОВИЯ', path: '/terms' },
                                 ].map(item => (
                                     <li key={item.name}>
-                                        <Link href={item.path} className="text-sm font-bold uppercase tracking-wider text-[#f5ead6]/60 hover:text-[#b83a2d] transition-colors">
-                                            {item.name}
+                                        <Link href={item.path} className="group relative flex items-center font-sans font-bold uppercase tracking-wider text-secondary-muted hover:text-cream transition-colors text-sm">
+                                            <span className="group-hover:translate-x-2 transition-transform">{item.name}</span>
                                         </Link>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        {/* Community */}
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b83a2d]">Сообщество</h4>
-                            <ul className="space-y-2.5">
-                                <li>
-                                    <a href="https://t.me/" target="_blank" rel="noopener noreferrer"
-                                        className="text-sm font-bold uppercase tracking-wider text-[#f5ead6]/60 hover:text-[#b83a2d] transition-colors flex items-center gap-2">
-                                        <Send size={12} /> Telegram
-                                    </a>
-                                </li>
-                            </ul>
-
-                            {/* Anime count badge */}
-                            <div className="mt-6 p-3 border-2 border-[#f5ead6]/10 bg-[#f5ead6]/[0.03]">
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#f5ead6]/30">База данных</p>
-                                <p className="font-editorial text-2xl text-[#b83a2d] mt-1">23,462</p>
-                                <p className="text-[8px] font-bold uppercase tracking-widest text-[#f5ead6]/25 mt-0.5">тайтлов</p>
-                            </div>
+                        {/* Network */}
+                        <div className="flex flex-col border-l-4 border-secondary-muted pl-6 col-span-2 md:col-span-1 border-t-4 md:border-t-0 pt-8 md:pt-0">
+                            <h4 className="font-editorial text-xl uppercase tracking-widest text-accent mb-6 bg-white text-bg-dark px-2 py-1 select-none w-fit">СООБЩЕСТВО</h4>
+                            <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 p-4 border-2 border-secondary-muted hover:border-accent hover:bg-accent hover:text-white transition-all w-fit">
+                                <Send size={20} className="group-hover:animate-bounce-slow" />
+                                <span className="font-editorial text-xl uppercase tracking-wider">ТЕЛЕГРАМ</span>
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#f5ead6]/25">
-                        &copy; 2026 ANIVAULT. Все данные предоставлены Shikimori API.
+                <div className="mt-16 pt-8 border-t-8 border-bg-dark flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p className="font-mono text-[10px] md:text-sm uppercase tracking-[0.2em] text-secondary">
+                        &copy; 2026 ANIVAULT GLOBAL. <span className="text-secondary-muted">ДАННЫЕ ПРЕДОСТАВЛЕНЫ SHIKIMORI API.</span>
                     </p>
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 border border-[#f5ead6]/10 px-2.5 py-1">
-                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                            <span className="text-[8px] font-black uppercase tracking-widest text-[#f5ead6]/40">ONLINE</span>
+                    <div className="flex items-center gap-4 bg-bg-dark p-2 border-2 border-secondary-muted">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green shadow-[0_0_10px_var(--color-green)] animate-pulseHard" />
+                            <span className="font-mono text-xs uppercase tracking-widest text-cream">СИС.ОНЛАЙН</span>
                         </div>
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-[#f5ead6]/15">v2.0</span>
+                        <span className="text-secondary-muted">|</span>
+                        <span className="font-mono text-xs uppercase tracking-widest text-secondary-muted hover:text-cream transition-colors cursor-crosshair">v2.0.0-rc1</span>
                     </div>
                 </div>
             </div>

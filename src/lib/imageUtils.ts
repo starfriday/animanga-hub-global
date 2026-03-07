@@ -7,7 +7,7 @@
  * 
  * Priority: posterUrl > image.original > image.preview > ''
  */
-export function resolveAnimeImage(anime: any): string {
+export function resolveAnimeImage(anime: { posterUrl?: string; image?: { original?: string; preview?: string } } | null | undefined): string {
     // Priority 1: Direct posterUrl from GraphQL or Kodik
     if (anime?.posterUrl) {
         return ensureFullUrl(anime.posterUrl);
@@ -33,8 +33,27 @@ export function resolveAnimeImage(anime: any): string {
  */
 export function ensureFullUrl(url: string): string {
     if (!url) return '';
+
+    // If it's a protocol-relative URL like "//shikimori.one/..."
+    if (url.startsWith('//')) {
+        return `https:${url}`;
+    }
+
+    // Sometimes API returns malformed URLs like "https//shikimori.io/..." missing the colon
+    if (url.startsWith('http//')) {
+        url = url.replace('http//', 'http://');
+    } else if (url.startsWith('https//')) {
+        url = url.replace('https//', 'https://');
+    }
+
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://shikimori.one${url}`;
+
+    // Avoid double-prepending if the domain is already there but protocol is missing (unlikely but safe)
+    if (url.includes('shikimori.') && !url.startsWith('/')) {
+        return `https://${url}`;
+    }
+
+    return `https://shikimori.one${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 /**

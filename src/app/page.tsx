@@ -1,8 +1,7 @@
-import { Suspense } from 'react';
-import { VintageHero } from "@/components/home/VintageHero";
-import { TrendingPolaroids } from "@/components/home/TrendingPolaroids";
-import { AnnouncedSection } from "@/components/home/AnnouncedSection";
-import { MoodSelector } from "@/components/home/MoodSelector";
+import { BrutalistHero } from "@/components/home/BrutalistHero";
+import { MangaPulseGrid } from "@/components/home/MangaPulseGrid";
+import { HUDContinueWatching } from "@/components/home/HUDContinueWatching";
+import { MoodEditorialPicks } from "@/components/home/MoodEditorialPicks";
 import { getTrendingAnimes, getUpcomingAnimes, getOngoingPopular } from "@/services/shikimori";
 import type { Metadata } from "next";
 
@@ -33,10 +32,10 @@ export default async function Home() {
 
   return (
     <>
-      <VintageHero trending={trending} />
-      <TrendingPolaroids trending={ongoing} />
-      <AnnouncedSection upcoming={upcoming} />
-      <MoodSelector />
+      <BrutalistHero trending={trending} />
+      <MangaPulseGrid trending={ongoing} />
+      <HUDContinueWatching upcoming={upcoming} />
+      <MoodEditorialPicks />
     </>
   );
 }

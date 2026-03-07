@@ -36,106 +36,102 @@ export function HomeHeader() {
     return (
         <>
             <header
-                className="fixed top-0 left-0 w-full z-[100] h-[60px] lg:h-[72px] flex items-center border-b-[1px] border-bg-dark/10 bg-bg-cream text-[#B83A2D]"
+                className={cn(
+                    "fixed top-0 left-0 w-full z-[100] h-[72px] lg:h-[88px] flex items-center bg-bg-cream border-b-4 border-bg-dark transition-transform duration-300",
+                    scrolled ? "-translate-y-full" : "translate-y-0"
+                )}
             >
-                {/* Background Texture (Graph Paper) */}
-                <div className="absolute inset-0 z-0 pointer-events-none opacity-20 MixBlendMultiply">
-                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                        <defs><pattern id="gridbg-nav" width="32" height="32" patternUnits="userSpaceOnUse"><rect width="32" height="32" fill="none" stroke="var(--color-bg-dark)" strokeWidth="0.5" /></pattern></defs>
-                        <rect width="100%" height="100%" fill="url(#gridbg-nav)" />
-                    </svg>
-                </div>
+                {/* Brutalist Grid Background */}
+                <div className="absolute inset-0 z-0 pointer-events-none mix-blend-multiply opacity-20" style={{ backgroundImage: 'var(--background-grid)' }} />
+
 
                 <div className="w-full flex items-center px-4 lg:px-8 relative z-10">
 
                     {/* DESKTOP NAV */}
-                    <nav className="hidden lg:flex items-center gap-6 font-black tracking-widest uppercase text-sm w-full">
-                        {/* Logo + ANIVAULT */}
-                        <div className="flex items-center gap-3">
-                            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-                                <img src="/logo.png" alt="AniVault" className="w-7 h-7 object-contain" />
-                                <span className="font-black tracking-widest uppercase text-sm">ANIVAULT</span>
+                    <nav className="hidden lg:flex items-center gap-8 font-editorial text-2xl uppercase tracking-wider w-full text-bg-dark">
+                        {/* Logo */}
+                        <div className="flex items-center gap-4 border-r-4 border-bg-dark pr-8 h-full">
+                            <Link href="/" className="flex items-center gap-3 group outline-none">
+                                <div className="w-10 h-10 bg-accent flex items-center justify-center border-2 border-bg-dark shadow-solid-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all">
+                                    <span className="text-bg-cream font-kanji font-black leading-none pt-1">A</span>
+                                </div>
+                                <span className="font-black tracking-tighter text-3xl group-hover:text-accent transition-colors">ANIVAULT</span>
                             </Link>
                         </div>
 
-                        {/* Separator */}
-                        <span className="text-[#B83A2D] opacity-60 font-serif font-light text-lg px-2">◇</span>
-
-                        {navLinks.map((link, idx) => (
-                            <React.Fragment key={link.name}>
+                        {/* Links */}
+                        <div className="flex items-center gap-8">
+                            {navLinks.map((link) => (
                                 <Link
+                                    key={link.name}
                                     href={link.path}
-                                    className="hover:opacity-70 transition-opacity"
+                                    className="relative group outline-none overflow-hidden"
                                 >
-                                    {link.name}
+                                    <span className="relative z-10 group-hover:text-accent transition-colors">{link.name}</span>
+                                    <span className="absolute bottom-0 left-0 w-full h-[3px] bg-accent -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-[var(--transition-spring)]" />
                                 </Link>
-                                {idx < navLinks.length - 1 && (
-                                    <span className="text-[#B83A2D] opacity-60 font-serif font-light text-lg px-2">◇</span>
-                                )}
-                            </React.Fragment>
-                        ))}
+                            ))}
+                        </div>
 
                         <div className="flex-1" />
 
-                        {/* Search, Shop & User Tools (Also in red for consistency) */}
-                        <div className="flex items-center gap-6">
+                        {/* Search, Shop & User Tools */}
+                        <div className="flex items-center gap-4 border-l-4 border-bg-dark pl-8 h-full">
                             <button
                                 onClick={() => setSearchActive(!searchActive)}
-                                className="w-8 h-8 flex items-center justify-center hover:opacity-70 transition-opacity outline-none"
+                                className="w-10 h-10 bg-white border-2 border-bg-dark shadow-solid-sm flex items-center justify-center hover:-translate-y-1 hover:-translate-x-1 hover:shadow-solid-accent transition-all active:translate-y-0 active:translate-x-0 active:shadow-none outline-none"
                             >
-                                <Search size={20} strokeWidth={2.5} />
+                                <Search size={20} strokeWidth={3} className="text-bg-dark" />
                             </button>
-                            <Link href="/shop" className="hover:opacity-70 transition-opacity">
-                                <ShoppingBag size={20} strokeWidth={2.5} />
-                            </Link>
                             {currentUser ? (
-                                <Link href={`/profile`} className="hover:opacity-70 transition-opacity flex items-center gap-2">
-                                    <span className="uppercase tracking-widest">{currentUser.username}</span>
+                                <Link href={`/profile`} className="px-4 h-10 bg-accent text-cream border-2 border-bg-dark flex items-center gap-2 font-editorial text-lg tracking-wider uppercase hover:bg-bg-dark transition-colors shadow-solid-sm hover:-translate-y-1 hover:-translate-x-1 hover:shadow-solid transition-all active:translate-y-0 active:translate-x-0 active:shadow-none outline-none">
+                                    <span>{currentUser.username}</span>
                                 </Link>
                             ) : (
-                                <button onClick={() => setAuthModalState('login')} className="hover:opacity-70 transition-opacity flex items-center gap-2">
-                                    <User size={20} strokeWidth={2.5} />
-                                    <span className="uppercase tracking-widest mt-0.5">LOGIN</span>
+                                <button onClick={() => setAuthModalState('login')} className="px-4 h-10 bg-bg-dark text-cream border-2 border-bg-dark flex items-center gap-2 font-editorial text-lg tracking-wider uppercase shadow-solid-sm hover:-translate-y-1 hover:-translate-x-1 hover:shadow-solid-accent transition-all active:translate-y-0 active:translate-x-0 active:shadow-none outline-none">
+                                    <span>LOGIN</span>
                                 </button>
                             )}
                         </div>
                     </nav>
 
                     {/* MOBILE NAV (Simplified) */}
-                    <div className="flex lg:hidden items-center justify-between w-full">
-                        <div className="flex items-center gap-2.5">
-                            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                                <img src="/logo.png" alt="AniVault" className="w-6 h-6 object-contain" />
-                                <span className="font-black tracking-widest uppercase text-sm">ANIVAULT</span>
-                            </Link>
-                        </div>
+                    <div className="flex lg:hidden items-center justify-between w-full text-bg-dark">
+                        <Link href="/" className="flex items-center gap-2 outline-none">
+                            <div className="w-8 h-8 bg-accent flex items-center justify-center border-2 border-bg-dark shadow-solid-sm">
+                                <span className="text-bg-cream font-kanji font-black leading-none pt-0.5">A</span>
+                            </div>
+                            <span className="font-editorial text-2xl tracking-tighter uppercase">ANIVAULT</span>
+                        </Link>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setSearchActive(!searchActive)}
-                                className="w-8 h-8 flex items-center justify-center outline-none"
+                                className="w-10 h-10 flex items-center justify-center outline-none bg-white border-2 border-bg-dark shadow-solid-sm active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             >
-                                <Search size={20} className="text-[#B83A2D]" strokeWidth={2.5} />
+                                <Search size={20} className="text-bg-dark" strokeWidth={3} />
                             </button>
                             <button
                                 onClick={() => setIsMenuOpen(true)}
-                                className="w-8 h-8 flex items-center justify-center outline-none"
+                                className="w-10 h-10 flex items-center justify-center outline-none bg-accent border-2 border-bg-dark shadow-solid-sm active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             >
-                                <Menu size={24} className="text-[#B83A2D]" strokeWidth={2.5} />
+                                <Menu size={24} className="text-cream" strokeWidth={3} />
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {searchActive && (
-                    <div className="absolute top-full left-0 w-full bg-bg-cream border-t border-bg-dark/10 p-4 z-20 shadow-[0_4px_0_var(--color-bg-dark)]">
-                        <div className="max-w-xl mx-auto flex items-center gap-4">
+                    <div className="absolute top-[calc(100%+4px)] left-0 w-full bg-accent text-cream border-b-4 border-bg-dark p-6 z-20 shadow-solid-lg animate-slide-up-fade">
+                        <div className="max-w-[1800px] mx-auto flex items-center gap-6">
+                            <Search size={32} strokeWidth={3} />
                             <input
                                 type="text"
-                                placeholder="Search..."
-                                className="w-full bg-transparent border-b-2 border-[#B83A2D] text-[#B83A2D] text-lg font-black tracking-widest uppercase outline-none py-2 placeholder-[#B83A2D]/40"
+                                placeholder="TYPE TO SEARCH..."
+                                className="w-full bg-transparent border-b-4 border-cream text-cream text-4xl lg:text-6xl font-editorial uppercase tracking-tighter outline-none py-2 placeholder-cream/30 focus:border-bg-dark transition-colors"
                                 autoFocus
                             />
+                            <button onClick={() => setSearchActive(false)} className="outline-none hover:scale-110 active:scale-95 transition-transform"><Menu size={32} strokeWidth={3} className="rotate-45" /></button>
                         </div>
                     </div>
                 )}

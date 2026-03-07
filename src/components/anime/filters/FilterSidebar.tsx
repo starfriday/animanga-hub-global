@@ -105,26 +105,26 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             {/* Mobile backdrop overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-bg-dark/60 backdrop-blur-sm z-[199] lg:hidden animate-fade-in"
+                    className="fixed inset-0 bg-bg-dark/80 backdrop-blur-sm z-[199] lg:hidden animate-fade-in"
                     onClick={onClose}
                 />
             )}
             <aside className={cn(
-                "fixed lg:sticky top-0 lg:top-[88px] left-0 h-full lg:h-[calc(100vh-88px)] w-[85%] sm:w-[320px] lg:w-[300px] shrink-0 bg-bg-cream border-r-4 lg:border-r-0 lg:border-4 border-bg-dark z-[200] lg:z-10 transition-transform duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col shadow-[8px_8px_0_var(--color-bg-dark)] lg:shadow-[4px_4px_0_var(--color-bg-dark)]",
+                "fixed lg:sticky top-0 lg:top-[88px] left-0 h-full lg:h-[calc(100vh-88px)] w-[85%] sm:w-[320px] lg:w-[340px] shrink-0 bg-bg-dark border-r-4 lg:border-r-0 lg:border-r-[12px] border-bg-dark lg:border-cream z-[200] lg:z-10 transition-transform duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col shadow-[8px_8px_0_var(--color-bg-dark)] lg:shadow-[20px_0_40px_rgba(0,0,0,0.5)]",
                 !isOpen && "-translate-x-full lg:translate-x-0"
             )}>
                 {/* Header */}
-                <div className="p-6 lg:p-5 space-y-4 shrink-0 bg-bg-cream z-10 border-b-4 border-bg-dark pb-6">
+                <div className="p-6 lg:p-5 space-y-4 shrink-0 bg-bg-dark z-10 border-b-4 border-secondary-muted pb-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-accent text-cream border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]">
+                            <div className="p-2 bg-accent text-cream border-2 border-cream shadow-[2px_2px_0_var(--color-cream)]">
                                 <Filter size={18} strokeWidth={3} />
                             </div>
-                            <h2 className="text-xl font-editorial uppercase tracking-tight text-bg-dark">ФИЛЬТРЫ</h2>
+                            <h2 className="text-xl font-editorial uppercase tracking-tight text-cream">УПРАВЛЕНИЕ</h2>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 border-2 border-bg-dark lg:hidden bg-white text-bg-dark active:translate-y-[2px] active:translate-x-[2px] transition-all shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:bg-accent hover:text-white"
+                            className="p-2 border-2 border-secondary-muted lg:hidden bg-bg-dark text-cream active:translate-y-[2px] active:translate-x-[2px] transition-all shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none hover:bg-accent hover:border-accent hover:text-white"
                         >
                             <X size={20} strokeWidth={3} />
                         </button>
@@ -132,18 +132,18 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
                     {/* Search */}
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-bg-dark/50 group-focus-within:text-accent transition-colors" size={18} strokeWidth={2.5} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/50 group-focus-within:text-accent transition-colors" size={18} strokeWidth={2.5} />
                         <input
                             type="text"
                             placeholder="ПОИСК ПО НАЗВАНИЮ..."
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
-                            className="w-full bg-white border-2 border-bg-dark focus:border-accent py-3 pl-12 pr-12 text-xs font-bold uppercase tracking-widest outline-none transition-all placeholder:text-bg-dark/30 text-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] focus:shadow-none"
+                            className="w-full bg-bg-dark border-2 border-secondary-muted focus:border-accent py-3 pl-12 pr-12 text-xs font-bold uppercase tracking-widest outline-none transition-all placeholder:text-cream/30 text-cream shadow-[2px_2px_0_var(--color-secondary-muted)] focus:shadow-[2px_2px_0_var(--color-accent)]"
                         />
                         {filters.search && (
                             <button
                                 onClick={() => updateFilter('search', '')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-bg-dark/10 hover:bg-accent rounded-full text-bg-dark hover:text-white transition-all"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-cream/10 hover:bg-accent rounded-full text-cream hover:text-white transition-all"
                             >
                                 <X size={14} strokeWidth={3} />
                             </button>
@@ -159,8 +159,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 className={cn(
                                     "shrink-0 px-4 py-2 border-2 text-[9px] font-black uppercase tracking-widest transition-all active:translate-y-[2px] active:translate-x-[2px] outline-none",
                                     activePreset === preset
-                                        ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                        : "bg-white hover:bg-bg-dark hover:text-cream border-bg-dark text-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none"
+                                        ? "bg-accent border-accent text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-[2px] translate-x-[2px]"
+                                        : "bg-bg-dark hover:bg-cream hover:border-cream hover:text-bg-dark border-secondary-muted text-cream shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none"
                                 )}
                             >
                                 {preset}
@@ -170,11 +170,11 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-5 space-y-10 pb-40 overscroll-contain bg-bg-cream">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-5 space-y-10 pb-40 overscroll-contain bg-bg-dark">
 
                     {/* Genres */}
                     <div className="space-y-4">
-                        <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2 border-b-2 border-bg-dark/10 pb-2">
+                        <h3 className="text-xs font-black text-cream uppercase tracking-[0.2em] flex items-center gap-2 border-b-2 border-secondary-muted/30 pb-2">
                             <Zap size={14} className="text-accent fill-accent" /> Жанры
                         </h3>
 
@@ -194,8 +194,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     <ThemesSection filters={filters} toggleGenreState={toggleGenreState} />
 
                     {/* Score filter */}
-                    <div className="space-y-4 border-t-2 border-bg-dark/10 pt-6">
-                        <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                    <div className="space-y-4 border-t-2 border-secondary-muted/30 pt-6">
+                        <h3 className="text-xs font-black text-cream uppercase tracking-[0.2em] flex items-center gap-2">
                             <Star size={14} className="text-accent fill-accent" /> Минимальный рейтинг
                         </h3>
                         <div className="flex gap-2">
@@ -206,8 +206,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                     className={cn(
                                         "flex-1 py-3 border-2 text-xs font-black uppercase tracking-wider transition-all outline-none",
                                         filters.minScore === btn.value
-                                            ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                            : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
+                                            ? "bg-cream border-cream text-bg-dark shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-0.5 translate-x-0.5"
+                                            : "bg-bg-dark border-secondary-muted text-cream hover:bg-cream hover:border-cream hover:text-bg-dark shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
                                     )}
                                 >
                                     {btn.label}
@@ -217,7 +217,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </div>
 
                     {/* Year Range */}
-                    <div className="px-1 border-t-2 border-bg-dark/10 pt-6">
+                    <div className="px-1 border-t-2 border-secondary-muted/30 pt-6">
                         <HistogramSlider
                             label="ГОД ВЫПУСКА"
                             data={yearHistogram}
@@ -228,8 +228,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </div>
 
                     {/* Episode count */}
-                    <div className="space-y-4 border-t-2 border-bg-dark/10 pt-6">
-                        <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                    <div className="space-y-4 border-t-2 border-secondary-muted/30 pt-6">
+                        <h3 className="text-xs font-black text-cream uppercase tracking-[0.2em] flex items-center gap-2">
                             <Tag size={14} className="text-accent" /> Количество эпизодов
                         </h3>
                         <div className="flex flex-wrap gap-2">
@@ -242,8 +242,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                         className={cn(
                                             "px-4 py-2.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all outline-none",
                                             isActive
-                                                ? "bg-accent border-bg-dark text-white shadow-[2px_2px_0_var(--color-bg-dark)]"
-                                                : "bg-white border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
+                                                ? "bg-cream border-cream text-bg-dark shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] translate-y-0.5 translate-x-0.5"
+                                                : "bg-bg-dark border-secondary-muted text-cream hover:bg-cream hover:border-cream hover:text-bg-dark shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none hover:translate-y-0.5 hover:translate-x-0.5"
                                         )}
                                     >
                                         {ep.label}
@@ -254,7 +254,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </div>
 
                     {/* Format & Status */}
-                    <div className="space-y-8 border-t-2 border-bg-dark/10 pt-6">
+                    <div className="space-y-8 border-t-2 border-secondary-muted/30 pt-6">
                         <SegmentedControl
                             label="ФОРМАТ ПРОЕКТА"
                             options={[
@@ -282,11 +282,11 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </div>
 
                 {/* Sticky Footer */}
-                <div className="shrink-0 p-6 lg:p-5 border-t-4 border-bg-dark bg-bg-cream relative z-20">
+                <div className="shrink-0 p-6 lg:p-5 border-t-4 border-secondary-muted bg-bg-dark relative z-20">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={resetFilters}
-                            className="p-4 border-2 border-bg-dark bg-white hover:bg-bg-dark hover:text-cream text-bg-dark transition-all shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none active:translate-y-0.5 active:translate-x-0.5 outline-none"
+                            className="p-4 border-2 border-secondary-muted bg-bg-dark hover:bg-cream hover:border-cream hover:text-bg-dark text-cream transition-all shadow-[2px_2px_0_var(--color-secondary-muted)] hover:shadow-none active:translate-y-0.5 active:translate-x-0.5 outline-none"
                             title="Сбросить"
                         >
                             <RotateCcw size={20} strokeWidth={2.5} />
@@ -295,10 +295,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                             disabled={totalCount === 0}
                             onClick={onClose}
                             className={cn(
-                                "flex-1 py-4 px-6 border-2 border-bg-dark flex items-center justify-center font-black uppercase text-xs tracking-widest transition-all outline-none",
+                                "flex-1 py-4 px-6 border-2 border-cream flex items-center justify-center font-black uppercase text-xs tracking-widest transition-all outline-none",
                                 totalCount > 0
-                                    ? "bg-accent text-white shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-[2px_2px_0_var(--color-bg-dark)] hover:translate-y-0.5 hover:translate-x-0.5 active:translate-y-1 active:translate-x-1 active:shadow-none"
-                                    : "bg-surface text-bg-dark/40 cursor-not-allowed shadow-none"
+                                    ? "bg-accent text-white shadow-[4px_4px_0_var(--color-cream)] hover:shadow-[2px_2px_0_var(--color-cream)] hover:translate-y-0.5 hover:translate-x-0.5 active:translate-y-1 active:translate-x-1 active:shadow-none"
+                                    : "bg-bg-dark border-secondary-muted text-cream/40 cursor-not-allowed shadow-none"
                             )}
                         >
                             <span className="lg:hidden">ПРИМЕНИТЬ</span>
@@ -321,12 +321,12 @@ const ThemesSection = ({ filters, toggleGenreState }: { filters: FilterState; to
     }, [filters.genres]);
 
     return (
-        <div className="space-y-4 border-t-2 border-bg-dark/10 pt-6">
+        <div className="space-y-4 border-t-2 border-secondary-muted/30 pt-6">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between group outline-none"
             >
-                <h3 className="text-xs font-black text-bg-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                <h3 className="text-xs font-black text-cream uppercase tracking-[0.2em] flex items-center gap-2">
                     <Tag size={14} className="text-accent" /> Темы
                     {activeThemeCount > 0 && (
                         <span className="min-w-[20px] h-[20px] flex items-center justify-center bg-accent text-cream text-[10px] font-black rounded-full border-2 border-bg-dark px-1">
@@ -335,7 +335,7 @@ const ThemesSection = ({ filters, toggleGenreState }: { filters: FilterState; to
                     )}
                 </h3>
                 <ChevronDown size={18} className={cn(
-                    "text-bg-dark/50 transition-transform duration-300",
+                    "text-cream/50 transition-transform duration-300",
                     isOpen && "rotate-180"
                 )} />
             </button>
