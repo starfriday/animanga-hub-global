@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 interface VideoData {
     id?: string | number;
-    url: string;
+    url?: string;
     playerUrl?: string;
     name?: string;
     kind?: string;
