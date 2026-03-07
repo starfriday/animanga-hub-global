@@ -33,9 +33,10 @@ export async function POST(request: Request) {
 
         const historyItem = await prisma.watchHistory.upsert({
             where: {
-                userId_animeId: {
+                userId_animeId_episode: {
                     userId: user.id,
-                    animeId: String(animeId)
+                    animeId: Number(animeId),
+                    episode: Number(episode)
                 }
             },
             update: {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
             },
             create: {
                 userId: user.id,
-                animeId: String(animeId),
+                animeId: Number(animeId),
                 episode: Number(episode),
                 progress: progress ? Number(progress) : 0,
                 completed: completed ? Boolean(completed) : false

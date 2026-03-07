@@ -10,7 +10,7 @@ export async function GET(request: Request) {
         if (!animeId) return NextResponse.json({ error: 'animeId is required' }, { status: 400 });
 
         const comments = await prisma.comment.findMany({
-            where: { animeId: String(animeId) },
+            where: { animeId: Number(animeId) },
             include: {
                 user: {
                     select: { id: true, username: true, avatarUrl: true }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         const comment = await prisma.comment.create({
             data: {
                 userId: user.id,
-                animeId: String(animeId),
+                animeId: Number(animeId),
                 content,
                 parentId: parentId ? Number(parentId) : null
             },

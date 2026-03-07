@@ -11,12 +11,12 @@ export async function POST(request: Request) {
         }
 
         const view = await prisma.animeView.upsert({
-            where: { animeId: String(animeId) },
+            where: { animeId: Number(animeId) },
             update: {
                 viewCount: { increment: 1 }
             },
             create: {
-                animeId: String(animeId),
+                animeId: Number(animeId),
                 viewCount: 1
             }
         });

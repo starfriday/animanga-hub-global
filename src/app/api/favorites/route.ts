@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         const favorite = await prisma.favorite.create({
             data: {
                 userId: user.id,
-                animeId: String(animeId)
+                animeId: Number(animeId)
             }
         });
 
@@ -59,7 +59,7 @@ export async function DELETE(request: Request) {
         await prisma.favorite.deleteMany({
             where: {
                 userId: user.id,
-                animeId: String(animeId)
+                animeId: Number(animeId)
             }
         });
 
