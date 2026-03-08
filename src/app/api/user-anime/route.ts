@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
+
+// Statuses: WATCHING, COMPLETED, ON_HOLD, DROPPED, PLANNED
 
 export async function GET(request: Request) {
     try {
         const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const favorites = await prisma.favorite.findMany({
+        const animeList = await prisma.userAnime.findMany({
             where: { userId: user.id },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { updatedAt: 'desc' }
         });
 
-        return NextResponse.json({ favorites });
+        return NextResponse.json({ animeList });
     } catch (error) {
-        console.error('Favorites GET API Error:', error);
+        console.error('UserAnime GET API Error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
@@ -27,23 +27,32 @@ export async function POST(request: Request) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { animeId } = body;
+        const { animeId, status, isFavorite } = body;
 
         if (!animeId) return NextResponse.json({ error: 'animeId is required' }, { status: 400 });
 
-        const favorite = await prisma.favorite.create({
-            data: {
+        const userAnime = await prisma.userAnime.upsert({
+            where: {
+                userId_animeId: {
+                    userId: user.id,
+                    animeId: Number(animeId)
+                }
+            },
+            update: {
+                status: status || undefined,
+                isFavorite: isFavorite !== undefined ? isFavorite : undefined
+            },
+            create: {
                 userId: user.id,
-                animeId: Number(animeId)
+                animeId: Number(animeId),
+                status: status || 'PLANNED',
+                isFavorite: isFavorite || false
             }
         });
 
-        return NextResponse.json({ favorite });
-    } catch (error: any) {
-        if (error.code === 'P2002') {
-            return NextResponse.json({ error: 'Already in favorites' }, { status: 409 });
-        }
-        console.error('Favorites POST API Error:', error);
+        return NextResponse.json({ userAnime });
+    } catch (error) {
+        console.error('UserAnime POST API Error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
@@ -58,7 +67,7 @@ export async function DELETE(request: Request) {
 
         if (!animeId) return NextResponse.json({ error: 'animeId is required' }, { status: 400 });
 
-        await prisma.favorite.deleteMany({
+        await prisma.userAnime.deleteMany({
             where: {
                 userId: user.id,
                 animeId: Number(animeId)
@@ -67,7 +76,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Favorites DELETE API Error:', error);
+        console.error('UserAnime DELETE API Error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

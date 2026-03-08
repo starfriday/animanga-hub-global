@@ -160,7 +160,7 @@ export function HeroSlider({ trending }: HeroSliderProps) {
 
                 {/* Right Column Cover Image - Desktop Only */}
                 <div className="hidden lg:block lg:col-span-5 relative">
-                    <div key={`img-${contentKey}`} className="animate-pop-in relative w-[280px] xl:w-[340px] aspect-[3/4] ml-auto rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-bg-dark/10 group-hover:-translate-y-2 transition-all duration-700 ease-out">
+                    <div key={`img-${contentKey}`} className="animate-pop-in relative w-[280px] xl:w-[340px] aspect-[3/4] ml-auto rounded-[2rem] overflow-hidden shadow-brutal-dark-xl border border-bg-dark/10 group-hover:-translate-y-2 transition-all duration-700 ease-out">
                         <BlurImage
                             src={current.image || current.banner}
                             alt={current.title}

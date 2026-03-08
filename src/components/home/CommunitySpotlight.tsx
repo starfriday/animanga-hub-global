@@ -57,9 +57,9 @@ export const CommunitySpotlight = () => {
                         </p>
 
                         {/* Active users card (vintage stamp style) */}
-                        <div className="bg-white text-bg-dark p-6 sm:p-8 border-4 border-bg-dark shadow-[6px_6px_0_var(--color-accent)] relative w-fit">
+                        <div className="bg-white text-bg-dark p-6 sm:p-8 border-4 border-bg-dark shadow-brutal-accent-md relative w-fit">
                             {/* LIVE badge as red stamp */}
-                            <div className="absolute -top-3 -right-3 bg-accent text-cream px-4 py-1.5 font-black text-[10px] uppercase tracking-widest border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)]">
+                            <div className="absolute -top-3 -right-3 bg-accent text-cream px-4 py-1.5 font-black text-[10px] uppercase tracking-widest border-2 border-bg-dark shadow-brutal-dark-sm">
                                 ● ОНЛАЙН
                             </div>
 
@@ -93,7 +93,7 @@ export const CommunitySpotlight = () => {
                                 <Link
                                     key={topic.id}
                                     href={`/team`}
-                                    className="block p-5 sm:p-6 bg-white text-bg-dark border-4 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-[8px_8px_0_var(--color-accent)] hover:-translate-y-1 hover:translate-x-[-2px] transition-all group"
+                                    className="block p-5 sm:p-6 bg-white text-bg-dark border-4 border-bg-dark shadow-brutal-dark-sm hover:shadow-brutal-accent-md hover:-translate-y-1 hover:translate-x-[-2px] transition-all group"
                                 >
                                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-3">
                                         <div className="flex gap-2">

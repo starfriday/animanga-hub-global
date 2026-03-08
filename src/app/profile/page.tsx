@@ -5,17 +5,22 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Loader2, Heart, History as HistoryIcon, LogOut, ArrowRight, User as UserIcon } from 'lucide-react';
+import {
+    Loader2, Heart, History as HistoryIcon, LogOut, ArrowRight,
+    User as UserIcon, List, Share2, Trash2
+} from 'lucide-react';
 import { HubCard } from '@/components/anime/HubCard';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 export default function ProfilePage() {
     const { user, logout, isLoading: authLoading } = useAuth();
     const router = useRouter();
 
-    const [activeTab, setActiveTab] = useState<'favorites' | 'history'>('favorites');
+    const [activeTab, setActiveTab] = useState<'WATCHING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED' | 'PLANNED' | 'favorites' | 'history' | 'collections'>('WATCHING');
     const [isLoading, setIsLoading] = useState(true);
     const [items, setItems] = useState<any[]>([]);
+    const [collections, setCollections] = useState<any[]>([]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -31,13 +36,35 @@ export default function ProfilePage() {
             setItems([]);
 
             try {
-                // Fetch user data IDs
-                const endpoint = activeTab === 'favorites' ? '/api/favorites' : '/api/history';
-                const userRes = await fetch(endpoint);
-                if (!userRes.ok) throw new Error('Failed to fetch user data');
-                const userData = await userRes.json();
+                if (activeTab === 'collections') {
+                    const res = await fetch('/api/custom-lists');
+                    if (res.ok) {
+                        const data = await res.json();
+                        setCollections(data.lists);
+                    }
+                    setIsLoading(false);
+                    return;
+                }
 
-                const list = activeTab === 'favorites' ? userData.favorites : userData.history;
+                // Fetch user data IDs
+                let list: any[] = [];
+                if (activeTab === 'history') {
+                    const res = await fetch('/api/history');
+                    if (res.ok) {
+                        const data = await res.json();
+                        list = data.history;
+                    }
+                } else {
+                    const res = await fetch('/api/user-anime');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (activeTab === 'favorites') {
+                            list = data.animeList.filter((a: any) => a.isFavorite);
+                        } else {
+                            list = data.animeList.filter((a: any) => a.status === activeTab);
+                        }
+                    }
+                }
 
                 if (!list || list.length === 0) {
                     setIsLoading(false);
@@ -80,6 +107,41 @@ export default function ProfilePage() {
 
         fetchData();
     }, [user, activeTab]);
+
+    const handleDeleteCollection = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        if (!confirm('Вы уверены, что хотите удалить эту коллекцию?')) return;
+
+        try {
+            const res = await fetch(`/api/custom-lists?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setCollections(prev => prev.filter(c => c.id !== id));
+            } else {
+                alert('Ошибка при удалении коллекции');
+            }
+        } catch (error) {
+            console.error('Delete collection error:', error);
+        }
+    };
+
+    const handleToggleShareCollection = async (e: React.MouseEvent, id: number, currentPublic: boolean) => {
+        e.stopPropagation();
+        try {
+            const res = await fetch('/api/custom-lists', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, isPublic: !currentPublic })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setCollections(prev => prev.map(c => c.id === id ? data.list : c));
+            } else {
+                alert('Ошибка при изменении статуса коллекции');
+            }
+        } catch (error) {
+            console.error('Toggle share error:', error);
+        }
+    };
 
     if (authLoading || (!user && isLoading)) {
         return (
@@ -154,28 +216,29 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Segmented Tabs */}
-                <div className="flex justify-center md:justify-start anim-reveal-up" style={{ animationDelay: '100ms' }}>
-                    <div className="inline-flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-bg-dark/5 shadow-sm">
-                        <button
-                            onClick={() => setActiveTab('favorites')}
-                            className={`flex items-center gap-2.5 px-6 md:px-8 py-3 rounded-xl font-bold tracking-widest text-xs md:text-sm transition-all duration-300 outline-none
-                                ${activeTab === 'favorites'
-                                    ? 'bg-bg-dark text-white shadow-md scale-100'
-                                    : 'text-bg-dark/50 hover:text-bg-dark hover:bg-white/80 scale-95 hover:scale-100'}`}
-                        >
-                            <Heart size={16} className={activeTab === 'favorites' ? 'fill-current' : ''} />
-                            ИЗБРАННОЕ
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('history')}
-                            className={`flex items-center gap-2.5 px-6 md:px-8 py-3 rounded-xl font-bold tracking-widest text-xs md:text-sm transition-all duration-300 outline-none
-                                ${activeTab === 'history'
-                                    ? 'bg-bg-dark text-white shadow-md scale-100'
-                                    : 'text-bg-dark/50 hover:text-bg-dark hover:bg-white/80 scale-95 hover:scale-100'}`}
-                        >
-                            <HistoryIcon size={16} />
-                            ИСТОРИЯ
-                        </button>
+                <div className="flex justify-center md:justify-start anim-reveal-up overflow-x-auto hide-scrollbar" style={{ animationDelay: '100ms' }}>
+                    <div className="inline-flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-bg-dark/5 shadow-sm whitespace-nowrap">
+                        {[
+                            { id: 'WATCHING', label: 'СМОТРЮ' },
+                            { id: 'COMPLETED', label: 'ЗАВЕРШЕНО' },
+                            { id: 'PLANNED', label: 'В ПЛАНАХ' },
+                            { id: 'ON_HOLD', label: 'ОТЛОЖЕНО' },
+                            { id: 'DROPPED', label: 'БРОШЕНО' },
+                            { id: 'favorites', label: 'ИЗБРАННОЕ' },
+                            { id: 'history', label: 'ИСТОРИЯ' },
+                            { id: 'collections', label: 'КОЛЛЕКЦИИ' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`flex items-center gap-2.5 px-6 py-3 rounded-xl font-bold tracking-widest text-[10px] md:text-xs transition-all duration-300 outline-none
+                                    ${activeTab === tab.id
+                                        ? 'bg-bg-dark text-white shadow-md'
+                                        : 'text-bg-dark/50 hover:text-bg-dark hover:bg-white/80'}`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -186,6 +249,60 @@ export default function ProfilePage() {
                             <Loader2 className="w-10 h-10 text-accent animate-spin" />
                             <p className="text-bg-dark/40 font-bold uppercase tracking-widest text-sm">Загрузка данных...</p>
                         </div>
+                    ) : activeTab === 'collections' ? (
+                        collections.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {collections.map((col) => (
+                                    <div
+                                        key={col.id}
+                                        onClick={() => router.push(`/collections/${col.id}`)}
+                                        className="bg-white border-2 border-bg-dark rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl transition-all group cursor-pointer"
+                                    >
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
+                                                <List size={24} />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => handleToggleShareCollection(e, col.id, col.isPublic)}
+                                                    className={cn(
+                                                        "p-2 rounded-xl transition-all",
+                                                        col.isPublic ? "bg-accent/10 text-accent" : "hover:bg-bg-dark/5 text-bg-dark/40"
+                                                    )}
+                                                    title={col.isPublic ? "Публичная (нажмите, чтобы скрыть)" : "Приватная (нажмите, чтобы поделиться)"}
+                                                >
+                                                    <Share2 size={18} className={col.isPublic ? "fill-accent/20" : ""} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleDeleteCollection(e, col.id)}
+                                                    className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-colors"
+                                                    title="Удалить"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <h3 className="text-2xl font-black uppercase tracking-tight mb-2">{col.name}</h3>
+                                        <p className="text-sm font-bold text-bg-dark/40 mb-6 line-clamp-2">{col.description || 'Нет описания'}</p>
+                                        <div className="flex items-center justify-between pt-6 border-t border-bg-dark/5">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-bg-dark/20">{col.entries?.length || 0} ТАЙТЛОВ</span>
+                                            <button
+                                                onClick={() => router.push(`/collections/${col.id}`)}
+                                                className="text-accent font-black text-xs uppercase hover:underline"
+                                            >
+                                                Открыть
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-24 text-center bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-bg-dark/5">
+                                <List size={48} className="mx-auto text-bg-dark/10 mb-6" />
+                                <h2 className="text-2xl font-black text-bg-dark">У вас еще нет коллекций</h2>
+                                <p className="text-sm font-medium text-bg-dark/40 mt-2">Вы можете создать коллекцию на странице любого аниме</p>
+                            </div>
+                        )
                     ) : items.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                             {items.map((project: any) => (
@@ -207,9 +324,9 @@ export default function ProfilePage() {
                             <div className="space-y-3 px-8">
                                 <h2 className="text-2xl font-black text-bg-dark">В этом разделе пока пусто</h2>
                                 <p className="text-sm font-medium text-bg-dark/60 max-w-sm mx-auto">
-                                    {activeTab === 'favorites'
-                                        ? 'Добавляйте тайтлы в избранное, чтобы быстро возвращаться к ним позже и ничего не терять.'
-                                        : 'Вы еще не начинали просмотр ни одного аниме. Пора это исправить!'}
+                                    {activeTab === 'history'
+                                        ? 'Вы еще не начинали просмотр ни одного аниме. Пора это исправить!'
+                                        : 'Добавляйте тайтлы в этот список, чтобы лучше организовать свой просмотр.'}
                                 </p>
                             </div>
 
@@ -217,7 +334,7 @@ export default function ProfilePage() {
                                 onClick={() => router.push('/catalog')}
                                 className="mt-4 flex items-center gap-3 px-8 py-4 bg-bg-dark text-white rounded-full font-bold uppercase tracking-widest text-xs hover:-translate-y-1 hover:shadow-lg hover:shadow-bg-dark/20 transition-all duration-300"
                             >
-                                Перейди в каталог <ArrowRight size={16} />
+                                Перейти в каталог <ArrowRight size={16} />
                             </button>
                         </div>
                     )}

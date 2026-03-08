@@ -12,6 +12,7 @@ import { ProjectHero } from './ProjectHero';
 import { ProjectCast } from './ProjectCast';
 import { RelatedReleases, type RelatedRelease } from './RelatedReleases';
 import { CommentsSection } from './CommentsSection';
+import { AddToListModal } from './AddToListModal';
 import Image from 'next/image';
 
 interface VideoData {
@@ -96,6 +97,8 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
 
     // We need a stable state for the VERY first episode to inject into the iframe URL so it doesn't reload later
     const [initialEpisode, setInitialEpisode] = useState<number | null>(null);
+
+    const [isListModalOpen, setIsListModalOpen] = useState(false);
 
     // Initial load: Fetch History and Setup Default Video
     useEffect(() => {
@@ -339,7 +342,15 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                 }}
                 nextEpisodeLabel={nextEpisodeLabel}
                 onPlay={handlePlay}
+                onAddToList={() => setIsListModalOpen(true)}
                 onShare={() => { }}
+            />
+
+            <AddToListModal
+                isOpen={isListModalOpen}
+                onClose={() => setIsListModalOpen(false)}
+                animeId={String(anime.id)}
+                animeName={anime.russian || anime.name}
             />
 
             {/* Content Navigation */}

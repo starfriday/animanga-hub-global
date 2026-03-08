@@ -108,7 +108,7 @@ export const ModernHero = ({ trending }: ModernHeroProps) => {
                                 {/* Actions */}
                                 <div className="flex flex-wrap items-center gap-4 pt-4">
                                     <Link href={`/anime/${slide.shikimoriId || slide.id}`}>
-                                        <button className="flex items-center bg-accent hover:bg-accent/90 text-white px-8 py-6 rounded-xl font-bold text-base shadow-lg shadow-accent/20 transition-all hover:scale-105 active:scale-95 group">
+                                        <button className="flex items-center bg-accent hover:bg-accent/90 text-white px-8 py-6 rounded-xl font-bold text-base shadow-brutal-accent-md transition-all hover:scale-105 active:scale-95 group">
                                             <Play size={20} className="mr-2 fill-current group-hover:scale-110 transition-transform" />
                                             Смотреть
                                         </button>

@@ -1,9 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Play, Share2 } from 'lucide-react';
+import { Play, Share2, Plus } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
-import { FavoriteButton } from '@/components/anime/FavoriteButton';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -26,6 +25,7 @@ export interface ProjectHeroProps {
     };
     nextEpisodeLabel: string;
     onPlay: () => void;
+    onAddToList: () => void;
     onShare: () => void;
     isMobile?: boolean;
 }
@@ -34,6 +34,7 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
     project,
     nextEpisodeLabel,
     onPlay,
+    onAddToList,
     onShare,
     isMobile
 }) => {
@@ -113,7 +114,13 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
                             </button>
 
                             <div className="flex items-center gap-2">
-                                <FavoriteButton animeId={String(project.id)} className="p-4 bg-black/5 border border-black/10 rounded-full hover:bg-black/10 text-bg-dark backdrop-blur-md transition-colors" />
+                                <button
+                                    onClick={onAddToList}
+                                    className="p-4 bg-black/5 border border-black/10 rounded-full hover:bg-black/10 text-bg-dark backdrop-blur-md transition-colors outline-none"
+                                    title="Добавить в список"
+                                >
+                                    <Plus size={24} />
+                                </button>
 
                                 <button
                                     onClick={onShare}

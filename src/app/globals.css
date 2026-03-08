@@ -1,273 +1,194 @@
 @import "tailwindcss";
 
 :root {
-  /* === ANIVAULT 2.0 BRUTALIST PALETTE === */
-  --background: #F4F4F0;
-  /* Off-White/Cream */
-  --foreground: #0D0D0D;
-  /* Jet Black */
+  /* === ANIVAULT 2.0 PREMIUM BRUTALIST PALETTE === */
 
-  /* Primary Palette */
-  --color-bg-dark: #0D0D0D;
-  /* Jet Black */
+  /* Core Neutrals */
   --color-bg-cream: #F4F4F0;
-  /* Off-White/Cream */
+  --color-bg-dark: #0D0D0D;
+  --color-pure-white: #FFFFFF;
+
+  /* Brand Accent */
   --color-accent: #E60012;
-  /* Crimson Red */
   --color-accent-hover: #B3000E;
+  --color-accent-soft: rgba(230, 0, 18, 0.1);
   --color-accent-glow: rgba(230, 0, 18, 0.45);
-  --color-green: #00FF55;
-  /* Acid Green for contrast */
-  --color-green-hover: #00CC44;
 
-  /* Supporting palette */
-  --color-blue: #0A00FF;
-  /* High contrast blue */
+  /* Contrast Accents */
+  --color-acid-green: #00FF55;
+  --color-electric-blue: #0A00FF;
 
-  /* Gray scales (hard) */
-  --color-secondary: #808080;
-  --color-secondary-muted: #555555;
+  /* Semantic Grays */
+  --color-text-muted: rgba(13, 13, 13, 0.6);
+  --color-text-dim: rgba(13, 13, 13, 0.3);
+  --color-border-subtle: rgba(13, 13, 13, 0.08);
 
-  /* Solid layers */
-  --color-dark: #0D0D0D;
-  --color-dark-layer: #1A1A1A;
-  --color-dark-card: #222222;
+  /* Brutalist Shadow Tokens (No slash syntax here to avoid parser issues) */
+  --shadow-dark-sm: 2px 2px 0px var(--color-bg-dark);
+  --shadow-dark-md: 4px 4px 0px var(--color-bg-dark);
+  --shadow-dark-lg: 8px 8px 0px var(--color-bg-dark);
+  --shadow-dark-xl: 12px 12px 0px var(--color-bg-dark);
 
-  --color-light: #FFFFFF;
-  --color-text: #0D0D0D;
-  --color-text-dark: #F4F4F0;
-  --color-cream: #F4F4F0;
+  --shadow-accent-sm: 2px 2px 0px var(--color-accent);
+  --shadow-accent-md: 4px 4px 0px var(--color-accent);
+
+  --shadow-soft-md: 4px 4px 0px rgba(13, 13, 13, 0.05);
+  --shadow-soft-lg: 8px 8px 0px rgba(13, 13, 13, 0.05);
+
+  /* Fonts */
+  --font-display: 'Impact', 'Arial Black', sans-serif;
+  --font-body: 'Outfit', 'Helvetica Neue', sans-serif;
+
+  /* Textures */
+  --texture-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  --texture-grid: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 20 0 L 0 0 0 20' fill='none' stroke='%230D0D0D' stroke-width='1' stroke-opacity='0.08'/%3E%3C/svg%3E");
 }
 
 @theme {
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
-  --color-accent-glow: var(--color-accent-glow);
-  --color-green: var(--color-green);
-  --color-green-hover: var(--color-green-hover);
-  --color-blue: var(--color-blue);
-  --color-secondary: var(--color-secondary);
-  --color-secondary-muted: var(--color-secondary-muted);
-  --color-dark: var(--color-dark);
-  --color-dark-layer: var(--color-dark-layer);
-  --color-dark-card: var(--color-dark-card);
-  --color-light: var(--color-light);
-  --color-text: var(--color-text);
-  --color-text-dark: var(--color-text-dark);
-  --color-cream: var(--color-cream);
+  --color-accent-soft: var(--color-accent-soft);
   --color-bg-cream: var(--color-bg-cream);
   --color-bg-dark: var(--color-bg-dark);
 
-  /* Brutalist Font Families */
-  --font-display: 'Impact', 'Arial Black', sans-serif;
-  --font-body: 'Outfit', 'Helvetica Neue', sans-serif;
-  --font-sans: 'Outfit', 'Helvetica Neue', sans-serif;
-  --font-editorial: 'Impact', 'Arial Black', sans-serif;
-  --font-kanji: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', sans-serif;
-
-  /* Backgrounds */
-  --background-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-  --background-grid: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 20 0 L 0 0 0 20' fill='none' stroke='%230D0D0D' stroke-width='1' stroke-opacity='0.1'/%3E%3C/svg%3E");
-  --background-dots: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%230D0D0D' fill-opacity='0.2'/%3E%3C/svg%3E");
-
-  /* Hard Brutalist Shadows */
-  --box-shadow-solid-sm: 2px 2px 0px var(--color-dark);
-  --box-shadow-solid: 4px 4px 0px var(--color-dark);
-  --box-shadow-solid-lg: 8px 8px 0px var(--color-dark);
-  --box-shadow-solid-accent: 4px 4px 0px var(--color-accent);
-  --box-shadow-solid-light: 4px 4px 0px var(--color-bg-cream);
-
-  /* Transition Spring Physics (crisp, snappy) */
-  --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --transition-duration-150: 150ms;
-  --transition-duration-300: 300ms;
-
-  /* Animations */
-  --animate-glitch: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
-  --animate-slide-up-fade: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-marquee: marqueeScroll 20s linear infinite;
-  --animate-marquee-fast: marqueeScroll 10s linear infinite;
-  --animate-pulse-hard: pulseHard 1s steps(2, end) infinite;
-  --animate-scan: scan 3s linear infinite;
+  --font-editorial: var(--font-display);
+  --font-body: var(--font-body);
 }
 
-@layer utilities {
-  @keyframes slideUpFade {
-    0% {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes glitch {
-    0% {
-      transform: translate(0);
-    }
-
-    20% {
-      transform: translate(-2px, 2px);
-    }
-
-    40% {
-      transform: translate(-2px, -2px);
-    }
-
-    60% {
-      transform: translate(2px, 2px);
-    }
-
-    80% {
-      transform: translate(2px, -2px);
-    }
-
-    100% {
-      transform: translate(0);
-    }
-  }
-
-  @keyframes pulseHard {
-
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0;
-    }
-  }
-
-  @keyframes marqueeScroll {
-    0% {
-      transform: translateX(0);
-    }
-
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-
-  @keyframes scan {
-    0% {
-      transform: translateY(-200%);
-    }
-
-    100% {
-      transform: translateY(200%);
-    }
+@layer base {
+  body {
+    background: var(--color-bg-cream);
+    color: var(--color-bg-dark);
+    font-family: var(--font-body);
+    background-image: var(--texture-grid);
+    background-attachment: fixed;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body);
-  /* Brutalist base grid */
-  background-image: var(--background-grid);
-  background-attachment: fixed;
-}
-
-/* Scrollbar styling for retro feel */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-cream);
-  border-left: 1px solid var(--color-bg-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-bg-dark);
-  border-radius: 9999px;
-  border: 2px solid var(--color-bg-cream);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-secondary-muted);
-}
-
-/* Base custom classes */
 @layer components {
+  /* Common Brutalist Elements */
 
-  /* Brutalist Outline Text */
-  .text-border {
-    -webkit-text-stroke: 1px var(--color-bg-dark);
-    color: transparent;
-  }
-
-  .text-border-thick {
-    -webkit-text-stroke: 2px var(--color-bg-dark);
-    color: transparent;
-  }
-
-  .text-border-light {
-    -webkit-text-stroke: 2px var(--color-bg-cream);
-    color: transparent;
-  }
-
-  /* Physical Brutalist Cards */
+  /* The "Brutal Card" - used for anime items, etc. */
   .brutal-card {
-    @apply border-2 md:border-4 border-bg-dark bg-bg-cream text-bg-dark transition-all duration-150 ease-[var(--transition-spring)];
-    box-shadow: var(--box-shadow-solid);
+    @apply bg-white border-2 md:border-4 border-bg-dark transition-all duration-300;
+    box-shadow: var(--shadow-dark-md);
   }
 
   .brutal-card:hover {
     @apply -translate-x-1 -translate-y-1;
-    box-shadow: var(--box-shadow-solid-lg);
+    box-shadow: var(--shadow-dark-lg);
   }
 
-  .brutal-card:active {
-    @apply translate-x-1 translate-y-1 shadow-none;
-  }
-
+  /* Header typography */
   .editorial-heading {
-    font-family: var(--font-editorial);
-    font-weight: 900;
-    text-transform: uppercase;
-    line-height: 0.85;
-    letter-spacing: -0.02em;
+    @apply uppercase font-black leading-[0.85] tracking-tighter;
+    font-family: var(--font-display);
   }
 
-  /* Structural Colors */
-  .cream-section {
-    background-color: var(--color-bg-cream);
-    color: var(--color-bg-dark);
+  /* Glow/Depth utilities */
+  .brutal-glow-red {
+    box-shadow: 0 0 25px var(--color-accent-glow);
   }
 
-  .dark-section {
-    background-color: var(--color-bg-dark);
-    color: var(--color-cream);
+  /* Fixed Shadows that were causing build errors in arbitrary syntax */
+  .shadow-brutal-soft {
+    box-shadow: 8px 8px 0 rgba(13, 13, 13, 0.05);
   }
 
-  .accent-section {
-    background-color: var(--color-accent);
-    color: var(--color-bg-cream);
+  .shadow-brutal-soft-xl {
+    box-shadow: 12px 12px 0 rgba(13, 13, 13, 0.05);
   }
 
-  /* Marquee container */
-  .marquee-track {
-    display: flex;
-    width: max-content;
-    animation: marqueeScroll 20s linear infinite;
+  .shadow-brutal-dark-sm {
+    box-shadow: var(--shadow-dark-sm);
   }
 
-  .marquee-track:hover {
-    animation-play-state: paused;
+  .shadow-brutal-dark-md {
+    box-shadow: var(--shadow-dark-md);
   }
 
-  /* Brutalist Diagonal Cuts */
-  .diagonal-cut-bottom {
-    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+  .shadow-brutal-dark-lg {
+    box-shadow: var(--shadow-dark-lg);
   }
 
-  .diagonal-cut-top {
-    clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
+  .shadow-brutal-dark-xl {
+    box-shadow: var(--shadow-dark-xl);
   }
+
+  .shadow-brutal-accent-sm {
+    box-shadow: var(--shadow-accent-sm);
+  }
+
+  .shadow-brutal-accent-md {
+    box-shadow: var(--shadow-accent-md);
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-cream);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-bg-dark);
+    border: 2px solid var(--color-bg-cream);
+    border-radius: 999px;
+  }
+}
+
+/* Utilities for noise/overlay */
+.texture-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: var(--texture-noise);
+  background-size: 200px;
+  z-index: 1;
+}
+
+/* Modern Hover Effects */
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-2;
+}
+
+.hover-glow {
+  @apply transition-all duration-300 hover:shadow-lg hover:shadow-accent/20;
+}
+
+/* Animations from previous version preserved/improved */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-fade-up {
+  animation: slideUpFade 0.6s var(--transition-spring) forwards;
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-animate {
+  animation: marqueeScroll 30s linear infinite;
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { WorldMovie } from './constants';
-import { Film, Star, Play } from 'lucide-react';
+import { Film } from 'lucide-react';
+import { CatalogCard } from '@/components/anime/catalog/CatalogCard';
 
 interface ArchiveGridProps {
     movies: WorldMovie[];
@@ -42,56 +41,26 @@ export function ArchiveGrid({ movies }: ArchiveGridProps) {
 
                 {/* Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
-                    {movies.map((movie) => (
-                        <Link
-                            key={movie.id}
-                            href={`/anime/${movie.id}`}
-                            className="group relative flex flex-col gap-3 rounded-[1.5rem] outline-none"
-                        >
-                            {/* Poster Box */}
-                            <div className="relative w-full aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-white/40 border border-bg-dark/5 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 group-hover:-translate-y-1">
-                                <Image
-                                    src={`https://shikimori.one${movie.image?.original}`}
-                                    alt={movie.name}
-                                    fill
-                                    unoptimized
-                                    referrerPolicy="no-referrer"
-                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                />
+                    {movies.map((movie) => {
+                        const project = {
+                            id: String(movie.id),
+                            slug: movie.name || String(movie.id),
+                            title: movie.russian || movie.name,
+                            description: '',
+                            banner: `https://shikimori.one${movie.image?.original}`,
+                            image: `https://shikimori.one${movie.image?.original}`,
+                            posterPosition: 'center',
+                            studio_rating: movie.score || 0,
+                            type: 'Movie',
+                            status: 'Completed',
+                            year: movie.aired_on ? new Date(movie.aired_on).getFullYear() : null,
+                            totalEpisodes: 1,
+                            episodes: [{ number: 1 }],
+                            views: 0
+                        };
 
-                                {/* Overlay gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-bg-dark/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                {/* Score Badge */}
-                                {(movie.score || 0) > 0 && (
-                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full border border-bg-dark/5 flex items-center gap-1 shadow-sm">
-                                        <Star size={12} className="text-accent fill-accent" />
-                                        <span className="text-bg-dark text-[10px] font-bold">{movie.score}</span>
-                                    </div>
-                                )}
-
-                                {/* Hover Play Icon */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300">
-                                    <div className="w-14 h-14 rounded-full bg-accent/90 text-white flex items-center justify-center shadow-lg shadow-accent/20 backdrop-blur-sm">
-                                        <Play size={20} fill="currentColor" className="ml-1" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Meta Info Below Poster */}
-                            <div className="flex flex-col gap-1 px-2 pt-1">
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-bg-dark/40 uppercase tracking-widest">
-                                    <span>{movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
-                                    <div className="w-1 h-1 rounded-full bg-bg-dark/20" />
-                                    <span>Фильм</span>
-                                </div>
-                                <h3 className="text-sm font-bold text-bg-dark line-clamp-2 leading-tight group-hover:text-accent transition-colors">
-                                    {movie.russian || movie.name}
-                                </h3>
-                            </div>
-                        </Link>
-                    ))}
+                        return <CatalogCard key={project.id} project={project as any} />;
+                    })}
                 </div>
 
             </div>

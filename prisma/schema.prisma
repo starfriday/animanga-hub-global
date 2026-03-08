@@ -16,25 +16,61 @@ model User {
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  favorites    Favorite[]
+  animeList    UserAnime[]
+  customLists  CustomList[]
   comments     Comment[]
   watchHistory WatchHistory[]
 
   @@map("users")
 }
 
-model Favorite {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  animeId   Int      @map("anime_id")
-  createdAt DateTime @default(now()) @map("created_at")
+model UserAnime {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  animeId    Int      @map("anime_id")
+  status     String   @default("PLANNED") @db.VarChar(50) // WATCHING, COMPLETED, ON_HOLD, DROPPED, PLANNED
+  isFavorite Boolean  @default(false) @map("is_favorite")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, animeId])
   @@index([userId])
   @@index([animeId])
-  @@map("favorites")
+  @@index([status])
+  @@map("user_anime_list")
+}
+
+model CustomList {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries CustomListEntry[]
+
+  @@index([userId])
+  @@index([isPublic])
+  @@map("custom_lists")
+}
+
+model CustomListEntry {
+  id        Int      @id @default(autoincrement())
+  listId    Int      @map("list_id")
+  animeId   Int      @map("anime_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  list CustomList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, animeId])
+  @@index([listId])
+  @@index([animeId])
+  @@map("custom_list_entries")
 }
 
 model Comment {
