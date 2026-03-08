@@ -12,13 +12,24 @@ interface CollectionPageProps {
     params: Promise<{ id: string }>;
 }
 
+interface Collection {
+    id: number;
+    userId: number;
+    name: string;
+    description: string | null;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+    entries?: any[];
+}
+
 export default function CollectionDetailPage({ params }: CollectionPageProps) {
     const { id } = use(params);
     const router = useRouter();
     const { user } = useAuth();
 
     const [isLoading, setIsLoading] = useState(true);
-    const [collection, setCollection] = useState<any>(null);
+    const [collection, setCollection] = useState<Collection | null>(null);
     const [animeItems, setAnimeItems] = useState<any[]>([]);
 
     // Editing state
@@ -81,11 +92,11 @@ export default function CollectionDetailPage({ params }: CollectionPageProps) {
             });
             if (res.ok) {
                 const data = await res.json();
-                setCollection(prev => ({
+                setCollection(prev => prev ? {
                     ...prev,
                     name: data.list.name,
                     description: data.list.description
-                }));
+                } : null);
                 setIsEditing(false);
             }
         } catch (error) {

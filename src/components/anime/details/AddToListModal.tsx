@@ -25,11 +25,11 @@ interface AddToListModalProps {
 }
 
 const STATUS_OPTIONS = [
-    { id: 'WATCHING', label: 'Смотрю', icon: <BookOpen size={16} /> },
-    { id: 'COMPLETED', label: 'Просмотрено', icon: <CheckCircle size={16} /> },
-    { id: 'ON_HOLD', label: 'Отложено', icon: <Clock size={16} /> },
-    { id: 'DROPPED', label: 'Брошено', icon: <Trash2 size={16} /> },
-    { id: 'PLANNED', label: 'В планах', icon: <Bookmark size={16} /> },
+    { id: 'WATCHING', label: 'Смотрю', icon: BookOpen },
+    { id: 'COMPLETED', label: 'Просмотрено', icon: CheckCircle },
+    { id: 'ON_HOLD', label: 'Отложено', icon: Clock },
+    { id: 'DROPPED', label: 'Брошено', icon: Trash2 },
+    { id: 'PLANNED', label: 'В планах', icon: Bookmark },
 ];
 
 export const AddToListModal: React.FC<AddToListModalProps> = ({
@@ -238,7 +238,7 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
                                             "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300",
                                             status === opt.id ? "bg-white/10" : "bg-bg-dark/5 group-hover:bg-accent/10"
                                         )}>
-                                            {React.cloneElement(opt.icon as React.ReactElement, { size: 14 })}
+                                            <opt.icon size={14} />
                                         </div>
                                         <span>{opt.label}</span>
                                     </div>
