@@ -11,119 +11,156 @@ export const HubCard = ({ project, viewMode = 'grid' }: { project: any, viewMode
     const isReading = ['Manga', 'Novel', 'Comics'].includes(project.type);
     const lastEp = Array.isArray(project.episodes) ? (project.episodes.length ? Math.max(...project.episodes.map((e: any) => e.number)) : 0) : (project.episodes || 0);
 
+    // ---------------------- LIST MODE ----------------------
     if (viewMode === 'list') {
         return (
             <Link
                 href={`/anime/${project.id}`}
-                className="group relative flex items-center gap-4 bg-white border-4 border-bg-dark p-3 overflow-hidden outline-none shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all"
+                className="group relative flex items-center gap-4 bg-white/60 backdrop-blur-md border border-bg-dark/5 p-3 rounded-2xl overflow-hidden outline-none shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
             >
-                <div className="w-20 md:w-24 aspect-[2/3] border-2 border-bg-dark overflow-hidden relative shrink-0 bg-bg-cream">
-                    <BlurImage src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/40">
-                        <div className="w-10 h-10 bg-bg-dark border-2 border-cream text-cream flex items-center justify-center shadow-[2px_2px_0_var(--color-cream)]">
-                            {isReading ? <BookOpen size={16} /> : <Play size={16} className="ml-1 fill-cream" />}
+                {/* Image Container */}
+                <div className="w-20 md:w-24 aspect-[2/3] rounded-xl overflow-hidden relative shrink-0 bg-bg-cream shadow-inner">
+                    <BlurImage src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-bg-dark/40 backdrop-blur-[2px]">
+                        <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/30 transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            {isReading ? <BookOpen size={16} /> : <Play size={16} className="ml-1 fill-white" />}
                         </div>
                     </div>
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-2 py-1">
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 border border-bg-dark bg-surface text-[9px] font-black uppercase tracking-widest text-bg-dark shadow-[1px_1px_0_var(--color-bg-dark)]">
-                            <Star size={10} className="fill-accent text-accent" />
-                            {project.studio_rating}
-                        </div>
-                        <span className="text-bg-dark text-[9px] font-black uppercase tracking-widest border border-bg-dark px-2 py-0.5 bg-surface shadow-[1px_1px_0_var(--color-bg-dark)]">
+                        {project.studio_rating && (
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-widest text-accent border border-accent/20">
+                                <Star size={10} className="fill-accent" />
+                                {project.studio_rating}
+                            </div>
+                        )}
+                        <span className="text-bg-dark/60 text-[10px] font-bold uppercase tracking-widest border border-bg-dark/10 rounded-full px-2 py-1 bg-white/50">
                             {project.type}
                         </span>
                     </div>
-                    <h3 className="font-editorial text-lg md:text-xl text-bg-dark line-clamp-1 group-hover:text-accent transition-colors duration-300 uppercase tracking-tight">
+                    <h3 className="font-bold text-lg md:text-xl text-bg-dark line-clamp-1 group-hover:text-accent transition-colors duration-300 tracking-tight">
                         {project.title}
                     </h3>
                 </div>
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
+
+                {/* Left accent border on hover */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-accent group-hover:h-3/4 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100" />
             </Link>
         );
     }
 
+
+    // ---------------------- GRID MODE ----------------------
     return (
         <Link
             href={`/anime/${project.id}`}
-            className="group block relative w-full h-full aspect-[2/3] overflow-hidden bg-bg-dark outline-none active:scale-[0.98] transition-transform duration-[400ms] ease-[var(--transition-spring)]"
+            className="group block relative w-full h-full aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-white/40 border border-bg-dark/5 outline-none transition-all duration-300 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1"
         >
             {/* The Poster Image */}
-            <BlurImage
-                src={project.image}
-                alt={project.title}
-                className="w-full h-full object-cover filter grayscale brightness-75 contrast-125 group-hover:grayscale-0 group-hover:brightness-100 group-hover:contrast-100 transition-all duration-[600ms] ease-out transform group-hover:scale-105"
-            />
+            <div className="absolute inset-0 z-0">
+                <BlurImage
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-[600ms] ease-out transform group-hover:scale-105"
+                />
+            </div>
 
-            {/* Dark overlay that fades on hover */}
-            <div className="absolute inset-0 bg-bg-dark/40 group-hover:bg-transparent transition-colors duration-500 pointer-events-none mix-blend-multiply" />
-
-            {/* Brutalist Frame inside the card */}
-            <div className="absolute inset-0 border-[6px] border-bg-dark pointer-events-none z-10" />
+            {/* Subtle Gradient overlay for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/80 via-transparent to-bg-dark/20 opacity-60 group-hover:opacity-80 transition-opacity duration-500 z-10 pointer-events-none" />
 
             {/* Top Badges */}
-            <div className="absolute top-0 left-0 right-0 p-3 flex justify-between items-start z-20 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 p-3 flex justify-between items-start z-30 pointer-events-none">
+
                 {/* Score Badge */}
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-cream border-2 border-bg-dark text-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-300">
-                    <Star size={14} className="fill-bg-dark" />
-                    <span className="font-editorial text-xl font-black mt-0.5">{project.studio_rating || 'N/A'}</span>
-                </div>
+                {(project.studio_rating && project.studio_rating !== '0.0') && (
+                    <div className="flex items-center gap-1 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-full border border-bg-dark/5 text-bg-dark shadow-sm transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300">
+                        <Star size={12} className="text-accent fill-accent" />
+                        <span className="text-[11px] font-bold mt-0.5">{project.studio_rating}</span>
+                    </div>
+                )}
 
                 {/* Top Right Action & Info */}
-                <div className="flex flex-col items-end gap-2 text-right pointer-events-auto">
-                    <FavoriteButton animeId={String(project.id)} />
+                <div className="flex flex-col items-end gap-2 text-right pointer-events-auto ml-auto">
+
+                    {/* Favorite Button (Needs a wrapper if FavoriteButton relies on old brutalist styling, but assuming it adapts) */}
+                    <div className="bg-white/90 backdrop-blur-md rounded-full border border-bg-dark/5 shadow-sm overflow-hidden transform group-hover:-translate-y-1 transition-transform duration-300 delay-75">
+                        <FavoriteButton animeId={String(project.id)} />
+                    </div>
+
                     {lastEp > 0 && (
-                        <div className="px-2 py-1 bg-accent border-2 border-bg-dark text-cream text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_var(--color-bg-dark)]">
+                        <div className="px-2 py-1 rounded-md bg-accent/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest shadow-sm border border-white/10 transform group-hover:-translate-y-1 transition-transform duration-300 delay-100">
                             ЭП {lastEp}
                         </div>
                     )}
+
                     {project.status === 'Ongoing' && (
-                        <div className="px-2 py-1 bg-green border-2 border-bg-dark shadow-[2px_2px_0_var(--color-bg-dark)] flex items-center gap-2">
-                            <span className="w-2 h-2 bg-bg-dark animate-pulseHard" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-bg-dark">ЭФИР</span>
+                        <div className="px-2.5 py-1 rounded-full bg-green-500/90 backdrop-blur-md shadow-sm border border-white/10 flex items-center gap-1.5 transform group-hover:-translate-y-1 transition-transform duration-300 delay-150">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-white">ЭФИР</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* The "Receipt" Data Block (Slides up on hover) */}
-            <div className="absolute bottom-0 left-0 w-full p-1.5 z-20 translate-y-full group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-[500ms] ease-[var(--transition-spring)] pointer-events-none">
-                <div className="bg-bg-dark border-4 border-cream p-4 space-y-3 shadow-[8px_8px_0_var(--color-accent)]">
+            {/* Hover Data Block */}
+            <div className="absolute bottom-0 left-0 w-full p-4 z-20 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-[400ms] ease-out pointer-events-none flex flex-col justify-end">
 
-                    {/* Header line of the receipt */}
-                    <div className="flex justify-between items-start border-b-2 border-secondary-muted pb-2">
-                        <span className="bg-cream text-bg-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest">
-                            {project.type}
-                        </span>
-                        <span className="text-cream text-[10px] font-mono tracking-widest">
-                            {project.year || 'TBA'}
-                        </span>
+                <h3 className="font-bold text-lg md:text-xl text-white line-clamp-2 leading-tight drop-shadow-md mb-2">
+                    {project.title}
+                </h3>
+
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-white/80 uppercase tracking-widest">
+                        <span>{project.year || 'TBA'}</span>
+                        <div className="w-1 h-1 rounded-full bg-white/40" />
+                        <span>{project.type}</span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="font-editorial text-2xl md:text-3xl text-cream uppercase line-clamp-2 leading-[0.9] tracking-tighter mix-blend-difference">
-                        {project.title}
-                    </h3>
-
-                    {/* Scrolling Genres Marquee inside receipt */}
-                    {project.genres && project.genres.length > 0 && (
-                        <div className="w-full bg-cream py-1.5 overflow-hidden flex whitespace-nowrap border-y-2 border-bg-dark">
-                            <div className="marquee-track-fast flex gap-4 text-bg-dark text-[10px] font-mono uppercase font-bold px-2">
-                                {Array(3).fill(project.genres.slice(0, 3).join(' ✦ ')).map((t, i) => (
-                                    <span key={i}>{t} ✦</span>
-                                ))}
+                    {/* History Progress (If Applicable) */}
+                    {project.historyData ? (
+                        <div className="space-y-1.5 mt-1 border-t border-white/10 pt-2">
+                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-accent">
+                                <span>Продолжить</span>
+                                <span>Эпизод {project.historyData.episode}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-accent rounded-full transition-all duration-1000"
+                                    style={{ width: project.historyData.progress > 0 ? '100%' : '0%' }}
+                                />
                             </div>
                         </div>
+                    ) : (
+                        /* Genre Tags (Limit to 2) */
+                        project.genres && project.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                {project.genres.slice(0, 2).map((genre: string) => (
+                                    <span key={genre} className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-md border border-white/10 text-white text-[9px] font-bold tracking-wider">
+                                        {genre}
+                                    </span>
+                                ))}
+                                {project.genres.length > 2 && (
+                                    <span className="px-1 py-0.5 rounded-md text-white/60 text-[9px] font-bold">
+                                        +{project.genres.length - 2}
+                                    </span>
+                                )}
+                            </div>
+                        )
                     )}
                 </div>
             </div>
 
-            {/* Huge Play Icon behind text, scaling up on hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-20 transition-all duration-500 scale-50 group-hover:scale-150 pointer-events-none mix-blend-overlay">
-                <Play size={120} className="fill-cream" />
+            {/* Hover Play Icon in Center */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-[400ms] pointer-events-none z-10">
+                <div className="w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20 backdrop-blur-md">
+                    {isReading ? <BookOpen size={20} /> : <Play size={20} className="ml-1 fill-white" />}
+                </div>
             </div>
+
         </Link>
     );
 };

@@ -15,14 +15,11 @@ export const metadata: Metadata = {
 
 export default function CommunityPage() {
     return (
-        <main className="min-h-screen bg-bg-cream text-bg-dark pt-[60px] lg:pt-[72px] relative overflow-hidden">
-            {/* Global grid background */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-5 MixBlendMultiply">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs><pattern id="gridbg-team" width="32" height="32" patternUnits="userSpaceOnUse"><rect width="32" height="32" fill="none" stroke="var(--color-bg-dark)" strokeWidth="0.5" /></pattern></defs>
-                    <rect width="100%" height="100%" fill="url(#gridbg-team)" />
-                </svg>
-            </div>
+        <main className="min-h-screen bg-bg-cream text-bg-dark pt-[60px] lg:pt-[72px] relative overflow-hidden selection:bg-accent selection:text-white">
+            {/* Ambient Background Blur */}
+            <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none z-0" />
+            <div className="absolute top-1/2 left-0 w-[40vw] h-[40vw] bg-accent/5 rounded-full blur-[100px] -translate-y-1/3 -translate-x-1/4 pointer-events-none z-0" />
+            <div className="absolute bottom-0 right-1/4 w-[60vw] h-[40vw] bg-accent/5 rounded-full blur-[140px] translate-y-1/2 pointer-events-none z-0" />
 
             <div className="relative z-10">
                 {/* 1. HERO MANIFESTO */}

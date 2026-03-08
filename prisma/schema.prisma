@@ -57,13 +57,14 @@ model Comment {
 }
 
 model WatchHistory {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  animeId   Int      @map("anime_id")
-  episode   Int      @default(1)
-  progress  Int      @default(0)
-  completed Boolean  @default(false)
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  animeId       Int      @map("anime_id")
+  episode       Int      @default(1)
+  progress      Int      @default(0)
+  completed     Boolean  @default(false)
+  translationId String?  @map("translation_id") @db.VarChar(50)
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

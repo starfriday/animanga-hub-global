@@ -23,7 +23,7 @@ export default async function CinemaPage() {
     const heroMovie = topMovies?.[0] || null;
 
     return (
-        <main className="min-h-screen bg-bg-dark text-white pt-[60px] lg:pt-[72px] relative overflow-hidden selection:bg-accent selection:text-white">
+        <main className="min-h-screen bg-bg-cream text-bg-dark pt-[60px] lg:pt-[72px] relative overflow-hidden selection:bg-accent selection:text-white">
             <div className="relative z-10 flex flex-col">
                 {/* 1. HERO SECTION */}
                 {heroMovie && <WorldHero movie={heroMovie} />}

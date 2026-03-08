@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -8,7 +7,6 @@ import { Play, BookOpen, ArrowRight, ChevronLeft, ChevronRight, Star } from 'luc
 import { cn } from '@/lib/utils';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { resolveAnimeImage } from '@/lib/imageUtils';
-
 
 interface HeroSliderProps {
     trending?: any[];
@@ -69,244 +67,156 @@ export function HeroSlider({ trending }: HeroSliderProps) {
 
     const current = featured[activeIndex];
     const isReading = ['Manga', 'Novel', 'Comics'].includes(current.type);
-    const padIndex = String(activeIndex + 1).padStart(2, '0');
-    const padTotal = String(featured.length).padStart(2, '0');
 
     return (
-        <section className="relative w-full min-h-screen overflow-hidden bg-bg-cream text-bg-dark pt-24 pb-12 selection:bg-accent selection:text-cream">
+        <section className="relative w-full min-h-[90svh] flex items-center justify-center overflow-hidden bg-bg-cream text-bg-dark pt-24 pb-24 selection:bg-accent selection:text-white group">
 
-            {/* === AGED PAPER TEXTURE === */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.06] mix-blend-multiply"
-                style={{ backgroundImage: 'var(--background-noise)', backgroundSize: '200px' }}
-            />
-
-            {/* === GRID BACKGROUND (Retro print registration marks) === */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.06]">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="heroGrid" width="80" height="80" patternUnits="userSpaceOnUse">
-                            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="var(--color-bg-dark)" strokeWidth="0.5" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#heroGrid)" />
-                </svg>
-            </div>
-
-            {/* === MASSIVE BACKGROUND TEXT (like vintage magazine title) === */}
-            <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-[1] select-none pointer-events-none">
-                <div key={`bg-title-${contentKey}`} className="animate-editorial-reveal">
-                    <h1 className="font-editorial text-[20vw] sm:text-[16vw] leading-[0.75] text-accent/[0.07] uppercase tracking-tighter whitespace-nowrap mix-blend-multiply">
-                        {current.title.split(' ')[0] || 'ANIME'}
-                    </h1>
+            {/* Background Image with blur and gradient overlay */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none bg-bg-cream">
+                <div key={`bg-${contentKey}`} className="absolute inset-0 animate-fade-in">
+                    <BlurImage
+                        src={current.banner || ''}
+                        alt=""
+                        className="object-cover w-full h-full opacity-25 contrast-110 saturate-100 transform scale-105 group-hover:scale-110 transition-transform duration-[10s] ease-out line-clamp-2"
+                    />
                 </div>
+                {/* Gradient Masks */}
+                <div className="absolute inset-0 bg-gradient-to-t from-bg-cream via-bg-cream/80 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-bg-cream via-bg-cream/60 to-transparent" />
             </div>
 
-            {/* === DECORATIVE RED BORDER FRAME (magazine page frame) === */}
-            <div className="absolute inset-4 sm:inset-6 lg:inset-8 border-2 border-accent/10 z-[1] pointer-events-none" />
-            {/* Corner ornaments */}
-            <div className="absolute top-4 sm:top-6 lg:top-8 left-4 sm:left-6 lg:left-8 w-5 h-5 border-accent/30 z-[2]">
-                <div className="absolute top-0 left-0 w-full h-0.5 bg-accent/30" />
-                <div className="absolute top-0 left-0 h-full w-0.5 bg-accent/30" />
-            </div>
-            <div className="absolute top-4 sm:top-6 lg:top-8 right-4 sm:right-6 lg:right-8 w-5 h-5 z-[2]">
-                <div className="absolute top-0 right-0 w-full h-0.5 bg-accent/30" />
-                <div className="absolute top-0 right-0 h-full w-0.5 bg-accent/30" />
-            </div>
-            <div className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-4 sm:left-6 lg:left-8 w-5 h-5 z-[2]">
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent/30" />
-                <div className="absolute bottom-0 left-0 h-full w-0.5 bg-accent/30" />
-            </div>
-            <div className="absolute bottom-4 sm:bottom-6 lg:bottom-8 right-4 sm:right-6 lg:right-8 w-5 h-5 z-[2]">
-                <div className="absolute bottom-0 right-0 w-full h-0.5 bg-accent/30" />
-                <div className="absolute bottom-0 right-0 h-full w-0.5 bg-accent/30" />
-            </div>
+            <div className="max-w-[1600px] w-full mx-auto px-6 lg:px-12 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
-            {/* === HEADER EDITORIAL STRIP === */}
-            <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-16">
-                <div className="flex items-center justify-between border-b-4 border-bg-dark pb-3 mb-8">
-                    <div className="flex items-center gap-3 sm:gap-6">
-                        <span className="font-editorial text-xl sm:text-2xl uppercase tracking-tighter text-accent">ANIVAULT</span>
-                        <span className="text-bg-dark/20">|</span>
-                        <span className="font-bold uppercase tracking-[0.3em] text-[8px] sm:text-[10px] text-bg-dark/50">ЕЖЕМЕСЯЧНЫЙ ВЫПУСК</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="font-bold uppercase tracking-widest text-[8px] sm:text-[10px] text-bg-dark/40 hidden sm:inline">
-                            №{padIndex} • 2024
-                        </span>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent text-cream flex items-center justify-center font-editorial text-sm sm:text-lg">
-                            特
-                        </div>
-                    </div>
-                </div>
-            </div>
+                {/* Left Column Text Content */}
+                <div className="lg:col-span-7 flex flex-col justify-center space-y-6 lg:space-y-8 z-10">
+                    <div key={`text-${contentKey}`} className="animate-fade-in-up flex flex-col gap-6">
 
-            {/* === MAIN LAYOUT: MAGAZINE SPREAD === */}
-            <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-16 flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-
-                {/* LEFT COLUMN: Image as manga panel */}
-                <div className="w-full lg:w-[55%] relative">
-                    <div key={`img-${contentKey}`} className="animate-pop-in">
-                        {/* Main image panel */}
-                        <div className="relative bg-bg-dark border-4 border-bg-dark shadow-[8px_8px_0_var(--color-accent)] overflow-hidden">
-                            <div className="aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] relative">
-                                <BlurImage
-                                    src={current.image || current.banner}
-                                    alt={current.title}
-                                    className="w-full h-full object-cover"
-                                />
-                                {/* Vintage grain overlay on image */}
-                                <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
-                                    style={{ backgroundImage: 'var(--background-noise)', backgroundSize: '128px' }}
-                                />
-                            </div>
-
-                            {/* Red stamp seal */}
-                            <div className="absolute top-6 right-6 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-accent/80 flex items-center justify-center rotate-[-12deg] opacity-80">
-                                <div className="text-center leading-none">
-                                    <div className="font-editorial text-accent text-lg sm:text-xl">推薦</div>
-                                    <div className="text-accent/60 text-[7px] font-bold tracking-widest mt-0.5">РЕКОМЕНДАЦИЯ</div>
-                                </div>
-                            </div>
-
-                            {/* Vertical side label */}
-                            <div className="absolute left-0 top-0 bottom-0 w-10 bg-accent flex items-center justify-center">
-                                <div className="font-editorial text-cream text-sm tracking-[0.5em] uppercase whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                                    {padIndex} — ANIVAULT
-                                </div>
-                            </div>
+                        {/* Top Metadata */}
+                        <div className="flex flex-wrap items-center gap-3 text-[10px] sm:text-xs font-bold text-accent uppercase tracking-widest">
+                            <span className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full backdrop-blur-md">
+                                {current.status}
+                            </span>
+                            <span className="px-3 py-1.5 bg-black/5 text-bg-dark/70 rounded-full backdrop-blur-md border border-black/5">
+                                {current.type}
+                            </span>
+                            <span className="text-bg-dark/50 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-bg-dark/30" />
+                                {current.year}
+                            </span>
                         </div>
 
-                        {/* Rating badge below image */}
-                        <div className="flex items-center gap-4 mt-4">
-                            <div className="flex items-center gap-2 bg-accent text-cream px-4 py-2 border-2 border-bg-dark shadow-[3px_3px_0_var(--color-bg-dark)]">
-                                <Star size={14} className="fill-cream" />
-                                <span className="font-editorial text-xl">{current.studio_rating}</span>
-                            </div>
-                            <div className="flex-1 h-px bg-bg-dark/20" />
-                            <span className="font-bold uppercase tracking-widest text-[9px] text-bg-dark/40">{current.type}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* RIGHT COLUMN: Editorial text content */}
-                <div className="w-full lg:w-[45%] flex flex-col">
-                    <div key={`text-${contentKey}`} className="animate-fade-in-up">
-
-                        {/* Issue number / Category */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="font-editorial text-7xl sm:text-8xl lg:text-9xl text-accent/15 leading-none tracking-tighter select-none">
-                                {padIndex}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="bg-accent text-cream px-3 py-1 text-[9px] font-black uppercase tracking-widest border border-accent">
-                                    {current.status}
-                                </span>
-                                <span className="text-bg-dark/40 font-bold uppercase tracking-[0.2em] text-[9px]">
-                                    {current.type}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Main Title (magazine headline) */}
-                        <h2 className="font-editorial text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-bg-dark uppercase tracking-tighter leading-[0.85] mb-2">
+                        {/* Title */}
+                        <h1
+                            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem] font-black text-bg-dark leading-[1.1] drop-shadow-sm tracking-tight line-clamp-3"
+                            title={current.title}
+                        >
                             {current.title}
-                        </h2>
+                        </h1>
 
-                        {/* Original title */}
-                        <p className="font-serif italic text-bg-dark/40 text-sm sm:text-base mb-8 border-b-2 border-bg-dark/10 pb-6">
-                            {(current as any).originalTitle || current.title}
+                        {/* Original Title & Info */}
+                        <div className="space-y-4">
+                            <p className="text-lg md:text-xl text-bg-dark/50 font-medium italic">
+                                {(current as any).originalTitle || current.title}
+                            </p>
+
+                            <div className="flex items-center gap-4 text-bg-dark/70 font-medium text-sm sm:text-base">
+                                <div className="flex items-center gap-1.5 bg-white shadow-sm border border-bg-dark/10 text-bg-dark px-3 py-1.5 rounded-xl">
+                                    <Star size={16} className="fill-accent text-accent" />
+                                    <span className="font-bold">{current.studio_rating}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-bg-dark/20" />
+                                    <span>{current.episodes} Эпизодов</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm sm:text-base md:text-lg text-bg-dark/70 leading-relaxed max-w-2xl line-clamp-3 md:line-clamp-4">
+                            Погрузитесь в невероятную историю, которая завоевала сердца миллионов зрителей по всему миру.
+                            Откройте для себя аниме-шедевры с потрясающей рисовкой и захватывающим сюжетом.
                         </p>
 
-                        {/* Description block with red left border */}
-                        <div className="border-l-4 border-accent pl-5 mb-8">
-                            <p className="font-serif text-bg-dark/70 leading-relaxed text-sm sm:text-base">
-                                Погрузитесь в невероятную историю, которая завоевала сердца миллионов зрителей по всему миру.
-                                Откройте для себя мир, где каждый кадр — произведение искусства.
-                            </p>
-                        </div>
-
-                        {/* Info grid (magazine fact box) */}
-                        <div className="grid grid-cols-3 gap-0 border-2 border-bg-dark mb-8">
-                            <div className="p-3 sm:p-4 border-r-2 border-bg-dark text-center">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-bg-dark/40 mb-1">Рейтинг</div>
-                                <div className="font-editorial text-2xl sm:text-3xl text-accent">{current.studio_rating}</div>
-                            </div>
-                            <div className="p-3 sm:p-4 border-r-2 border-bg-dark text-center">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-bg-dark/40 mb-1">Эпизоды</div>
-                                <div className="font-editorial text-2xl sm:text-3xl text-bg-dark">{current.episodes}</div>
-                            </div>
-                            <div className="p-3 sm:p-4 text-center">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-bg-dark/40 mb-1">Год</div>
-                                <div className="font-editorial text-2xl sm:text-3xl text-bg-dark">{(current as any).year || '2024'}</div>
-                            </div>
-                        </div>
-
-                        {/* CTA buttons */}
-                        <div className="flex flex-wrap gap-3">
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center gap-4 pt-4">
                             <Link
                                 href={`/anime/${current.slug || current.id}`}
-                                className="group flex items-center gap-3 bg-accent text-cream px-8 py-4 font-black uppercase tracking-widest text-xs border-2 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-[2px_2px_0_var(--color-bg-dark)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:shadow-none active:translate-x-1 active:translate-y-1"
+                                className="group/btn flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-accent text-white rounded-full font-bold text-sm sm:text-lg hover:scale-105 active:scale-95 transition-all shadow-lg shadow-accent/20 outline-none"
                             >
-                                {isReading ? <BookOpen size={16} /> : <Play size={16} className="fill-current" />}
-                                {isReading ? 'ЧИТАТЬ' : 'СМОТРЕТЬ'}
+                                {isReading ? <BookOpen size={20} /> : <Play size={20} className="fill-current" />}
+                                <span>{isReading ? 'ЧИТАТЬ' : 'СМОТРЕТЬ'}</span>
                             </Link>
+
                             <Link
                                 href={`/anime/${current.slug || current.id}`}
-                                className="group flex items-center gap-3 bg-bg-cream text-bg-dark px-8 py-4 font-black uppercase tracking-widest text-xs border-2 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-[2px_2px_0_var(--color-bg-dark)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:shadow-none active:translate-x-1 active:translate-y-1"
+                                className="group/btn flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white text-bg-dark hover:bg-black/5 border border-bg-dark/10 shadow-sm rounded-full font-bold text-sm sm:text-lg transition-all active:scale-95 outline-none"
                             >
-                                ПОДРОБНЕЕ
-                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                <span>ПОДРОБНЕЕ</span>
+                                <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                             </Link>
                         </div>
                     </div>
                 </div>
+
+                {/* Right Column Cover Image - Desktop Only */}
+                <div className="hidden lg:block lg:col-span-5 relative">
+                    <div key={`img-${contentKey}`} className="animate-pop-in relative w-[280px] xl:w-[340px] aspect-[3/4] ml-auto rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-bg-dark/10 group-hover:-translate-y-2 transition-all duration-700 ease-out">
+                        <BlurImage
+                            src={current.image || current.banner}
+                            alt={current.title}
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                        {/* Recommendation Badge overlay */}
+                        <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-black/10 shadow-sm flex flex-col items-center justify-center transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300 pointer-events-none">
+                            <span className="text-accent text-lg font-black tracking-tight leading-none mb-0.5">TOP</span>
+                            <span className="text-bg-dark/60 text-[9px] font-bold uppercase tracking-widest leading-none">Релизы</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            {/* === BOTTOM: Slider navigation (editorial page numbers) === */}
-            <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-16 mt-12">
-                <div className="flex items-center justify-between border-t-4 border-bg-dark pt-4">
-                    {/* Page dots */}
-                    <div className="flex items-center gap-3">
+            {/* Bottom Slider Navigation Controls */}
+            <div className="absolute bottom-6 sm:bottom-10 left-0 right-0 z-20">
+                <div className="max-w-[1600px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+                    {/* Pagination Dots */}
+                    <div className="flex items-center gap-2">
                         {featured.map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => goTo(i)}
                                 className={cn(
-                                    "font-editorial text-lg transition-all duration-300 outline-none",
+                                    "h-2 rounded-full transition-all duration-300 outline-none",
                                     i === activeIndex
-                                        ? "text-accent underline underline-offset-4 decoration-2"
-                                        : "text-bg-dark/20 hover:text-bg-dark/50"
+                                        ? "w-8 sm:w-10 bg-accent shadow-sm shadow-accent/30"
+                                        : "w-2 bg-bg-dark/20 hover:bg-bg-dark/40"
                                 )}
-                            >
-                                {String(i + 1).padStart(2, '0')}
-                            </button>
+                                aria-label={`Go to slide ${i + 1}`}
+                            />
                         ))}
                     </div>
 
-                    {/* Navigation arrows */}
-                    <div className="flex gap-2">
+                    {/* Prev / Next Buttons */}
+                    <div className="flex gap-2 sm:gap-3">
                         <button
                             onClick={handlePrev}
                             disabled={isTransitioning}
-                            className="p-3 border-2 border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream transition-all active:scale-95 shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none"
+                            className="p-3 sm:p-4 rounded-full bg-white text-bg-dark border border-bg-dark/10 hover:border-accent hover:text-accent shadow-sm transition-all active:scale-95 disabled:opacity-50 outline-none"
+                            aria-label="Previous slide"
                         >
-                            <ChevronLeft size={18} strokeWidth={3} />
+                            <ChevronLeft size={20} />
                         </button>
                         <button
                             onClick={handleNext}
                             disabled={isTransitioning}
-                            className="p-3 border-2 border-bg-dark text-bg-dark hover:bg-bg-dark hover:text-cream transition-all active:scale-95 shadow-[2px_2px_0_var(--color-bg-dark)] hover:shadow-none"
+                            className="p-3 sm:p-4 rounded-full bg-white text-bg-dark border border-bg-dark/10 hover:border-accent hover:text-accent shadow-sm transition-all active:scale-95 disabled:opacity-50 outline-none"
+                            aria-label="Next slide"
                         >
-                            <ChevronRight size={18} strokeWidth={3} />
+                            <ChevronRight size={20} />
                         </button>
                     </div>
-                </div>
-            </div>
-
-            {/* === DECORATIVE: Vertical Japanese text (side of page) === */}
-            <div className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-[2] pointer-events-none select-none hidden xl:block">
-                <div className="font-editorial text-8xl text-accent/[0.06] tracking-widest" style={{ writingMode: 'vertical-rl' }}>
-                    アニメの世界
                 </div>
             </div>
 

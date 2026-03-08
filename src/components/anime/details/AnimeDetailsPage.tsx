@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-    Layers, PlayCircle,
-    ChevronUp, Building2, Clock, Calendar, ShieldAlert, ExternalLink, Hash, FileText, UserCog, MonitorPlay, Link2
+    PlayCircle,
+    ChevronUp, Building2, Clock, Calendar, ShieldAlert, MonitorPlay, FileText, UserCog, Link2, ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ensureFullUrl } from '@/lib/imageUtils';
@@ -12,7 +12,7 @@ import { ProjectHero } from './ProjectHero';
 import { ProjectCast } from './ProjectCast';
 import { RelatedReleases, type RelatedRelease } from './RelatedReleases';
 import { CommentsSection } from './CommentsSection';
-import Link from 'next/link';
+import Image from 'next/image';
 
 interface VideoData {
     id?: string | number;
@@ -86,15 +86,156 @@ interface AnimeDetailsPageProps {
 
 export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles, videos, related }) => {
     const [isDescExpanded, setDescExpanded] = useState(false);
-    const [isDecrypting, setIsDecrypting] = useState(false);
-    const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(videos?.[0] || null);
+    const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
     const [viewLogged, setViewLogged] = useState(false);
-    const [sessionToken, setSessionToken] = useState<string>('');
 
+    // Watch History State
+    const [savedEpisode, setSavedEpisode] = useState<number | null>(null);
+    const [savedProgress, setSavedProgress] = useState<number | null>(null);
+    const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
+
+    // We need a stable state for the VERY first episode to inject into the iframe URL so it doesn't reload later
+    const [initialEpisode, setInitialEpisode] = useState<number | null>(null);
+
+    // Initial load: Fetch History and Setup Default Video
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSessionToken(Math.floor(Math.random() * 0xFFFFFF).toString(16));
-    }, []);
+        const fetchHistoryAndVideos = async () => {
+            try {
+                const res = await fetch('/api/history');
+                if (!res.ok) throw new Error('Failed to fetch history');
+                const data = await res.json();
+
+                const currentAnimeHistory = data.history?.find((h: any) => h.animeId === Number(anime.id));
+                let lastTranslationId: string | null = null;
+
+                if (currentAnimeHistory) {
+                    setSavedEpisode(currentAnimeHistory.episode);
+                    setSavedProgress(currentAnimeHistory.progress);
+                    setInitialEpisode(currentAnimeHistory.episode); // Only set once on mount
+
+                    if (currentAnimeHistory.translationId) {
+                        lastTranslationId = String(currentAnimeHistory.translationId);
+                    }
+                }
+
+                // Now set the initial video based on history or default to the first one
+                if (videos && videos.length > 0 && !selectedVideo) {
+                    console.log("[DEBUG] Fetch History complete. lastTranslationId:", lastTranslationId);
+                    if (lastTranslationId) {
+                        const historyVideo = videos.find(v => String(v.translation?.id) === lastTranslationId);
+                        console.log("[DEBUG] Found historyVideo for translation:", historyVideo?.translation?.title);
+                        setSelectedVideo(historyVideo || videos[0]);
+                    } else {
+                        setSelectedVideo(videos[0]);
+                    }
+                }
+
+            } catch (error) {
+                console.error("Failed to load history:", error);
+                if (videos && videos.length > 0 && !selectedVideo) {
+                    setSelectedVideo(videos[0]);
+                }
+            } finally {
+                setIsHistoryLoaded(true);
+            }
+        };
+
+        fetchHistoryAndVideos();
+        // We purposefully omit selectedVideo to avoid resetting it if the user clicks a different translation
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [anime.id, videos]);
+
+    // Construct a stable iframe URL that only updates when translation (selectedVideo) changes
+    // It utilizes the `initialEpisode` so it starts correctly, but ignore `savedEpisode` updates during playback
+    const iframeSrc = useMemo(() => {
+        if (!selectedVideo?.link) return '';
+        let url = selectedVideo.link.startsWith('//') ? `https:${selectedVideo.link}` : selectedVideo.link;
+
+        if (initialEpisode && initialEpisode > 1) {
+            url += url.includes('?') ? `&episode=${initialEpisode}` : `?episode=${initialEpisode}`;
+        }
+        return url;
+    }, [selectedVideo, initialEpisode]);
+
+
+
+    // Listen to Kodik Player Messages for Progress Tracking
+    useEffect(() => {
+        if (!isHistoryLoaded) return;
+
+        let saveTimeout: NodeJS.Timeout;
+
+        const handleMessage = (event: MessageEvent) => {
+            if (!event.data) return;
+
+            let messageData = event.data;
+            if (typeof event.data === 'string') {
+                try {
+                    messageData = JSON.parse(event.data);
+                } catch (e) {
+                    return; // Not a JSON string
+                }
+            }
+
+            const key = messageData.key;
+            const value = messageData.value;
+
+            // Expected events: 'kodik_player_video_ended', 'kodik_player_time_update', 'kodik_player_current_episode'
+            if (key === 'kodik_player_current_episode') {
+                const ep = Number(value?.episode || value);
+                setSavedEpisode(ep);
+
+                // Let's immediately save when an episode changes to avoid timeout drops
+                fetch('/api/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        animeId: String(anime.id),
+                        episode: ep,
+                        progress: 0,
+                        completed: false,
+                        translationId: selectedVideo?.translation?.id ? String(selectedVideo.translation.id) : undefined
+                    })
+                }).catch(err => console.error("Failed to save episode change", err));
+
+            } else if (key === 'kodik_player_time_update' || key === 'kodik_player_video_ended') {
+
+                // Kodik might not send standard values on video end, but time_update constantly sends value
+                const currentProg = key === 'kodik_player_time_update' ? Math.floor(Number(value)) : (savedProgress || 0);
+                const isCompleted = key === 'kodik_player_video_ended';
+
+                // We rely on the React state for the latest episode since 'time_update' does not include it
+                const currentEp = savedEpisode || 1;
+
+                // Debounce the save to prevent spamming the API every second
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    try {
+                        await fetch('/api/history', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                animeId: String(anime.id),
+                                episode: currentEp,
+                                progress: currentProg,
+                                completed: isCompleted,
+                                translationId: selectedVideo?.translation?.id ? String(selectedVideo.translation.id) : undefined
+                            })
+                        });
+                        setSavedProgress(currentProg);
+                    } catch (err) {
+                        console.error("Failed to save progress", err);
+                    }
+                }, 3000); // Save every 3 seconds of continuous playback
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            clearTimeout(saveTimeout);
+        };
+    }, [anime.id, isHistoryLoaded, savedEpisode, savedProgress, selectedVideo]);
 
     // Resolve best available poster image
     const bestImage = useMemo(() => {
@@ -160,7 +301,9 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
     const handlePlay = () => {
         const playerElement = document.getElementById('player-section');
         if (playerElement) {
-            playerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const yOffset = -100; // offset for sticky header
+            const y = playerElement.getBoundingClientRect().top + window.scrollY + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
         }
 
         if (!viewLogged) {
@@ -170,321 +313,220 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ animeId: String(anime.id) })
             }).catch(console.error);
-
-            fetch('/api/history', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    animeId: String(anime.id),
-                    episode: 1
-                })
-            }).catch(console.error);
         }
     };
 
-    const nextEpisodeLabel = anime.status === 'anons' ? 'СКОРО' : 'СМОТРЕТЬ 1 СЕРИЮ';
+    const nextEpisodeLabel = savedEpisode ? `ПРОДОЛЖИТЬ (ЭП. ${savedEpisode})` : (anime.status === 'anons' ? 'СКОРО' : 'СМОТРЕТЬ 1 СЕРИЮ');
 
     return (
         <main className="min-h-screen bg-bg-cream text-bg-dark overflow-x-hidden pt-16 selection:bg-accent selection:text-white">
-            {/* Header / SYS.INFO Bar */}
-            <div className="border-b-[3px] border-bg-dark bg-white py-3 px-4 md:px-8 sticky top-16 z-50 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="w-2 h-2 bg-accent animate-pulse" />
-                    <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40">System.Status: Active</span>
-                    <div className="h-4 w-[1px] bg-bg-dark/10 hidden md:block" />
-                    <nav className="hidden md:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-bg-dark/60">
-                        <Link href="/" className="hover:text-accent transition-colors">ROOT</Link>
-                        <span>/</span>
-                        <Link href="/catalog" className="hover:text-accent transition-colors">INDEX</Link>
-                        <span>/</span>
-                        <span className="text-bg-dark italic">{anime.russian || anime.name}</span>
-                    </nav>
-                </div>
-                <div className="text-[10px] font-mono opacity-20 hidden lg:block">
-                    UUID: {anime.id}-{sessionToken || '------'}
+
+
+
+            <ProjectHero
+                project={{
+                    ...anime,
+                    title: anime.russian || anime.name,
+                    studio_rating: anime.score,
+                    type: anime.kind === 'tv' ? 'TV Сериал' : anime.kind === 'movie' ? 'Фильм' : (anime.kind?.toUpperCase() || 'UNKNOWN'),
+                    status: anime.status === 'released' ? 'Completed' : anime.status === 'ongoing' ? 'Ongoing' : 'Announced',
+                    banner: bestImage,
+                    image: bestImage,
+                    episodes_total: anime.episodes,
+                    episodes_aired: anime.episodes_aired || anime.episodesAired,
+                    studio: anime.studios?.[0]?.name || 'UNKNOWN',
+                    genres: anime.genres || []
+                }}
+                nextEpisodeLabel={nextEpisodeLabel}
+                onPlay={handlePlay}
+                onShare={() => { }}
+            />
+
+            {/* Content Navigation */}
+            <div className="sticky top-[110px] md:top-[120px] z-40 bg-bg-cream/90 backdrop-blur-xl border-b border-bg-dark/10 shadow-sm">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex overflow-x-auto hide-scrollbar snap-x">
+                    <a href="#overview" className="flex items-center gap-2 px-6 py-4 text-sm font-bold text-bg-dark/50 hover:text-bg-dark transition-colors border-b-2 border-transparent hover:border-bg-dark shrink-0 snap-start">
+                        <FileText size={18} /> Обзор
+                    </a>
+                    <a href="#personnel" className="flex items-center gap-2 px-6 py-4 text-sm font-bold text-bg-dark/50 hover:text-bg-dark transition-colors border-b-2 border-transparent hover:border-bg-dark shrink-0 snap-start">
+                        <UserCog size={18} /> В ролях
+                    </a>
+                    <a href="#player-section" className="flex items-center gap-2 px-6 py-4 text-sm font-bold text-bg-dark/50 hover:text-bg-dark transition-colors border-b-2 border-transparent hover:border-bg-dark shrink-0 snap-start">
+                        <MonitorPlay size={18} /> Плеер
+                    </a>
+                    <a href="#related" className="flex items-center gap-2 px-6 py-4 text-sm font-bold text-bg-dark/50 hover:text-bg-dark transition-colors border-b-2 border-transparent hover:border-bg-dark shrink-0 snap-start">
+                        <Link2 size={18} /> Связанное
+                    </a>
                 </div>
             </div>
 
             <div className="container mx-auto px-4 md:px-8 max-w-[1600px] py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
 
-                    {/* LEFT COLUMN (8 Cols) - Primary Assets */}
-                    <div className="lg:col-span-8 space-y-16">
-                        <ProjectHero
-                            project={{
-                                ...anime,
-                                title: anime.russian || anime.name,
-                                studio_rating: anime.score,
-                                type: anime.kind === 'tv' ? 'TV Сериал' : anime.kind === 'movie' ? 'Фильм' : (anime.kind?.toUpperCase() || 'UNKNOWN'),
-                                status: anime.status === 'released' ? 'Completed' : anime.status === 'ongoing' ? 'Ongoing' : 'Announced',
-                                banner: bestImage,
-                                image: bestImage,
-                                episodes_total: anime.episodes,
-                                episodes_aired: anime.episodes_aired || anime.episodesAired,
-                                studio: anime.studios?.[0]?.name || 'UNKNOWN',
-                                genres: anime.genres || []
-                            }}
-                            nextEpisodeLabel={nextEpisodeLabel}
-                            onPlay={handlePlay}
-                            onShare={() => { }}
-                        />
+                    {/* LEFT COLUMN (8 Cols) - Main Content */}
+                    <div className="lg:col-span-8 space-y-20">
 
-                        {/* TACTICAL SUB-NAVIGATION */}
-                        <div className="sticky top-[120px] md:top-[128px] z-40 bg-white/95 backdrop-blur-md border-[3px] border-bg-dark shadow-[8px_8px_0_var(--color-bg-dark)] flex overflow-x-auto hide-scrollbar snap-x">
-                            <a href="#overview" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
-                                <FileText size={16} /> OVERVIEW
-                            </a>
-                            <a href="#personnel" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
-                                <UserCog size={16} /> PERSONNEL
-                            </a>
-                            <a href="#player-section" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors border-r-[3px] border-bg-dark shrink-0 snap-start">
-                                <MonitorPlay size={16} /> MEDIA TERMINAL
-                            </a>
-                            <a href="#related" className="flex items-center gap-2 px-6 py-4 font-black uppercase tracking-widest text-xs md:text-sm text-bg-dark hover:bg-bg-dark hover:text-white transition-colors shrink-0 snap-start">
-                                <Link2 size={16} /> RELATED
-                            </a>
-                        </div>
-
-                        {/* SYNOPSIS BLOCK / M.O.T.H.E.R LOG */}
-                        <section id="overview" className="relative group scroll-mt-48">
-                            <div className="absolute -left-4 top-0 bottom-0 w-1 bg-accent/20 group-hover:bg-accent transition-colors" />
-                            <div className="space-y-6 pl-4 md:pl-8">
-                                <div className="flex items-center gap-4">
-                                    <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
-                                        <span className="text-sm font-black not-italic opacity-20 font-mono">[ 01 ]</span>
-                                        M.O.T.H.E.R. Log
-                                    </h2>
-                                    <div className="flex-1 h-[2px] bg-bg-dark/5" />
+                        {/* SYNOPSIS BLOCK */}
+                        <section id="overview" className="relative scroll-mt-48">
+                            <h2 className="text-2xl md:text-3xl font-black mb-6 text-bg-dark">Об аниме</h2>
+                            <div className="relative">
+                                <div className={cn(
+                                    "prose prose-sm md:prose-base max-w-none prose-p:leading-8 prose-p:text-bg-dark/70 prose-a:text-accent font-medium leading-relaxed transition-all duration-500",
+                                    !isDescExpanded && "line-clamp-4"
+                                )}>
+                                    <ShikiText text={anime.description || "Описание отсутствует."} />
                                 </div>
-                                <div className="relative max-w-4xl p-6 bg-white border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-bg-dark)]">
-                                    {/* Noise Overlay when encrypted */}
-                                    {!isDescExpanded && (
-                                        <div className="absolute inset-0 z-10 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay opacity-30" />
-                                    )}
-                                    {isDecrypting && (
-                                        <div className="absolute inset-0 z-20 bg-accent mix-blend-color-burn opacity-50 pointer-events-none animate-pulseHard" />
-                                    )}
 
-                                    <div className={cn(
-                                        "prose prose-sm md:prose-base max-w-none prose-p:leading-relaxed prose-headings:font-editorial prose-headings:text-bg-dark prose-p:text-bg-dark/80 prose-strong:text-bg-dark prose-a:text-accent font-medium leading-relaxed tracking-wide transition-all duration-700 relative z-0",
-                                        !isDescExpanded ? "line-clamp-4 blur-[2px] select-none" : "blur-none",
-                                        isDecrypting && "animate-pulse"
-                                    )}>
-                                        <ShikiText text={anime.description || "NO DATA"} />
-                                    </div>
-
-                                    {(anime.description?.length ?? 0) > 100 && !isDescExpanded && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent z-10 flex items-end justify-center pb-6">
-                                            <button
-                                                onClick={() => {
-                                                    setIsDecrypting(true);
-                                                    setTimeout(() => {
-                                                        setIsDecrypting(false);
-                                                        setDescExpanded(true);
-                                                    }, 800);
-                                                }}
-                                                className="group/btn flex items-center gap-4 px-6 py-3 bg-bg-dark text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-accent transition-colors shadow-[4px_4px_0_var(--color-accent)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
-                                            >
-                                                <Hash size={16} className={cn("group-hover/btn:animate-spin", isDecrypting && "animate-spin")} />
-                                                {isDecrypting ? 'DECRYPTING...' : 'DECRYPT FULL LOG'}
-                                            </button>
-                                        </div>
-                                    )}
-                                    {isDescExpanded && (
+                                {(anime.description?.length ?? 0) > 300 && !isDescExpanded && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-bg-cream via-bg-cream/80 to-transparent flex items-end justify-start pb-2">
                                         <button
-                                            onClick={() => setDescExpanded(false)}
-                                            className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-bg-dark/40 hover:text-bg-dark transition-colors"
+                                            onClick={() => setDescExpanded(true)}
+                                            className="font-bold text-accent hover:text-bg-dark transition-colors flex items-center gap-2"
                                         >
-                                            <ChevronUp size={14} /> COLLAPSE LOG
+                                            Читать полностью <ChevronUp size={16} className="rotate-180" />
                                         </button>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
+                                {isDescExpanded && (
+                                    <button
+                                        onClick={() => setDescExpanded(false)}
+                                        className="mt-6 font-bold text-bg-dark/50 hover:text-bg-dark transition-colors flex items-center gap-2"
+                                    >
+                                        Свернуть <ChevronUp size={16} />
+                                    </button>
+                                )}
                             </div>
                         </section>
 
-                        {/* THE PLAYER (Kodik Integration) */}
-                        <section id="player-section" className="space-y-4 animate-reveal-up pt-8">
-                            {/* Translation Selection HUD Box */}
-                            <div className="bg-white border-[1px] border-bg-dark/10 p-4 md:p-6 flex flex-col relative w-full overflow-hidden">
-                                {/* Top right squares */}
-                                <div className="absolute top-2 right-2 flex gap-1 opacity-20">
-                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
-                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
-                                    <div className="w-1.5 h-1.5 bg-bg-dark" />
-                                </div>
+                        {/* PLAYER SECTION */}
+                        <section id="player-section" className="space-y-6 scroll-mt-48 pt-8">
+                            <h2 className="text-2xl md:text-3xl font-black mb-6 text-bg-dark">Смотреть онлайн</h2>
 
-                                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-bg-dark/30 mb-4 border-b-[1px] border-bg-dark/5 pb-2 inline-block">
-                                    Payload.Source: Select Translation
-                                </div>
-
-                                <div className="flex flex-wrap gap-2 md:gap-3">
-                                    {videos?.map((v: VideoData) => (
-                                        <button
-                                            key={v.id}
-                                            onClick={() => setSelectedVideo(v)}
-                                            className={cn(
-                                                "px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-colors",
-                                                selectedVideo?.id === v.id
-                                                    ? "bg-bg-dark text-white border-[1px] border-bg-dark"
-                                                    : "bg-white text-bg-dark/40 border-[1px] border-bg-dark/10 hover:border-bg-dark/30 hover:text-bg-dark"
-                                            )}
-                                        >
-                                            {v.translation?.title || "Subtitles"}
-                                        </button>
-                                    ))}
-                                </div>
+                            {/* Translation Pills */}
+                            <div className="flex flex-wrap gap-2 md:gap-3">
+                                {videos?.map((v: VideoData) => (
+                                    <button
+                                        key={v.id}
+                                        onClick={() => setSelectedVideo(v)}
+                                        className={cn(
+                                            "px-5 py-2.5 rounded-full text-sm font-bold transition-all border",
+                                            selectedVideo?.id === v.id
+                                                ? "bg-accent text-white shadow-lg shadow-accent/20 border-accent"
+                                                : "bg-black/5 text-bg-dark/70 border-black/10 hover:bg-black/10 hover:text-bg-dark"
+                                        )}
+                                    >
+                                        {v.translation?.title || "Субтитры"}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* The Viewport */}
-                            <div className="relative aspect-video w-full bg-black shadow-[0_10px_40px_rgba(0,0,0,0.1)] overflow-hidden">
+                            {/* Viewport */}
+                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-bg-dark/5 shadow-xl shadow-black/5 border border-bg-dark/10">
                                 {selectedVideo?.link ? (
                                     <iframe
-                                        src={selectedVideo.link.startsWith('//') ? `https:${selectedVideo.link}` : selectedVideo.link}
+                                        src={iframeSrc}
                                         className="w-full h-full"
                                         allowFullScreen
                                         allow="autoplay; fullscreen; picture-in-picture"
                                         referrerPolicy="no-referrer"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-6 text-white/10 group-hover/viewport:text-accent/20 transition-colors">
-                                        <PlayCircle size={80} strokeWidth={0.5} className="animate-pulse" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.8em]">System.Awaiting.Input</p>
+                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-4 text-bg-dark/30">
+                                        <PlayCircle size={64} strokeWidth={1} />
+                                        <p className="text-sm font-bold">Выберите плеер для просмотра</p>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* Bottom Status Bar */}
-                            <div className="flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] pt-2 px-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-[#00ff88]" />
-                                    <span className="text-bg-dark/40 italic">Stream.Online</span>
-                                </div>
-                                <div className="flex gap-4 md:gap-8 text-bg-dark/30">
-                                    <span>Resolution: 1080p</span>
-                                    <span>Buffering: 0.02ms</span>
-                                </div>
                             </div>
                         </section>
 
                         {/* PERSONNEL BLOCK */}
-                        <section id="personnel" className="space-y-8 scroll-mt-48">
-                            <div className="flex items-center gap-4 pl-4 md:pl-8">
-                                <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
-                                    <span className="text-sm font-black not-italic opacity-20 font-mono">[ 03 ]</span>
-                                    Персонал
-                                </h2>
-                                <div className="flex-1 h-[2px] bg-bg-dark/5" />
-                            </div>
-                            <div className="pl-4 md:pl-8">
-                                <ProjectCast
-                                    actorCredits={actorCredits}
-                                    creators={crewCredits.slice(0, 4)}
-                                    crewCredits={crewCredits.slice(4, 24)}
-                                />
-                            </div>
+                        <section id="personnel" className="scroll-mt-48 pt-8">
+                            <ProjectCast
+                                actorCredits={actorCredits}
+                                creators={crewCredits.slice(0, 4)}
+                                crewCredits={crewCredits.slice(4, 24)}
+                            />
                         </section>
 
                         {/* COMMENTS BLOCK */}
-                        <section className="space-y-8">
-                            <div className="flex items-center gap-4 pl-4 md:pl-8">
-                                <h2 className="text-3xl md:text-5xl font-editorial uppercase tracking-tight text-bg-dark italic flex items-baseline gap-4">
-                                    <span className="text-sm font-black not-italic opacity-20 font-mono">[ 04 ]</span>
-                                    Логи
-                                </h2>
-                                <div className="flex-1 h-[2px] bg-bg-dark/5" />
-                            </div>
-                            <div className="pl-4 md:pl-8">
-                                <CommentsSection animeId={String(anime.id)} />
-                            </div>
+                        <section className="scroll-mt-48 pt-8">
+                            <CommentsSection animeId={String(anime.id)} />
                         </section>
                     </div>
 
-                    {/* RIGHT COLUMN (4 Cols) - Technical Documentation */}
-                    <aside className="lg:col-span-4 space-y-12">
-                        {/* SYS.MONITOR Card */}
-                        <div className="bg-bg-dark text-white p-8 md:p-10 border-[3px] border-bg-dark shadow-[12px_12px_0_var(--color-accent)] relative overflow-hidden flex flex-col gap-10">
-                            <div className="absolute top-0 left-0 w-full h-[2px] bg-accent" />
+                    {/* RIGHT COLUMN (4 Cols) - Sidebar Info */}
+                    <aside className="lg:col-span-4 space-y-8">
 
-                            {/* Score Monolith */}
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em] text-accent">
-                                    <span>Core.Score</span>
-                                    <span>Rank: {(anime.score ?? 0) > 8 ? 'Alpha' : 'Beta'}</span>
-                                </div>
-                                <div className="flex items-end gap-2">
-                                    <span className="text-8xl font-editorial italic tracking-tighter leading-none">{anime.score || '?.?'}</span>
-                                    <div className="flex-1 h-2 bg-white/20 mb-2 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-accent transition-all duration-1000 ease-out"
-                                            style={{ width: `${(anime.score || 0) * 10}%` }}
-                                        >
-                                            <div className="absolute inset-0 bg-white/30 animate-scan" />
-                                        </div>
+                        {/* Information Card */}
+                        <div className="bg-white border border-bg-dark/10 shadow-sm rounded-3xl p-8 space-y-8 sticky top-32">
+
+                            {/* Score Display */}
+                            <div className="flex items-center gap-6 pb-6 border-b border-bg-dark/10">
+                                <div className="text-6xl font-black text-accent">{anime.score || '?.?'}</div>
+                                <div className="space-y-1">
+                                    <p className="text-bg-dark/50 text-xs font-bold uppercase tracking-wider">Оценка Shikimori</p>
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <div
+                                                key={star}
+                                                className={cn(
+                                                    "w-3 h-3 rounded-full",
+                                                    (anime.score || 0) >= star * 2 ? "bg-accent" : "bg-bg-dark/10"
+                                                )}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        { label: 'Shikimori', score: anime.score },
-                                        { label: 'MAL', score: anime.score ? (Number(anime.score) + 0.1).toFixed(2) : 'N/A' },
-                                    ].map((r, i) => (
-                                        <div key={i} className="border border-white/10 p-3 bg-white/5 group hover:bg-white/10 transition-colors">
-                                            <div className="text-[8px] font-black uppercase tracking-widest opacity-40">{r.label}</div>
-                                            <div className="text-lg font-black italic">{r.score}</div>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
 
-                            {/* Technical Specs Grid */}
-                            <div className="space-y-8">
-                                <h3 className="text-xl font-editorial uppercase tracking-tight flex items-center gap-3 italic">
-                                    <div className="w-1.5 h-1.5 bg-accent" /> Tech.Report
-                                </h3>
-                                <div className="grid grid-cols-1 gap-6 pt-2">
-                                    {[
-                                        { label: 'Release.Status', val: anime.status === 'released' ? 'Terminated' : 'Active.Stream', icon: <Clock size={16} className="text-accent" /> },
-                                        { label: 'Unit.Payload', val: `${anime.episodes_aired || 0} / ${anime.episodes || '?'} Units`, icon: <Layers size={16} className="text-accent" /> },
-                                        { label: 'Temporal.Range', val: `${anime.aired_on?.split('-')[0] || '?'} - ${anime.released_on?.split('-')[0] || 'Present'}`, icon: <Calendar size={16} className="text-accent" /> },
-                                        { label: 'Maturity.Protocol', val: anime.rating?.toUpperCase() || 'N/A', icon: <ShieldAlert size={16} className="text-accent" /> },
-                                        { label: 'Production.Lab', val: anime.studios?.[0]?.name || 'Unknown', icon: <Building2 size={16} className="text-accent" /> }
-                                    ].map((item, idx) => (
-                                        <div key={idx} className="flex flex-col gap-1 border-b border-white/5 pb-4 group cursor-default">
-                                            <div className="flex items-center gap-2 text-white/30 group-hover:text-accent transition-colors">
-                                                {item.icon}
-                                                <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
-                                            </div>
-                                            <span className="text-sm font-black uppercase tracking-[0.1em] text-white pl-6">{item.val}</span>
+                            {/* Info List */}
+                            <div className="space-y-6">
+                                {[
+                                    { label: 'Тип', val: anime.kind === 'tv' ? 'ТВ Сериал' : (anime.kind === 'movie' ? 'Фильм' : 'OVA / Special'), icon: <MonitorPlay size={18} className="text-accent" /> },
+                                    { label: 'Эпизоды', val: `${anime.episodes_aired || 0} / ${anime.episodes || '?'}`, icon: <Clock size={18} className="text-accent" /> },
+                                    { label: 'Год', val: anime.aired_on?.split('-')[0] || 'Анонс', icon: <Calendar size={18} className="text-accent" /> },
+                                    { label: 'Возраст', val: anime.rating?.toUpperCase() || 'Нет данных', icon: <ShieldAlert size={18} className="text-accent" /> },
+                                    { label: 'Студия', val: anime.studios?.[0]?.name || 'Неизвестно', icon: <Building2 size={18} className="text-accent" /> }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                                            {item.icon}
                                         </div>
-                                    ))}
-                                </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-bg-dark/50 mb-0.5">{item.label}</p>
+                                            <p className="text-sm font-bold text-bg-dark">{item.val}</p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
-                            {/* External Dossier Links */}
-                            <div className="space-y-4 pt-4 border-t border-white/10">
+                            {/* External Links */}
+                            <div className="pt-6 border-t border-bg-dark/10">
                                 <a
                                     href={`https://shikimori.one/animes/${anime.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-between p-4 bg-white/5 border border-white/10 text-white hover:bg-accent hover:border-accent transition-all group"
+                                    className="flex items-center justify-between p-4 rounded-xl bg-black/5 hover:bg-black/10 border border-black/5 text-bg-dark transition-all group"
                                 >
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">External.Database: Shikimori</span>
-                                    <ExternalLink size={14} className="opacity-40 group-hover:opacity-100" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-blue-500 overflow-hidden shrink-0">
+                                            <Image src="https://shikimori.one/assets/logo-b25191de8dcfea53b7c8441cd508be6510dc411d3cbdb1c2b545d9e508c9f694.svg" alt="Shikimori" width={24} height={24} />
+                                        </div>
+                                        <span className="text-sm font-bold">Shikimori.one</span>
+                                    </div>
+                                    <ExternalLink size={16} className="text-bg-dark/30 group-hover:text-bg-dark" />
                                 </a>
                             </div>
                         </div>
 
-                        {/* RELATED BLOCK */}
-                        <div id="related" className="space-y-8 sticky top-32 scroll-mt-48">
-                            <div className="flex items-center gap-3 border-b-[3px] border-bg-dark pb-3">
-                                <div className="w-5 h-5 bg-accent border-2 border-bg-dark" />
-                                <h3 className="text-2xl font-editorial uppercase tracking-tight italic">Rel.Connections</h3>
-                            </div>
+                        {/* Related Releases Block */}
+                        <div id="related" className="scroll-mt-48">
                             <RelatedReleases
                                 currentAnimeId={String(anime.id)}
                                 related={related}
-                                className="bg-transparent p-0 shadow-none border-0"
                             />
                         </div>
+
                     </aside>
                 </div>
             </div>

@@ -1,44 +1,49 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import React from 'react';
 
 export function TeamHero() {
     return (
-        <section className="relative w-full pt-16 pb-12 lg:pt-24 lg:pb-20 px-4 lg:px-12 flex justify-center border-b-8 border-bg-dark">
+        <section className="relative w-full pt-20 pb-16 lg:pt-32 lg:pb-24 px-6 lg:px-12 flex justify-center">
             <div className="max-w-[1600px] w-full flex flex-col items-center">
 
-                {/* Massive Title */}
-                <div className="w-full text-center lg:text-left border-b-4 border-bg-dark pb-6 mb-8 lg:mb-12 relative">
-                    <h1 className="font-editorial text-7xl lg:text-[10rem] tracking-tighter leading-[0.8] uppercase text-bg-dark break-words">
-                        ОСН<br className="lg:hidden" />
-                        <span className="text-accent underline decoration-8 underline-offset-[16px]">ОВА</span>
-                    </h1>
-
-                    {/* Decorative sub-elements typical of zine style */}
-                    <div className="hidden lg:flex absolute bottom-6 right-0 items-center gap-4 text-bg-dark font-black tracking-widest text-sm uppercase">
-                        <span className="bg-[#B83A2D] text-cream px-3 py-1 border-2 border-bg-dark">ОСН. 2026</span>
-                        <span>[ МАНИФЕСТ ]</span>
-                        <span className="opacity-50">ТОМ 01</span>
+                {/* Elegant Title */}
+                <div className="w-full text-center lg:text-left mb-16 relative">
+                    <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
+                        <div className="w-12 h-1.5 rounded-full bg-accent" />
+                        <span className="text-accent font-bold uppercase tracking-widest text-sm">
+                            AniVault 2026
+                        </span>
                     </div>
+
+                    <h1 className="font-black text-6xl md:text-8xl lg:text-[7.5rem] tracking-tight leading-[0.9] text-bg-dark break-words">
+                        Команда <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/80">&</span><br className="lg:hidden" />
+                        <span className="lg:ml-6">Сообщество</span>
+                    </h1>
                 </div>
 
-                {/* Subtext Grid */}
-                <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+                {/* Glassmorphic Manifesto Cards Grid */}
+                <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch">
 
-                    {/* Left Quote */}
-                    <div className="lg:col-span-8 border-4 border-bg-dark bg-cream p-6 lg:p-10 shadow-[8px_8px_0_var(--color-bg-dark)]">
-                        <p className="font-editorial text-2xl lg:text-4xl text-bg-dark leading-snug uppercase tracking-tight">
-                            "МЫ НЕ ПРОСТО ПЛАТФОРМА. МЫ — АРХИВ, ТЕАТР И СООБЩЕСТВО, СОЗДАННОЕ ФАНАТАМИ ДЛЯ ФАНАТОВ."
+                    {/* Main Quote Card */}
+                    <div className="lg:col-span-8 flex flex-col justify-center bg-white/60 backdrop-blur-xl border border-bg-dark/5 p-10 lg:p-16 rounded-[2.5rem] shadow-sm hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all duration-500">
+                        <p className="text-2xl lg:text-4xl text-bg-dark leading-snug font-bold tracking-tight">
+                            "Мы не просто платформа. Мы — огромный архив, уютный кинотеатр и живое сообщество, созданное фанатами для фанатов."
                         </p>
                     </div>
 
-                    {/* Right Mission text */}
-                    <div className="lg:col-span-4 flex flex-col gap-6">
-                        <div className="bg-[#B83A2D] border-4 border-bg-dark p-6 text-cream shadow-[4px_4px_0_var(--color-bg-dark)]">
-                            <h3 className="font-black text-xl uppercase tracking-widest border-b-2 border-cream/30 pb-2 mb-4">НАША МИССИЯ</h3>
-                            <p className="font-medium text-sm lg:text-base leading-relaxed opacity-90">
-                                AniVault был создан, чтобы преодолеть разрыв между эстетикой и функциональностью.
+                    {/* Mission Statement Card */}
+                    <div className="lg:col-span-4 flex flex-col bg-bg-dark text-bg-cream border border-bg-dark/10 p-10 lg:p-12 rounded-[2.5rem] shadow-lg hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1 relative overflow-hidden group">
+
+                        {/* Glow effect on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                        <div className="relative z-10 h-full flex flex-col">
+                            <h3 className="font-black text-xl uppercase tracking-widest border-b border-bg-cream/20 pb-4 mb-6">Наша Миссия</h3>
+                            <p className="font-medium text-base lg:text-lg leading-relaxed text-bg-cream/90 flex-grow">
+                                AniVault был создан, чтобы преодолеть разрыв между эстетикой и бескомпромиссной функциональностью.
+                            </p>
+                            <p className="font-medium text-base lg:text-lg leading-relaxed text-bg-cream/60 mt-4">
                                 Мы открываем миру лучшую японскую анимацию, тщательно каталогизируя ее с абсолютной точностью.
                             </p>
                         </div>

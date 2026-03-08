@@ -5,6 +5,7 @@ import { Play, Share2 } from 'lucide-react';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { FavoriteButton } from '@/components/anime/FavoriteButton';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 export interface ProjectHeroProps {
     project: {
@@ -38,59 +39,60 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
 }) => {
     const displayBanner = isMobile ? (project.image || project.banner) : (project.banner || project.image);
 
-    // Dynamic text sizing based on title length to prevent layout blowout on long Light Novel titles
-    const titleLength = project.title?.length || 0;
-    const titleSizeClass = titleLength > 45
-        ? "text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl"
-        : titleLength > 25
-            ? "text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl"
-            : "text-5xl sm:text-7xl lg:text-8xl xl:text-9xl";
-
     return (
-        <section className="relative min-h-[70vh] w-full bg-bg-dark border-[3px] border-bg-dark shadow-[20px_20px_0_var(--color-bg-dark)] overflow-hidden group/hero">
-            {/* Background Layer: Massive Art */}
-            <div className="absolute inset-0 opacity-40 grayscale group-hover/hero:grayscale-0 group-hover/hero:opacity-50 transition-all duration-1000 scale-105 group-hover/hero:scale-100">
+        <section className="relative w-full min-h-[75vh] flex items-end pb-24 pt-32 px-4 lg:px-12 overflow-hidden group rounded-b-3xl -mt-16">
+            {/* Background Image with blur and gradient overlay */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none bg-bg-cream">
                 <BlurImage
                     src={displayBanner || ''}
                     alt=""
-                    className="w-full h-full object-cover"
+                    className="object-cover w-full h-full scale-105 group-hover:scale-110 transition-transform duration-[10s] ease-out opacity-20 contrast-125 saturate-50"
                 />
+                {/* Gradient Masks */}
+                <div className="absolute inset-0 bg-gradient-to-t from-bg-cream via-bg-cream/80 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-bg-cream via-bg-cream/60 to-transparent" />
             </div>
 
-            {/* CRT Overlay Effect */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] z-10 pointer-events-none bg-[length:100%_4px,3px_100%]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/80 to-transparent z-10" />
+            <div className="max-w-[1600px] w-full mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-end">
 
-            <div className="relative z-20 h-full flex flex-col md:flex-row items-end md:items-stretch">
+                {/* Content Section */}
+                <div className="lg:col-span-8 flex flex-col justify-end space-y-8">
+                    {/* Top Metadata */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-bg-dark/70 uppercase tracking-wider">
+                        {project.type && (
+                            <span className="px-3 py-1 bg-black/5 rounded-full backdrop-blur-md border border-black/10">
+                                {project.type}
+                            </span>
+                        )}
+                        <span>{project.year || 'TBA'}</span>
+                        {project.studio && (
+                            <>
+                                <div className="w-1.5 h-1.5 rounded-full bg-bg-dark/30" />
+                                <span>{project.studio}</span>
+                            </>
+                        )}
+                    </div>
 
-                {/* Left: Huge Title Monolith */}
-                <div className="flex-1 min-w-0 p-8 md:p-16 flex flex-col justify-end gap-8 relative z-20">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-[2px] bg-accent" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent animate-pulse">Classification.Dossier</span>
-                        </div>
-                        <div className="w-full max-w-[800px]">
-                            <h1
-                                className={cn(
-                                    "font-editorial uppercase tracking-tighter leading-[0.85] text-white italic drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] break-words w-full",
-                                    titleSizeClass,
-                                    titleLength > 60 && "line-clamp-4"
-                                )}
-                                title={project.title}
-                            >
-                                {project.title}
-                            </h1>
-                        </div>
-                        <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-white/40">
-                            <span>{project.originalTitle}</span>
-                            <div className="h-1 w-1 bg-accent rounded-full" />
-                            <span>{project.type}</span>
-                        </div>
+                    {/* Title */}
+                    <h1
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-bg-dark leading-tight drop-shadow-md"
+                        title={project.title}
+                    >
+                        {project.title}
+                    </h1>
+
+                    {/* Original Title & Genres */}
+                    <div className="space-y-4">
+                        {project.originalTitle && (
+                            <p className="text-lg md:text-xl text-bg-dark/50 font-medium italic">
+                                {project.originalTitle}
+                            </p>
+                        )}
+
                         {project.genres && project.genres.length > 0 && (
-                            <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider mt-4">
-                                {project.genres.slice(0, 4).map((g, i) => (
-                                    <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 text-cream whitespace-nowrap">
+                            <div className="flex flex-wrap gap-2 text-[11px] font-bold tracking-wide">
+                                {project.genres.slice(0, 5).map((g, i) => (
+                                    <span key={i} className="px-3 py-1.5 bg-accent/10 text-accent rounded-full border border-accent/20 backdrop-blur-sm">
                                         {g.russian || g.name}
                                     </span>
                                 ))}
@@ -98,99 +100,61 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({
                         )}
                     </div>
 
-                    {/* Action Cluster HUD */}
-                    <div className="flex flex-wrap items-center gap-4">
-                        <button
-                            onClick={onPlay}
-                            className="group/play relative flex items-center gap-4 px-10 py-6 bg-accent border-[3px] border-white/20 hover:border-white text-white font-editorial uppercase tracking-widest text-2xl md:text-3xl transition-all active:scale-95 overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/play:translate-x-[100%] transition-transform duration-500 italic" />
-                            <Play size={28} fill="currentColor" className="relative z-10" />
-                            <span className="relative z-10 italic">{nextEpisodeLabel}</span>
-                        </button>
-
-                        <div className="flex bg-white/5 border-[3px] border-white/10 backdrop-blur-md">
-                            <FavoriteButton animeId={String(project.id)} variant="brutalist" className="!border-0 !shadow-none hover:bg-white/10 transition-colors" />
-                            <div className="w-[2px] bg-white/10 h-16 self-center" />
+                    {/* Actions */}
+                    <div className="flex flex-wrap items-center gap-4 pt-6">
+                        {/* Play Button */}
+                        <div className="flex items-center gap-4 pt-6">
                             <button
-                                onClick={onShare}
-                                className="w-16 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all outline-none"
+                                onClick={onPlay}
+                                className="group/btn flex items-center gap-3 px-8 py-4 bg-accent text-white rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-lg shadow-accent/20 outline-none"
                             >
-                                <Share2 size={24} />
+                                <Play size={22} fill="currentColor" />
+                                <span>{nextEpisodeLabel}</span>
                             </button>
+
+                            <div className="flex items-center gap-2">
+                                <FavoriteButton animeId={String(project.id)} className="p-4 bg-black/5 border border-black/10 rounded-full hover:bg-black/10 text-bg-dark backdrop-blur-md transition-colors" />
+
+                                <button
+                                    onClick={onShare}
+                                    className="p-4 bg-black/5 border border-black/10 rounded-full hover:bg-black/10 text-bg-dark backdrop-blur-md transition-colors outline-none"
+                                >
+                                    <Share2 size={24} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right: Technical Poster Frame */}
-                <div className="hidden lg:flex w-[350px] xl:w-[400px] shrink-0 border-l-[3px] border-white/10 bg-white/5 backdrop-blur-xl flex-col p-8 xl:p-12 gap-8 justify-between relative overflow-hidden z-20">
-                    {/* Decorative scanline for the poster frame */}
-                    <div className="absolute inset-0 bg-accent/5 animate-scan pointer-events-none" />
+                {/* Cover Image (Desktop only) */}
+                <div className="hidden lg:block lg:col-span-4 relative">
+                    <div className="relative w-[280px] xl:w-[320px] aspect-[2/3] ml-auto rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-bg-dark/10 group-hover:-translate-y-4 group-hover:rotate-2 transition-all duration-700 ease-out">
+                        <Image
+                            src={project.image || ''}
+                            alt={project.title}
+                            fill
+                            unoptimized
+                            referrerPolicy="no-referrer"
+                            className="object-cover"
+                            sizes="320px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div className="space-y-6 relative z-10">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/30">
-                            <span>Visual.Reference</span>
-                            <span>Ref: {project.id}-00A</span>
+                        {/* Status Badge */}
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-bg-dark/10 flex items-center gap-2 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300">
+                            <div className={cn(
+                                "w-2 h-2 rounded-full shadow-sm",
+                                project.status === 'released' ? 'bg-[#00ff88] shadow-[#00ff88]/50' :
+                                    project.status === 'ongoing' ? 'bg-accent shadow-accent/50 animate-pulse' :
+                                        'bg-bg-dark/50'
+                            )} />
+                            <span className="text-bg-dark text-[10px] font-bold uppercase tracking-widest">
+                                {project.status === 'released' ? 'Завершен' : project.status === 'ongoing' ? 'Онгоинг' : 'Анонс'}
+                            </span>
                         </div>
-                        <div className="aspect-[2/3] w-full border-[6px] border-white shadow-[0_20px_40px_rgba(0,0,0,0.5)] relative group/frame overflow-hidden">
-                            <BlurImage
-                                src={project.image || ''}
-                                alt={project.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/frame:scale-110"
-                            />
-                            <div className="absolute inset-0 border-[20px] border-transparent group-hover/frame:border-white/20 transition-all pointer-events-none" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 relative z-10">
-                        <div className="flex justify-between items-end pb-4 border-b border-white/10">
-                            <div className="space-y-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Temporal.Signature</span>
-                                <div className="text-3xl font-editorial text-white italic">{project.year || 'TBA'}</div>
-                            </div>
-                            <div className="text-right space-y-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Stream.Rating</span>
-                                <div className="text-3xl font-editorial text-accent italic">{project.studio_rating || 'N/A'}</div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/10">
-                            <div className="space-y-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate block">Sys.Status</span>
-                                <div className="text-xs font-black text-white uppercase tracking-widest truncate">
-                                    {project.status === 'released' ? 'RELEASED' : project.status === 'ongoing' ? 'ON AIR' : 'ANNOUNCED'}
-                                </div>
-                            </div>
-                            <div className="text-right space-y-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate block">Dev.Studio</span>
-                                <div className="text-xs font-black text-white uppercase tracking-widest truncate">
-                                    {project.studio || 'UNKNOWN'}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Vol.Sequence</span>
-                            <div className="text-xs font-black text-white uppercase tracking-widest">
-                                {project.episodes_aired || project.episodes_total || '?'} / {project.episodes_total || '?'} EPS
-                            </div>
-                        </div>
-
-                        <div className="h-1 w-full bg-white/10">
-                            <div
-                                className="h-full bg-accent relative overflow-hidden transition-all duration-1000"
-                                style={{ width: `${Math.min(100, ((project.episodes_aired || 0) / (project.episodes_total || 1)) * 100 || 100)}%` }}
-                            >
-                                <div className="absolute inset-0 bg-white/50 animate-scan" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Industrial serial numbers */}
-                    <div className="absolute bottom-4 right-4 text-[8px] font-mono text-white/10 rotate-90 origin-right">
-                        AX-77-B / PROTOCOL-9 / AV-2026
                     </div>
                 </div>
+
             </div>
         </section>
     );

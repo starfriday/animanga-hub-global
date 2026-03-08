@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
- 
+
 /**
  * Shikimori API Client
  * Documentation: https://shikimori.one/api/doc
@@ -67,12 +67,18 @@ export async function getTrendingAnimes(limit: number = 20) {
             }
         }`;
 
-        const response = await fetch('https://shikimori.one/api/graphql', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ query }),
-            next: { revalidate: 3600 }
-        });
+        let response;
+        try {
+            response = await fetch('https://shikimori.one/api/graphql', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ query }),
+                next: { revalidate: 3600 }
+            });
+        } catch (error) {
+            console.error('getTrendingAnimes network error (timeout/dns):', error);
+            return [];
+        }
 
         if (!response.ok) throw new Error(`Shikimori GQL trending error: ${response.status}`);
         const data = await response.json();
@@ -191,12 +197,18 @@ export async function getUpcomingAnimes(limit: number = 20) {
             }
         }`;
 
-        const response = await fetch('https://shikimori.one/api/graphql', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ query }),
-            next: { revalidate: 3600 }
-        });
+        let response;
+        try {
+            response = await fetch('https://shikimori.one/api/graphql', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ query }),
+                next: { revalidate: 3600 }
+            });
+        } catch (error) {
+            console.error('getUpcomingAnimes network error:', error);
+            return [];
+        }
 
         if (!response.ok) throw new Error(`Shikimori GQL upcoming error: ${response.status}`);
         const data = await response.json();
@@ -335,12 +347,18 @@ export async function getFullAnimeDetailsGQL(id: string | number) {
             }
         }`;
 
-        const response = await fetch('https://shikimori.one/api/graphql', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ query }),
-            next: { revalidate: 86400 } // Cache for 24 hours
-        });
+        let response;
+        try {
+            response = await fetch('https://shikimori.one/api/graphql', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ query }),
+                next: { revalidate: 86400 } // Cache for 24 hours
+            });
+        } catch (error) {
+            console.error('getFullAnimeDetailsGQL network timeout:', error);
+            return null;
+        }
 
         if (!response.ok) return null;
         const data = await response.json();
@@ -367,4 +385,3 @@ export async function getFullAnimeDetailsGQL(id: string | number) {
         return null;
     }
 }
-

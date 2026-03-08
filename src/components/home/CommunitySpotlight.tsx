@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Users, ArrowRight, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import Image from 'next/image';
 
 export const CommunitySpotlight = () => {
     const { ref: sectionRef, isVisible } = useScrollReveal(0.1);
@@ -68,7 +69,7 @@ export const CommunitySpotlight = () => {
                             <div className="flex -space-x-3">
                                 {activeUsers.map((u, i) => (
                                     <div key={i} className="w-12 h-12 rounded-full border-4 border-white overflow-hidden bg-bg-cream" style={{ zIndex: 10 - i }}>
-                                        <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                                        <Image src={u.avatar} alt={u.name} width={48} height={48} className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                                 <div className="w-12 h-12 rounded-full border-4 border-white bg-accent flex items-center justify-center font-editorial text-lg text-cream z-0">

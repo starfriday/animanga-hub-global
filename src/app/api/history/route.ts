@@ -19,14 +19,13 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
-
 export async function POST(request: Request) {
     try {
         const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { animeId, episode, progress, completed } = body;
+        const { animeId, episode, progress, completed, translationId } = body;
 
         if (!animeId || episode === undefined) {
             return NextResponse.json({ error: 'animeId and episode are required' }, { status: 400 });
@@ -43,14 +42,16 @@ export async function POST(request: Request) {
             update: {
                 episode: Number(episode),
                 progress: progress !== undefined ? Number(progress) : undefined,
-                completed: completed !== undefined ? Boolean(completed) : undefined
+                completed: completed !== undefined ? Boolean(completed) : undefined,
+                translationId: translationId ? String(translationId) : undefined
             },
             create: {
                 userId: user.id,
                 animeId: Number(animeId),
                 episode: Number(episode),
                 progress: progress ? Number(progress) : 0,
-                completed: completed ? Boolean(completed) : false
+                completed: completed ? Boolean(completed) : false,
+                translationId: translationId ? String(translationId) : null
             }
         });
 

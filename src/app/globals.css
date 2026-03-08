@@ -175,21 +175,22 @@ body {
 
 /* Scrollbar styling for retro feel */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--color-bg-cream);
-  border-left: 2px solid var(--color-bg-dark);
+  border-left: 1px solid var(--color-bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-bg-dark);
-  border-left: 2px solid var(--color-bg-dark);
+  border-radius: 9999px;
+  border: 2px solid var(--color-bg-cream);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background: var(--color-secondary-muted);
 }
 
 /* Base custom classes */

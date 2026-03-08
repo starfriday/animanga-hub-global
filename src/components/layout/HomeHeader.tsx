@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, Film, Users, PlayCircle, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import { useAuth } from '@/components/auth/AuthContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 
@@ -212,7 +213,7 @@ export function HomeHeader() {
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center overflow-hidden">
                                         {currentUser.avatarUrl ? (
-                                            <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                            <Image src={currentUser.avatarUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
                                         ) : (
                                             <span className="font-bold text-xl text-accent">
                                                 {currentUser.username[0].toUpperCase()}

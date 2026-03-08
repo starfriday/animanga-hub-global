@@ -14,25 +14,27 @@ export function ArchiveGrid({ movies }: ArchiveGridProps) {
     if (!movies || movies.length === 0) return null;
 
     return (
-        <section className="w-full py-24 bg-bg-dark relative">
-            {/* Background Grain */}
-            <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("/noise.png")', backgroundRepeat: 'repeat' }} />
+        <section className="w-full py-24 bg-bg-cream relative">
+            {/* Ambient Background Blur */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+            </div>
 
             <div className="max-w-[1800px] mx-auto px-4 lg:px-12 flex flex-col gap-12 relative z-10">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-white/10 pb-8 gap-8">
+                <div className="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-bg-dark/10 pb-8 gap-8">
                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-white/50 text-sm font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-2 text-bg-dark/50 text-sm font-bold uppercase tracking-wider">
                             <Film size={18} />
                             Полный каталог
                         </div>
-                        <h2 className="text-4xl lg:text-5xl font-black text-white leading-none">
+                        <h2 className="text-4xl lg:text-5xl font-black text-bg-dark leading-none">
                             Киноархив
                         </h2>
                     </div>
                     <div className="max-w-md text-left md:text-right">
-                        <p className="text-white/60 font-medium">
+                        <p className="text-bg-dark/60 font-medium">
                             Кураторская подборка полнометражных произведений. Исследуйте богатую коллекцию классики и новых шедевров японской анимации.
                         </p>
                     </div>
@@ -44,10 +46,10 @@ export function ArchiveGrid({ movies }: ArchiveGridProps) {
                         <Link
                             key={movie.id}
                             href={`/anime/${movie.id}`}
-                            className="group relative flex flex-col gap-3 rounded-xl outline-none"
+                            className="group relative flex flex-col gap-3 rounded-[1.5rem] outline-none"
                         >
                             {/* Poster Box */}
-                            <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 shadow-lg">
+                            <div className="relative w-full aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-white/40 border border-bg-dark/5 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 group-hover:-translate-y-1">
                                 <Image
                                     src={`https://shikimori.one${movie.image?.original}`}
                                     alt={movie.name}
@@ -59,13 +61,13 @@ export function ArchiveGrid({ movies }: ArchiveGridProps) {
                                 />
 
                                 {/* Overlay gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-bg-dark/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                 {/* Score Badge */}
                                 {(movie.score || 0) > 0 && (
-                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 shadow-sm">
+                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full border border-bg-dark/5 flex items-center gap-1 shadow-sm">
                                         <Star size={12} className="text-accent fill-accent" />
-                                        <span className="text-white text-[10px] font-bold">{movie.score}</span>
+                                        <span className="text-bg-dark text-[10px] font-bold">{movie.score}</span>
                                     </div>
                                 )}
 
@@ -78,13 +80,13 @@ export function ArchiveGrid({ movies }: ArchiveGridProps) {
                             </div>
 
                             {/* Meta Info Below Poster */}
-                            <div className="flex flex-col gap-1 px-1">
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                            <div className="flex flex-col gap-1 px-2 pt-1">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-bg-dark/40 uppercase tracking-widest">
                                     <span>{movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
-                                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                                    <div className="w-1 h-1 rounded-full bg-bg-dark/20" />
                                     <span>Фильм</span>
                                 </div>
-                                <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-accent transition-colors">
+                                <h3 className="text-sm font-bold text-bg-dark line-clamp-2 leading-tight group-hover:text-accent transition-colors">
                                     {movie.russian || movie.name}
                                 </h3>
                             </div>

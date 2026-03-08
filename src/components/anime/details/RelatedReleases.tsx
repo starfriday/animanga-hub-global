@@ -55,73 +55,100 @@ export const RelatedReleases: React.FC<RelatedReleasesProps> = ({ currentAnimeId
 
     return (
         <div className={cn("space-y-6", className)}>
-            <div className="flex items-center justify-between border-b-[3px] border-bg-dark pb-3">
+            <div className="flex items-center justify-between pb-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-accent border-[3px] border-bg-dark/10" />
-                    <h3 className="text-xl font-editorial uppercase tracking-tight text-bg-dark italic">Rel.Connections</h3>
+                    <h3 className="text-xl md:text-2xl font-black text-bg-dark">Связанное</h3>
                 </div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-20 hidden sm:block">
-                    {sortedRelated.length} UNITS.SYNC
+                <div className="text-xs font-bold text-bg-dark/30 hidden sm:block">
+                    {sortedRelated.length}
                 </div>
             </div>
 
-            <div className="relative space-y-4 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-bg-dark/5">
+            <div className="flex flex-col gap-3">
                 {sortedRelated.map((r) => {
                     const anime = r.anime!;
                     const isCurrent = String(anime.id) === String(currentAnimeId);
                     const year = anime.aired_on ? anime.aired_on.split('-')[0] : 'TBA';
+                    const imgUrl = anime.image?.original ? ensureFullUrl(anime.image.original) : '';
+                    const title = anime.russian || anime.name;
+
+                    const isImportant = ['Sequel', 'Prequel', 'Main Story', 'Продолжение', 'Предыстория', 'Главная история']
+                        .some(relation => relation === r.relation || relation === r.relation_russian);
 
                     return (
-                        <div key={anime.id} className="relative pl-8 group">
-                            {/* Chronology Dot */}
-                            <div className={cn(
-                                "absolute left-[11px] top-4 border-[3px] border-bg-cream transition-all z-10 rounded-full",
-                                isCurrent
-                                    ? "w-3 h-3 bg-accent shadow-[0_0_8px_var(--color-accent)] scale-125"
-                                    : "w-2.5 h-2.5 bg-bg-dark group-hover:bg-accent"
-                            )} />
+                        <div key={anime.id} className="relative group">
+
+                            {/* Focus Indicator for current anime */}
+                            {isCurrent && (
+                                <div className="absolute -left-3 top-2 bottom-2 w-1 bg-accent rounded-r-md z-10" />
+                            )}
 
                             <Link
                                 href={`/anime/${anime.id}`}
                                 className={cn(
-                                    "flex items-center gap-4 p-3 bg-white border border-bg-dark/5 transition-all outline-none group/card",
-                                    isCurrent
-                                        ? "border-accent bg-accent/[0.03] shadow-[4px_4px_0_var(--color-accent)]"
-                                        : "hover:border-bg-dark hover:shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-0.5"
+                                    "relative flex items-center gap-4 p-3 bg-white border border-bg-dark/10 shadow-sm rounded-2xl transition-all overflow-hidden group/link",
+                                    isCurrent ? "bg-accent/10 border-accent/20" : "hover:border-accent hover:shadow-md"
                                 )}
                             >
-                                <div className="w-10 h-14 bg-bg-cream border border-bg-dark/10 overflow-hidden shrink-0 relative">
-                                    <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover/card:opacity-100 animate-scan z-10 pointer-events-none" />
-                                    <Image
-                                        src={anime.image?.original ? ensureFullUrl(anime.image.original) : ''}
-                                        alt={anime.russian || anime.name}
-                                        fill
-                                        unoptimized
-                                        referrerPolicy="no-referrer"
-                                        className="object-cover grayscale group-hover/card:grayscale-0 transition-all duration-500"
-                                        sizes="40px"
-                                    />
+                                {/* Hover Highlight */}
+                                <div className="absolute inset-y-0 left-0 w-1 bg-accent opacity-0 group-hover/link:opacity-100 transition-opacity" />
+
+                                <div className="relative w-12 h-16 md:w-16 md:h-20 shrink-0 rounded-lg overflow-hidden shadow-sm">
+                                    {imgUrl ? (
+                                        <Image
+                                            src={imgUrl}
+                                            alt={title}
+                                            fill
+                                            unoptimized
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover group-hover/link:scale-110 transition-transform duration-500"
+                                            sizes="64px"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-bg-dark/5 flex items-center justify-center font-bold text-bg-dark/30 text-xl">
+                                            {title[0]}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="flex-1 min-w-0 space-y-1">
-                                    <div className="text-[8px] font-black text-accent uppercase tracking-widest leading-none">
-                                        {r.relation_russian}
+                                <div className="flex-1 min-w-0 pr-2 pb-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={cn(
+                                            "truncate text-[10px] md:text-xs font-bold uppercase tracking-wider",
+                                            isImportant || isCurrent ? "text-accent" : "text-bg-dark/40"
+                                        )}>
+                                            {r.relation_russian || r.relation || 'Связь'}
+                                        </span>
+                                        {anime.score && (
+                                            <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold",
+                                                isCurrent ? "bg-accent/20 text-accent" : "bg-black/5 text-bg-dark"
+                                            )}>
+                                                <span>★</span> {anime.score}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className={cn(
-                                        "text-[13px] font-editorial uppercase tracking-tight line-clamp-1 transition-colors leading-tight italic",
-                                        isCurrent ? "text-accent" : "text-bg-dark group-hover/card:text-accent"
-                                    )}>
-                                        {anime.russian || anime.name}
-                                    </div>
-                                    <div className="flex items-center gap-3 opacity-30">
-                                        <span className="text-[9px] font-mono tracking-tighter uppercase whitespace-nowrap">REF: {anime.id}</span>
-                                        <span className="text-[9px] font-mono tracking-tighter uppercase whitespace-nowrap">{year}</span>
+                                    <h4 className={cn(
+                                        "text-sm md:text-base font-bold transition-colors truncate mb-1",
+                                        isCurrent ? "text-accent" : "text-bg-dark group-hover/link:text-accent"
+                                    )} title={title}>
+                                        {title}
+                                    </h4>
+                                    <div className="flex items-center gap-2 text-xs text-bg-dark/50 font-medium truncate">
+                                        <span>{anime.kind === 'tv' ? 'ТВ Сериал' : anime.kind === 'movie' ? 'Фильм' : (anime.kind?.toUpperCase() || 'UNKNOWN')}</span>
+                                        <span className="w-1 h-1 rounded-full bg-bg-dark/20" />
+                                        <span>{year}</span>
+                                        {anime.status && (
+                                            <>
+                                                <span className="w-1 h-1 rounded-full bg-bg-dark/20" />
+                                                <span>{anime.status === 'released' ? 'Вышло' : anime.status === 'ongoing' ? 'Онгоинг' : 'Анонс'}</span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
-                                <ChevronRight size={14} className={cn(
-                                    "text-bg-dark transition-all opacity-0 group-hover/card:opacity-100 group-hover/card:translate-x-1",
-                                    isCurrent ? "opacity-100 text-accent font-bold" : ""
+                                <ChevronRight size={18} className={cn(
+                                    "transition-all opacity-0 group-hover/link:opacity-100 group-hover/link:translate-x-1",
+                                    isCurrent ? "opacity-100 text-accent" : "text-bg-dark/30"
                                 )} />
                             </Link>
                         </div>

@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Pin, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface SearchableItem {
     id: string;
@@ -94,7 +95,7 @@ export const SearchableList: React.FC<SearchableListProps> = ({
                                     {isSelected && <Check size={10} strokeWidth={4} />}
                                 </div>
                                 {item.logo && (
-                                    <img src={item.logo} alt="" className="w-5 h-5 rounded-md object-contain bg-white/5" />
+                                    <Image src={item.logo} alt="" width={20} height={20} className="w-5 h-5 rounded-md object-contain bg-white/5" />
                                 )}
                                 <span className="text-[11px] font-bold tracking-tight">{item.label}</span>
                             </div>

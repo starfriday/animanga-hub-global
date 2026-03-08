@@ -1,0 +1,11 @@
+fetch('https://kodikapi.com/search?token=1a181b998ddb87ae564c7c31afca5df4&shikimori_id=52991')
+    .then(res => res.json())
+    .then(data => {
+        if (data.results) {
+            console.log("Translations and links:");
+            data.results.forEach(r => {
+                console.log(r.translation.title, "-", r.link);
+            });
+        }
+    })
+    .catch(console.error);

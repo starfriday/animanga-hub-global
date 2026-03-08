@@ -13,75 +13,97 @@ const TOP_USERS = [
 
 export function WallOfFame() {
     return (
-        <section className="w-full py-16 lg:py-24 px-4 lg:px-12 bg-bg-cream">
+        <section className="w-full py-16 lg:py-24 px-6 lg:px-12 relative z-10">
             <div className="max-w-[1200px] w-full mx-auto">
 
-                <div className="text-center mb-16">
-                    <h2 className="font-editorial text-5xl lg:text-7xl uppercase tracking-tighter text-bg-dark mb-4">
-                        ДОСКА <span className="text-[#B83A2D] underline decoration-8 underline-offset-8">ПОЧЕТА</span>
+                <div className="flex flex-col items-center mb-16 text-center">
+                    <span className="text-accent font-bold uppercase tracking-widest text-sm mb-4 inline-block px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20">
+                        Топ Пользователей
+                    </span>
+                    <h2 className="font-black text-4xl lg:text-6xl tracking-tight text-bg-dark">
+                        Доска Почета
                     </h2>
-                    <p className="font-bold text-sm tracking-widest uppercase opacity-60">
-                        САМЫЕ АКТИВНЫЕ ГОЛОСА НАШЕГО СООБЩЕСТВА
-                    </p>
                 </div>
 
-                {/* Printed Leaderboard Table */}
-                <div className="w-full border-4 border-bg-dark bg-cream shadow-[12px_12px_0_var(--color-bg-dark)]">
+                {/* Elegant List View */}
+                <div className="w-full flex flex-col gap-4">
 
                     {/* Header Row */}
-                    <div className="grid grid-cols-12 gap-4 p-4 lg:p-6 border-b-4 border-bg-dark bg-bg-dark text-cream font-black text-xs lg:text-sm tracking-widest uppercase">
-                        <div className="col-span-2 lg:col-span-1 text-center">РАНГ</div>
-                        <div className="col-span-6 lg:col-span-5">ПОЛЬЗОВАТЕЛЬ</div>
-                        <div className="col-span-4 lg:col-span-3 text-center">СТАТУС</div>
-                        <div className="hidden lg:flex col-span-3 items-center justify-end text-accent">УРОВЕНЬ И СТАТИСТИКА</div>
+                    <div className="grid grid-cols-12 gap-4 px-8 py-4 bg-white/40 backdrop-blur-sm rounded-2xl border border-bg-dark/5 text-bg-dark/50 font-bold text-xs tracking-widest uppercase shadow-sm">
+                        <div className="col-span-2 lg:col-span-1 text-center">Ранг</div>
+                        <div className="col-span-6 lg:col-span-6">Пользователь</div>
+                        <div className="col-span-4 lg:col-span-2 text-center">Статус</div>
+                        <div className="hidden lg:flex col-span-3 items-center justify-end">Статистика</div>
                     </div>
 
                     {/* Data Rows */}
-                    <div className="flex flex-col">
-                        {TOP_USERS.map((user, idx) => (
-                            <div key={user.name} className={`grid grid-cols-12 gap-4 p-4 lg:p-6 items-center hover:bg-bg-dark/5 transition-colors ${idx !== TOP_USERS.length - 1 ? 'border-b-2 border-bg-dark/20' : ''}`}>
+                    <div className="flex flex-col gap-3">
+                        {TOP_USERS.map((user) => {
+                            // Determine visual styles based on rank
+                            const isTop3 = user.rank <= 3;
+                            const isFirst = user.rank === 1;
 
-                                {/* Rank */}
-                                <div className="col-span-2 lg:col-span-1 flex justify-center">
-                                    <span className={`font-editorial text-3xl lg:text-4xl leading-none ${user.rank <= 3 ? 'text-[#B83A2D]' : 'text-bg-dark opacity-50'}`}>
-                                        {String(user.rank).padStart(2, '0')}
-                                    </span>
-                                </div>
+                            let rankStyle = "text-bg-dark/40 font-bold";
+                            if (isFirst) rankStyle = "text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-600 font-black drop-shadow-sm";
+                            else if (user.rank === 2) rankStyle = "text-transparent bg-clip-text bg-gradient-to-br from-slate-300 to-slate-500 font-black drop-shadow-sm";
+                            else if (user.rank === 3) rankStyle = "text-transparent bg-clip-text bg-gradient-to-br from-amber-600 to-amber-800 font-black drop-shadow-sm";
 
-                                {/* User Name */}
-                                <div className="col-span-6 lg:col-span-5 flex items-center gap-4">
-                                    <div className="w-10 h-10 lg:w-12 lg:h-12 border-2 border-bg-dark bg-accent shrink-0 hidden sm:block">
-                                        <div
-                                            className="w-full h-full bg-cover bg-center grayscale mix-blend-multiply opacity-80"
-                                            style={{ backgroundImage: `url('https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}')` }}
-                                        />
+                            return (
+                                <div
+                                    key={user.name}
+                                    className={`
+                                        grid grid-cols-12 gap-4 px-8 py-5 items-center 
+                                        bg-white/60 backdrop-blur-md rounded-2xl border transition-all duration-300
+                                        hover:bg-white/90 hover:shadow-md hover:scale-[1.01] hover:-translate-y-0.5
+                                        ${isFirst ? 'border-yellow-400/30' : 'border-bg-dark/5'}
+                                    `}
+                                >
+                                    {/* Rank */}
+                                    <div className="col-span-2 lg:col-span-1 flex justify-center">
+                                        <span className={`text-2xl lg:text-3xl ${rankStyle}`}>
+                                            #{user.rank}
+                                        </span>
                                     </div>
-                                    <h3 className="font-editorial text-2xl lg:text-3xl uppercase tracking-tighter text-bg-dark">
-                                        {user.name}
-                                    </h3>
-                                </div>
 
-                                {/* Status */}
-                                <div className="col-span-4 lg:col-span-3 flex justify-center">
-                                    <span className="font-black text-[10px] lg:text-xs tracking-widest uppercase px-3 py-1 border-2 border-bg-dark bg-cream">
-                                        {user.role}
-                                    </span>
-                                </div>
+                                    {/* User Name */}
+                                    <div className="col-span-6 lg:col-span-6 flex items-center gap-5">
+                                        <div className={`w-12 h-12 rounded-full relative overflow-hidden shrink-0 hidden sm:block ${isFirst ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-bg-cream' : 'border border-bg-dark/10'}`}>
+                                            <div
+                                                className="w-full h-full bg-cover bg-center bg-bg-cream"
+                                                style={{ backgroundImage: `url('https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}')` }}
+                                            />
+                                        </div>
+                                        <h3 className="font-bold text-xl lg:text-2xl tracking-tight text-bg-dark">
+                                            {user.name}
+                                        </h3>
+                                    </div>
 
-                                {/* Stats */}
-                                <div className="hidden lg:flex col-span-3 justify-end items-center gap-6 font-black text-sm uppercase tracking-widest text-[#B83A2D]">
-                                    <span>УРОВЕНЬ {user.lvl}</span>
-                                    <span className="opacity-50 text-bg-dark text-xs">{user.comments} КОММЕНТ.</span>
+                                    {/* Status */}
+                                    <div className="col-span-4 lg:col-span-2 flex justify-center">
+                                        <span className={`
+                                            font-bold text-[10px] lg:text-xs tracking-widest uppercase px-3 py-1.5 rounded-full border
+                                            ${isTop3 ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-bg-dark/5 border-bg-dark/10 text-bg-dark/70'}
+                                        `}>
+                                            {user.role}
+                                        </span>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="hidden lg:flex col-span-3 justify-end items-center gap-6 font-bold text-sm tracking-wide text-bg-dark/80">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-accent">Lv. {user.lvl}</span>
+                                            <span className="font-medium text-xs text-bg-dark/50">{user.comments} сообщений</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
-
                 </div>
 
-                <div className="mt-12 text-center">
-                    <button className="bg-[#B83A2D] text-cream font-black text-sm lg:text-base uppercase tracking-widest px-8 py-4 border-4 border-bg-dark shadow-[4px_4px_0_var(--color-bg-dark)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all active:scale-95">
-                        ВСТУПИТЬ В РЯДЫ
+                <div className="mt-16 text-center">
+                    <button className="bg-bg-dark text-white font-bold text-sm lg:text-base tracking-widest px-8 md:px-10 py-4 lg:py-5 rounded-full shadow-lg shadow-bg-dark/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95 border border-transparent hover:border-white/10">
+                        Присоединиться к Коммьюнити
                     </button>
                 </div>
 

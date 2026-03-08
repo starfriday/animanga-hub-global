@@ -51,6 +51,7 @@ export const BlurImage: React.FC<BlurImageProps> = ({ src, alt, className, fill,
 
     return (
         <div className={cn("relative overflow-hidden bg-secondary/10", className)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 ref={imgRef}
                 src={imgSrc}

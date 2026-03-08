@@ -27,7 +27,7 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
     if (!movies || movies.length === 0) return null;
 
     return (
-        <section className="w-full py-20 bg-bg-dark relative overflow-hidden">
+        <section className="w-full py-20 bg-bg-cream relative overflow-hidden">
             <div className="max-w-[1800px] mx-auto px-4 lg:px-12 flex flex-col gap-8">
 
                 {/* Header */}
@@ -37,7 +37,7 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
                             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                             В тренде
                         </div>
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-bg-dark drop-shadow-sm">
                             Популярное кино
                         </h2>
                     </div>
@@ -45,13 +45,13 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
                     <div className="flex gap-3">
                         <button
                             onClick={() => scroll('left')}
-                            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95 outline-none backdrop-blur-sm border border-white/10"
+                            className="w-12 h-12 flex items-center justify-center rounded-full bg-bg-dark/5 hover:bg-bg-dark/10 text-bg-dark transition-all active:scale-95 outline-none backdrop-blur-sm border border-bg-dark/10"
                         >
                             <ChevronLeft size={24} />
                         </button>
                         <button
                             onClick={() => scroll('right')}
-                            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95 outline-none backdrop-blur-sm border border-white/10"
+                            className="w-12 h-12 flex items-center justify-center rounded-full bg-bg-dark/5 hover:bg-bg-dark/10 text-bg-dark transition-all active:scale-95 outline-none backdrop-blur-sm border border-bg-dark/10"
                         >
                             <ChevronRight size={24} />
                         </button>
@@ -66,7 +66,7 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
                 >
                     {movies.map((movie) => (
                         <div key={movie.id} className="min-w-[280px] lg:min-w-[340px] snap-start group relative">
-                            <Link href={`/anime/${movie.id}`} className="block relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-bg-dark border border-white/5 select-none shadow-lg">
+                            <Link href={`/anime/${movie.id}`} className="block relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/40 border border-bg-dark/5 select-none shadow-md hover:shadow-xl transition-shadow duration-300">
                                 {/* Image */}
                                 <Image
                                     src={`https://shikimori.one${movie.image?.original}`}
@@ -78,14 +78,14 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
                                     sizes="(max-width: 1024px) 100vw, 400px"
                                 />
 
-                                {/* Dark Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                                {/* Light Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-bg-dark/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                                 {/* Top Badge */}
                                 {(movie.score || 0) > 0 && (
-                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300">
+                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-bg-dark/5 flex items-center gap-1.5 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300 shadow-sm">
                                         <Star size={14} className="text-accent fill-accent" />
-                                        <span className="text-white text-xs font-bold">{movie.score}</span>
+                                        <span className="text-bg-dark text-xs font-bold">{movie.score}</span>
                                     </div>
                                 )}
 
@@ -95,9 +95,9 @@ export function CinematicRadar({ movies }: CinematicRadarProps) {
                                         {movie.russian || movie.name}
                                     </h3>
 
-                                    <div className="flex items-center gap-4 text-xs font-medium text-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                                        <span>{movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
-                                        <div className="w-1 h-1 rounded-full bg-white/30" />
+                                    <div className="flex items-center gap-4 text-xs font-medium text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                        <span className="font-bold">{movie.aired_on ? new Date(movie.aired_on).getFullYear() : 'TBA'}</span>
+                                        <div className="w-1 h-1 rounded-full bg-white/40" />
                                         <span>Аниме фильм</span>
                                     </div>
 
