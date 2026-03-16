@@ -182,43 +182,39 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-            {/* Backdrop with aggressive blur */}
-            <div className="fixed inset-0 bg-bg-dark/80 backdrop-blur-2xl transition-all duration-500" onClick={onClose} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300" onClick={onClose} />
 
-            {/* Modal Container - Max height significantly restricted to ensure fit */}
-            <div className="relative w-full max-w-[480px] max-h-[85vh] bg-bg-cream border-2 border-bg-dark rounded-[2rem] shadow-brutal-dark-xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 duration-500 ease-out overflow-hidden my-auto">
+            {/* Modal Container */}
+            <div className="relative w-full max-w-[480px] max-h-[85vh] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden my-auto">
 
-                {/* Header Section - Stripped down height */}
-                <div className="bg-white border-b-2 border-bg-dark p-6 relative overflow-hidden shrink-0">
-                    <div className="relative z-10 flex justify-between items-center gap-4">
-                        <div className="space-y-0.5">
-                            <h2 className="font-editorial text-2xl sm:text-3xl text-bg-dark leading-none uppercase tracking-tighter">
+                {/* Header */}
+                <div className="p-6 pb-5 relative shrink-0">
+                    <div className="flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                            <h2 className="text-2xl sm:text-[1.7rem] font-black text-bg-dark leading-tight tracking-tight">
                                 Добавить в список
                             </h2>
-                            <div className="flex items-center gap-2">
-                                <div className="h-0.5 w-4 bg-accent" />
-                                <p className="font-serif italic text-[10px] sm:text-xs text-bg-dark/50 line-clamp-1">{animeName}</p>
-                            </div>
+                            <p className="text-sm text-secondary-muted line-clamp-1">{animeName}</p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-1.5 bg-bg-dark text-white rounded-full hover:bg-accent transition-all duration-300 transform hover:rotate-90 active:scale-95 shadow-brutal-dark-sm shrink-0"
+                            className="w-9 h-9 rounded-full bg-bg-dark/5 hover:bg-bg-dark/10 flex items-center justify-center text-secondary-muted hover:text-bg-dark transition-all duration-300 active:scale-90 shrink-0"
                         >
-                            <X size={14} strokeWidth={3} />
+                            <X size={18} />
                         </button>
                     </div>
+                    {/* Divider */}
+                    <div className="absolute bottom-0 left-6 right-6 h-px bg-secondary-muted/10" />
                 </div>
 
-                {/* Main Content Area - Scrollable with tighter gaps */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                {/* Main Content */}
+                <div className="flex-1 overflow-y-auto p-6 pt-5 space-y-6">
 
-                    {/* Status Grid */}
+                    {/* Status Section */}
                     <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-bg-dark/20">01 / Статус</span>
-                            <div className="h-px flex-1 bg-bg-dark/5" />
-                        </div>
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-secondary-muted">Статус</span>
 
                         <div className="grid grid-cols-2 gap-2">
                             {STATUS_OPTIONS.map((opt) => (
@@ -227,64 +223,58 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
                                     disabled={isActionLoading}
                                     onClick={() => handleStatusUpdate(status === opt.id ? null : opt.id)}
                                     className={cn(
-                                        "group flex items-center justify-between p-2.5 rounded-xl border-2 transition-all duration-300 font-black text-[8px] uppercase tracking-widest",
+                                        "group flex items-center gap-3 p-3 rounded-xl transition-colors duration-150 text-sm font-bold",
                                         status === opt.id
-                                            ? "bg-bg-dark border-bg-dark text-white shadow-brutal-dark-sm"
-                                            : "bg-white/60 border-bg-dark/10 text-bg-dark hover:border-bg-dark/40 hover:bg-white"
+                                            ? "bg-bg-dark text-white shadow-md"
+                                            : "bg-[#f8f9fa] text-bg-dark/70 hover:bg-bg-dark/[0.06] hover:text-bg-dark"
                                     )}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn(
-                                            "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300",
-                                            status === opt.id ? "bg-white/10" : "bg-bg-dark/5 group-hover:bg-accent/10"
-                                        )}>
-                                            <opt.icon size={14} />
-                                        </div>
-                                        <span>{opt.label}</span>
+                                    <div className={cn(
+                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-150 shrink-0",
+                                        status === opt.id ? "bg-white/15" : "bg-white shadow-sm"
+                                    )}>
+                                        <opt.icon size={16} />
                                     </div>
-                                    {status === opt.id && <div className="w-1 h-1 bg-accent rounded-full animate-pulse" />}
+                                    <span className="truncate">{opt.label}</span>
+                                    {status === opt.id && <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse ml-auto shrink-0" />}
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Favorite Button - Tighter padding */}
+                    {/* Favorite Button */}
                     <button
                         onClick={toggleFavorite}
                         disabled={isActionLoading}
                         className={cn(
-                            "w-full group flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all duration-500 relative overflow-hidden",
+                            "w-full group flex items-center justify-center gap-3 py-4 rounded-2xl transition-colors duration-150 font-bold text-sm",
                             isFavorite
-                                ? "bg-accent border-bg-dark text-white shadow-brutal-dark-sm"
-                                : "bg-white border-bg-dark text-bg-dark hover:bg-bg-cream"
+                                ? "bg-accent text-white shadow-lg shadow-accent/20"
+                                : "bg-[#f8f9fa] text-bg-dark hover:bg-bg-dark/[0.06] border border-secondary-muted/15"
                         )}
                     >
-                        <Heart size={18} className={cn(isFavorite && "fill-white")} />
-                        <span className="font-black uppercase tracking-widest text-[9px]">
-                            {isFavorite ? 'В ИЗБРАННОМ' : 'В ИЗБРАННОЕ'}
-                        </span>
+                        <Heart size={18} className={cn(isFavorite && "fill-white", "transition-transform duration-150 group-hover:scale-110")} />
+                        <span>{isFavorite ? 'В избранном' : 'В избранное'}</span>
                     </button>
 
-                    {/* Custom Lists - Subdued gaps */}
-                    <div className="space-y-4 pt-6 border-t-2 border-bg-dark/5">
+                    {/* Custom Lists */}
+                    <div className="space-y-3 pt-4 border-t border-secondary-muted/10">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-bg-dark/20">02 / Коллекции</span>
-                            </div>
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-secondary-muted">Коллекции</span>
                             <button
                                 onClick={() => setIsCreatingList(!isCreatingList)}
-                                className="text-[8px] font-black uppercase tracking-widest text-accent hover:text-bg-dark transition-colors"
+                                className="text-[11px] font-bold text-accent hover:text-accent-hover transition-colors"
                             >
-                                {isCreatingList ? '[ Отмена ]' : '[ Создать ]'}
+                                {isCreatingList ? 'Отмена' : '+ Создать'}
                             </button>
                         </div>
 
                         {isCreatingList && (
-                            <div className="flex gap-2 p-2 bg-white border-2 border-bg-dark rounded-xl animate-in zoom-in-95 duration-300">
+                            <div className="flex gap-2 p-1.5 bg-[#f8f9fa] rounded-xl border border-secondary-muted/15">
                                 <input
                                     autoFocus
-                                    className="flex-1 bg-transparent px-2 text-[9px] font-black uppercase outline-none"
-                                    placeholder="Имя коллекции..."
+                                    className="flex-1 bg-transparent px-3 py-2 text-sm font-medium outline-none placeholder:text-secondary-muted/50"
+                                    placeholder="Название коллекции..."
                                     value={newListName}
                                     onChange={(e) => setNewListName(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && createList()}
@@ -292,7 +282,7 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
                                 <button
                                     onClick={createList}
                                     disabled={isActionLoading || !newListName.trim()}
-                                    className="px-3 py-1 bg-bg-dark text-white rounded-md text-[8px] font-black uppercase tracking-widest"
+                                    className="px-4 py-2 bg-bg-dark text-white rounded-lg text-sm font-bold hover:bg-bg-dark/90 transition-colors disabled:opacity-40"
                                 >
                                     ОК
                                 </button>
@@ -308,36 +298,34 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
                                         disabled={isActionLoading}
                                         onClick={() => toggleInCustomList(list.id, isInList)}
                                         className={cn(
-                                            "w-full group flex items-center justify-between p-3 rounded-lg border-2 transition-all duration-300",
+                                            "w-full group flex items-center justify-between p-3.5 rounded-xl transition-colors duration-150",
                                             isInList
-                                                ? "bg-accent/5 border-accent text-accent"
-                                                : "bg-white/40 border-bg-dark/5 text-bg-dark hover:border-bg-dark/20"
+                                                ? "bg-accent/[0.06] text-accent border border-accent/20"
+                                                : "bg-[#f8f9fa] text-bg-dark/70 border border-transparent hover:bg-bg-dark/[0.04] hover:text-bg-dark"
                                         )}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <ListPlus size={14} className={isInList ? "text-accent" : "text-bg-dark/20"} />
+                                            <div className={cn(
+                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                                                isInList ? "bg-accent/10" : "bg-white shadow-sm"
+                                            )}>
+                                                <ListPlus size={16} className={isInList ? "text-accent" : "text-secondary-muted"} />
+                                            </div>
                                             <div className="text-left leading-tight">
-                                                <span className="block font-black uppercase text-[9px] truncate max-w-[200px]">
+                                                <span className="block font-bold text-sm truncate max-w-[200px]">
                                                     {list.name}
                                                 </span>
-                                                <span className="block text-[7px] font-bold opacity-30 uppercase">
-                                                    {list.entries.length} TITLES
+                                                <span className="block text-[11px] text-secondary-muted">
+                                                    {list.entries.length} тайтлов
                                                 </span>
                                             </div>
                                         </div>
-                                        {isInList ? <CheckCircle size={12} /> : <Plus size={10} className="opacity-20" />}
+                                        {isInList ? <CheckCircle size={16} /> : <Plus size={14} className="text-secondary-muted/40" />}
                                     </button>
                                 );
                             })}
                         </div>
                     </div>
-                </div>
-
-                {/* Footer Section - Super compact */}
-                <div className="py-2 bg-bg-dark text-center border-t-2 border-bg-dark shrink-0">
-                    <p className="text-[6px] font-black uppercase tracking-[0.5em] text-white/20">
-                        ANIMANGA HUB • 2026
-                    </p>
                 </div>
             </div>
 

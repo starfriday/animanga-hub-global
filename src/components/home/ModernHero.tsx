@@ -113,10 +113,10 @@ export const ModernHero = ({ trending }: ModernHeroProps) => {
                                             Смотреть
                                         </button>
                                     </Link>
-                                    <button className="flex items-center bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white px-6 py-6 rounded-xl font-bold backdrop-blur-sm transition-all hover:scale-105 active:scale-95">
+                                    <Link href={`/anime/${slide.shikimoriId || slide.id}`} className="flex items-center bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white px-6 py-6 rounded-xl font-bold backdrop-blur-sm transition-all hover:scale-105 active:scale-95">
                                         <Bookmark size={20} className="mr-2" />
                                         В закладки
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

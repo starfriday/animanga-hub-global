@@ -24,16 +24,16 @@ export function Footer() {
 
                         {/* Social Links */}
                         <div className="flex items-center gap-4">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
+                            <a href="https://t.me/anivault" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
                                 <Send size={18} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
+                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors" aria-label="Twitter">
                                 <Twitter size={18} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
+                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors" aria-label="YouTube">
                                 <Youtube size={18} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-accent hover:bg-accent/10 transition-colors">
                                 <Github size={18} />
                             </a>
                         </div>
@@ -44,10 +44,15 @@ export function Footer() {
                         <div>
                             <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Навигация</h4>
                             <ul className="space-y-4">
-                                {['Каталог', 'Коллекции', 'Онгоинги', 'Случайное'].map(link => (
-                                    <li key={link}>
-                                        <Link href="#" className="text-white/60 hover:text-accent text-sm font-medium transition-colors">
-                                            {link}
+                                {[
+                                    { label: 'Каталог', href: '/catalog' },
+                                    { label: 'Коллекции', href: '/collections' },
+                                    { label: 'Онгоинги', href: '/catalog?status=ongoing' },
+                                    { label: 'Случайное', href: '/random' },
+                                ].map(link => (
+                                    <li key={link.label}>
+                                        <Link href={link.href} className="text-white/60 hover:text-accent text-sm font-medium transition-colors">
+                                            {link.label}
                                         </Link>
                                     </li>
                                 ))}
@@ -56,10 +61,15 @@ export function Footer() {
                         <div>
                             <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Аккаунт</h4>
                             <ul className="space-y-4">
-                                {['Профиль', 'Избранное', 'История просмотров', 'Настройки'].map(link => (
-                                    <li key={link}>
-                                        <Link href="#" className="text-white/60 hover:text-accent text-sm font-medium transition-colors">
-                                            {link}
+                                {[
+                                    { label: 'Профиль', href: '/profile' },
+                                    { label: 'Избранное', href: '/profile' },
+                                    { label: 'История просмотров', href: '/profile' },
+                                    { label: 'Настройки', href: '/profile' },
+                                ].map(link => (
+                                    <li key={link.label}>
+                                        <Link href={link.href} className="text-white/60 hover:text-accent text-sm font-medium transition-colors">
+                                            {link.label}
                                         </Link>
                                     </li>
                                 ))}
@@ -71,10 +81,15 @@ export function Footer() {
                     <div className="lg:col-span-3">
                         <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm">Информация</h4>
                         <ul className="space-y-4">
-                            {['О проекте', 'Пользовательское соглашение', 'Политика конфиденциальности', 'Правообладателям'].map(link => (
-                                <li key={link}>
-                                    <Link href="#" className="text-white/60 hover:text-white text-sm font-medium transition-colors relative group inline-flex items-center">
-                                        {link}
+                            {[
+                                { label: 'О проекте', href: '/about' },
+                                { label: 'Пользовательское соглашение', href: '/terms' },
+                                { label: 'Политика конфиденциальности', href: '/privacy' },
+                                { label: 'Правообладателям', href: '/about' },
+                            ].map(link => (
+                                <li key={link.label}>
+                                    <Link href={link.href} className="text-white/60 hover:text-white text-sm font-medium transition-colors relative group inline-flex items-center">
+                                        {link.label}
                                     </Link>
                                 </li>
                             ))}

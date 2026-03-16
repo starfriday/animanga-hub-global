@@ -343,7 +343,21 @@ export const AnimeDetailsPage: React.FC<AnimeDetailsPageProps> = ({ anime, roles
                 nextEpisodeLabel={nextEpisodeLabel}
                 onPlay={handlePlay}
                 onAddToList={() => setIsListModalOpen(true)}
-                onShare={() => { }}
+                onShare={() => {
+                    const url = window.location.href;
+                    const title = anime.russian || anime.name;
+                    if (navigator.share) {
+                        navigator.share({ title, url }).catch(() => {});
+                    } else {
+                        navigator.clipboard.writeText(url).then(() => {
+                            const toast = document.createElement('div');
+                            toast.textContent = 'Ссылка скопирована!';
+                            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-bg-dark text-white rounded-full font-bold text-sm shadow-xl z-[999] animate-in fade-in slide-in-from-bottom-4 duration-300';
+                            document.body.appendChild(toast);
+                            setTimeout(() => toast.remove(), 2000);
+                        });
+                    }
+                }}
             />
 
             <AddToListModal

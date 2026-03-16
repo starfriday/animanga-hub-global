@@ -1,5 +1,7 @@
 "use client";
 
+import Link from 'next/link';
+
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Share2, List, Trash2, Eye, Globe, Lock,
@@ -129,7 +131,7 @@ export default function CollectionsPage() {
 
 function CollectionCard({ collection, isPublicView = false }: { collection: any, isPublicView?: boolean }) {
     return (
-        <div className="group relative bg-white border-2 border-bg-dark rounded-[2.5rem] p-8 shadow-brutal-soft hover:shadow-brutal-soft-xl hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 overflow-hidden">
+        <Link href={`/collection/${collection.id}`} className="group relative bg-white border-2 border-bg-dark rounded-[2.5rem] p-8 shadow-brutal-soft hover:shadow-brutal-soft-xl hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 overflow-hidden block">
             {/* Visual Decoration */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
 
@@ -177,11 +179,11 @@ function CollectionCard({ collection, isPublicView = false }: { collection: any,
                             от @{collection.user?.username}
                         </span>
                     )}
-                    <button className="ml-auto w-12 h-12 bg-bg-dark text-white rounded-2xl flex items-center justify-center hover:bg-accent transition-all active:scale-90">
+                    <div className="ml-auto w-12 h-12 bg-bg-dark text-white rounded-2xl flex items-center justify-center group-hover:bg-accent transition-all">
                         <ChevronRight size={24} />
-                    </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }
