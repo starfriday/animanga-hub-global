@@ -1,5 +1,5 @@
 const SHIKIMORI_BASE_URL = 'https://shikimori.one/api';
-const KODIK_BASE_URL = 'https://kodikapi.com';
+const KODIK_BASE_URL = 'https://kodik-api.com';
 const KODIK_TOKEN = '1a181b998ddb87ae564c7c31afca5df4';
 
 async function debug() {

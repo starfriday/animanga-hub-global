@@ -7,7 +7,7 @@
 
 // Kodik API token — from env or fallback for development
 const KODIK_TOKEN = process.env.KODIK_API_TOKEN || '1a181b998ddb87ae564c7c31afca5df4';
-const KODIK_BASE_URL = 'https://kodikapi.com';
+const KODIK_BASE_URL = 'https://kodik-api.com';
 
 export interface KodikResult {
     id: string;
